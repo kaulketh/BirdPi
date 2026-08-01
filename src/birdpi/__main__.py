@@ -1,5 +1,4 @@
-def main():
-    print("🐦 BirdPi online")
+from birdpi.main import main
 
 
 if __name__ == "__main__":
