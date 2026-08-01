@@ -52,9 +52,15 @@ class Camera:
             "--nopreview"
         ]
 
-        subprocess.run(
-            command,
-            check=True
-        )
+        try:
+            subprocess.run(
+                command,
+                check=True
+            )
+
+        except subprocess.CalledProcessError as error:
+            raise RuntimeError(
+                "Camera capture failed"
+            ) from error
 
         return output_file
