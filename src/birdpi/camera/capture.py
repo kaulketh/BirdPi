@@ -1,17 +1,14 @@
 """
-Interface for capturing still images using a Raspberry Pi Camera.
+Module for interfacing with a Raspberry Pi Camera.
 
-This module provides a `Camera` class designed for interaction with
-the Raspberry Pi Camera. It allows configuration of the output directory
-and capturing of still images using the `rpicam-still` command-line tool.
-The captured images can be saved with a timestamp-based name or a user-provided name.
+This module provides a Camera class to capture still images using a Raspberry
+Pi Camera. The captured images are saved to a specified path using the
+configuration provided during the initialization of the Camera instance.
 """
 
 import subprocess
 from datetime import datetime
 from pathlib import Path
-
-from birdpi.config import CAMERA_WIDTH, CAMERA_HEIGHT
 
 
 class Camera:
@@ -19,8 +16,9 @@ class Camera:
     Raspberry Pi Camera interface.
     """
 
-    def __init__(self, image_path: Path):
-        self.image_path = Path(image_path)
+    def __init__(self, config):
+        self.config = config
+        self.image_path = config.image_path
 
     def capture(self, filename: str | None = None) -> Path:
         """
@@ -44,9 +42,9 @@ class Camera:
         command = [
             "rpicam-still",
             "--width",
-            str(CAMERA_WIDTH),
+            str(self.config.camera_width),
             "--height",
-            str(CAMERA_HEIGHT),
+            str(self.config.camera_height),
             "-o",
             str(output_file),
             "--nopreview"
