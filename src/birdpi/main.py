@@ -9,9 +9,11 @@ Functions:
 """
 from birdpi.application import BirdPi
 from birdpi.config import load_config
+from birdpi.utils.logger import configure_logging
 
 
 def main() -> None:
+    configure_logging()
     config = load_config()
     app = BirdPi(config)
     app.run()
