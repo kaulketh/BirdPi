@@ -7,6 +7,9 @@ such as the camera and application settings.
 """
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
+from birdpi.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class BirdPi:
@@ -23,8 +26,8 @@ class BirdPi:
         Start BirdPi application.
         """
 
-        print("🐦 BirdPi online")
+        logger.info("BirdPi online")
 
         image = self.camera.capture()
 
-        print(f"📸 Image captured: {image}")
+        logger.info("Image captured: %s", image)
