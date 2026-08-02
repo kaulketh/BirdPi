@@ -1,9 +1,10 @@
 """
-Module for interfacing with a Raspberry Pi Camera.
+This module provides an interface for interacting with a Raspberry Pi Camera
+to capture still images.
 
-This module provides a Camera class to capture still images using a Raspberry
-Pi Camera. The captured images are saved to a specified path using the
-configuration provided during the initialization of the Camera instance.
+It contains a `Camera` class that enables capturing images and saving them to
+a provided path. The module relies on external configuration and a subprocess
+to invoke the camera functionality.
 """
 
 import subprocess
@@ -18,8 +19,8 @@ class Camera:
     Raspberry Pi Camera interface.
     """
 
-    def __init__(self, config: Config):
-        self.config = config
+    def __init__(self, config: Config) -> None:
+        self.config: Config = config
 
     def capture(self, filename: str | None = None) -> Path:
         """

@@ -1,10 +1,9 @@
 """
-Main application module for the BirdPi system.
+Main module for the BirdPi system.
 
-This module defines the BirdPi class, the central hub for initializing and
-running the BirdPi application. It integrates multiple components, including
-configuration management and camera functionality, to provide the main
-features of the application.
+This module provides the main entry point for initializing and running the
+BirdPi application. It configures and integrates the necessary parts
+such as the camera and application settings.
 """
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
@@ -15,11 +14,11 @@ class BirdPi:
     Main application class for the BirdPi system.
     """
 
-    def __init__(self, config: Config):
-        self.config = config
-        self.camera = Camera(config)
+    def __init__(self, config: Config) -> None:
+        self.config: Config = config
+        self.camera: Camera = Camera(config)
 
-    def run(self):
+    def run(self) -> None:
         """
         Start BirdPi application.
         """
