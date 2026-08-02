@@ -15,9 +15,9 @@ class BirdPi:
     Main application class for the BirdPi system.
     """
 
-    def __init__(self):
-        self.config = Config()
-        self.camera = Camera(self.config)
+    def __init__(self, config: Config):
+        self.config = config
+        self.camera = Camera(config)
 
     def run(self):
         """

@@ -9,10 +9,12 @@ Functions:
     main(): Initializes and runs the BirdPi application.
 """
 from birdpi.application import BirdPi
+from birdpi.config import load_config
 
 
 def main():
-    app = BirdPi()
+    config = load_config()
+    app = BirdPi(config)
     app.run()
 
 

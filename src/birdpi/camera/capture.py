@@ -10,15 +10,16 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 
+from birdpi.config import Config
+
 
 class Camera:
     """
     Raspberry Pi Camera interface.
     """
 
-    def __init__(self, config):
+    def __init__(self, config: Config):
         self.config = config
-        self.image_path = config.image_path
 
     def capture(self, filename: str | None = None) -> Path:
         """
@@ -32,7 +33,7 @@ class Camera:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"image_{timestamp}.jpg"
 
-        output_file = self.image_path / filename
+        output_file = self.config.image_path / filename
 
         output_file.parent.mkdir(
             parents=True,
@@ -41,12 +42,16 @@ class Camera:
 
         command = [
             "rpicam-still",
+
             "--width",
             str(self.config.camera_width),
+
             "--height",
             str(self.config.camera_height),
+
             "-o",
             str(output_file),
+
             "--nopreview"
         ]
 

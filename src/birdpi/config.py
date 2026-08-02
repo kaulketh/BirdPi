@@ -1,24 +1,37 @@
 """
-A configuration module for BirdPi.
+Configuration module for BirdPi.
 
-This module provides the `Config` class which contains configuration
-settings for the BirdPi application. It defines paths and settings
-related to data storage and camera parameters.
+This module defines the application's configuration data model and
+provides a factory function for creating the default configuration.
 """
+
+from dataclasses import dataclass
 from pathlib import Path
 
 
+@dataclass(slots=True)
 class Config:
     """
     BirdPi configuration.
     """
 
-    def __init__(self):
-        self.data_path = Path(
-            "/home/kaulketh/birdpi-data"
-        )
+    data_path: Path
+    image_path: Path
 
-        self.image_path = self.data_path / "images"
+    camera_width: int
+    camera_height: int
 
-        self.camera_width = 1920
-        self.camera_height = 1080
+
+def load_config() -> Config:
+    """
+    Create the default BirdPi configuration.
+    """
+
+    data_path = Path("/home/kaulketh/birdpi-data")
+
+    return Config(
+        data_path=data_path,
+        image_path=data_path / "images",
+        camera_width=3280,
+        camera_height=2464,
+    )
