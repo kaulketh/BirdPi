@@ -8,10 +8,10 @@ to invoke the camera functionality.
 """
 
 import subprocess
-from datetime import datetime
 from pathlib import Path
 
 from birdpi.config import Config
+from birdpi.storage import Storage
 
 
 class Camera:
@@ -21,6 +21,7 @@ class Camera:
 
     def __init__(self, config: Config) -> None:
         self.config: Config = config
+        self.storage: Storage = Storage(config)
 
     def capture(self, filename: str | None = None) -> Path:
         """
@@ -29,17 +30,8 @@ class Camera:
         Returns:
             Path of created image.
         """
-
-        if filename is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"image_{timestamp}.jpg"
-
-        output_file = self.config.image_path / filename
-
-        output_file.parent.mkdir(
-            parents=True,
-            exist_ok=True
-        )
+        self.storage.ensure_directories()
+        output_file: Path = self.storage.next_image_path(filename)
 
         command = [
             "rpicam-still",
