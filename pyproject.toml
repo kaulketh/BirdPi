@@ -1,0 +1,10 @@
+[project]
+name = "birdpi"
+version = "0.1.0-dev"
+description = "Bird house observation system based on Raspberry Pi"
+readme = "README.md"
+requires-python = ">=3.13"
+
+dependencies = [
+    "Flask>=3.1",
+]
