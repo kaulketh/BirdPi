@@ -6,7 +6,7 @@ to handle HTTP requests. The primary purpose of this module is to configure
 the web endpoints required to respond to client requests.
 
 """
-from flask import Flask
+from flask import Flask, render_template
 
 
 def register_routes(app: Flask) -> None:
@@ -16,4 +16,4 @@ def register_routes(app: Flask) -> None:
 
     @app.get("/")
     def index() -> str:
-        return "BirdPi is running"
+        return render_template("index.html")

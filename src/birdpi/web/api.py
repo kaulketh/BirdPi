@@ -1,10 +1,12 @@
 """
-A module for creating and configuring a Flask web application.
+This module provides the creation and configuration of a Flask application.
 
-This module is used to initialize and return a Flask application instance
-with predefined routes registered to it. The `create_app` function is the
-primary entry point for application setup and configuration.
+It initializes a Flask application instance, sets the template and static
+folder paths based on the package root directory, and registers application
+routes.
 """
+from pathlib import Path
+
 from flask import Flask
 
 from birdpi.web.routes import register_routes
@@ -14,7 +16,14 @@ def create_app() -> Flask:
     """
     Create Flask application.
     """
+    package_root = Path(__file__).resolve().parent.parent
 
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        template_folder=package_root / "templates",
+        static_folder=package_root / "static",
+    )
+
     register_routes(app)
+
     return app
