@@ -34,3 +34,18 @@ class Storage:
             filename = f"image_{timestamp}.jpg"
 
         return self.config.image_path / filename
+
+    def latest_image(self) -> Path | None:
+        """
+        Return the most recently created image.
+
+        Returns:
+            Path of the latest image, or None if no images exist.
+        """
+        images = sorted(
+            self.config.image_path.glob("*.jpg"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+
+        return images[0] if images else None
