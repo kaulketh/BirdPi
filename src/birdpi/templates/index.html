@@ -1,71 +1,51 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
 
-    <title>BirdPi</title>
+{% block title %}BirdPi{% endblock %}
 
-    <link
-            rel="stylesheet"
-            href="{{ url_for('static', filename='style.css') }}"
+{% block content %}
+
+<section class="card">
+    <h2>System</h2>
+
+    <p>Host: {{ hostname }}</p>
+    <p>Uptime: {{ uptime }}</p>
+    <p>CPU temperature: {{ "%.1f"|format(cpu_temperature) }} °C</p>
+</section>
+
+<section class="card">
+    <h2>Camera</h2>
+
+    <p>Model: {{ camera_model }}</p>
+    <p>Resolution: {{ camera_resolution }}</p>
+    <p>Stored images: {{ image_count }}</p>
+
+    <form
+        class="capture-form"
+        action="{{ url_for('web.capture') }}"
+        method="post"
     >
-</head>
+        <button type="submit">
+            📸 Capture image
+        </button>
+    </form>
+</section>
 
-<body>
+<section class="card">
+    <h2>Latest image</h2>
 
-<div class="container">
-
-    <header>
-        <h1>🐦 BirdPi</h1>
-        <p class="subtitle">Nature Observation Node</p>
-    </header>
-    <section class="card">
-        <h2>System</h2>
-        <p>Host: {{ hostname }}</p>
-        <p>Uptime: {{ uptime }}</p>
-        <p>CPU temperature: {{ "%.1f"|format(cpu_temperature) }} °C</p>
-    </section>
-
-    <section class="card">
-        <h2>Camera</h2>
-        <p>Model: {{ camera_model }}</p>
-        <p>Resolution: {{ camera_resolution }}</p>
-        <p>Stored images: {{ image_count }}</p>
-        <form
-                class="capture-form"
-                action="{{ url_for('web.capture') }}"
-                method="post"
-        >
-            <button type="submit">
-                📸 Capture image
-            </button>
-        </form>
-    </section>
-
-    <section class="card">
-        <h2>Latest image</h2>
-
-        {% if latest_image %}
-
+    {% if latest_image %}
         <p class="image-name">
             {{ latest_image.name }}
         </p>
 
         <img
-                class="camera-image"
-                src="{{ url_for('web.image', filename=latest_image.name) }}"
-                alt="Latest BirdPi image"
+            class="camera-image"
+            src="{{ url_for('web.image', filename=latest_image.name) }}"
+            alt="Latest BirdPi image"
         >
-
-        {% else %}
-
+    {% else %}
         <p>No images available.</p>
+    {% endif %}
+</section>
 
-        {% endif %}
-    </section>
-
-</div>
-
-</body>
-</html>
+{% endblock %}
