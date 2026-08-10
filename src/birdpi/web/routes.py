@@ -8,10 +8,15 @@ the web endpoints required to respond to client requests.
 """
 from flask import Flask, render_template, send_from_directory
 
+from birdpi.camera.capture import Camera
 from birdpi.storage import Storage
 
 
-def register_routes(app: Flask, storage: Storage) -> None:
+def register_routes(
+    app: Flask,
+    storage: Storage,
+    camera: Camera,
+) -> None:
     """
     Register all web routes.
     """

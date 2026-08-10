@@ -5,6 +5,7 @@ This module initializes the BirdPi web application using the `create_app`
 function and runs the application on the specified host and port.
 """
 
+from birdpi.camera.capture import Camera
 from birdpi.config import load_config
 from birdpi.storage import Storage
 from birdpi.web.api import create_app
@@ -12,8 +13,9 @@ from birdpi.web.api import create_app
 
 config = load_config()
 storage = Storage(config)
+camera = Camera(config)
 
-app = create_app(storage)
+app = create_app(storage, camera)
 
 
 if __name__ == "__main__":

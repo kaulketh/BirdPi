@@ -9,14 +9,19 @@ from pathlib import Path
 
 from flask import Flask
 
+from birdpi.camera.capture import Camera
 from birdpi.storage import Storage
 from birdpi.web.routes import register_routes
 
 
-def create_app(storage: Storage) -> Flask:
+def create_app(
+    storage: Storage,
+    camera: Camera,
+) -> Flask:
     """
     Create Flask application.
     """
+
     package_root = Path(__file__).resolve().parent.parent
 
     app = Flask(
@@ -25,6 +30,6 @@ def create_app(storage: Storage) -> Flask:
         static_folder=package_root / "static",
     )
 
-    register_routes(app, storage)
+    register_routes(app, storage, camera)
 
     return app
