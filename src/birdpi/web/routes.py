@@ -59,4 +59,13 @@ def register_routes(storage: Storage, camera: Camera, ) -> Blueprint:
         camera.capture()
         return redirect(url_for("web.index"))
 
+    @web.get("/gallery")
+    def gallery() -> str:
+        images = storage.images()
+
+        return render_template(
+            "gallery.html",
+            images=images,
+        )
+
     return web

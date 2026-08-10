@@ -59,3 +59,33 @@ button:hover {
     color: #666;
     font-size: 0.9rem;
 }
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(220px, 1fr)
+    );
+    gap: 1rem;
+}
+
+.gallery-item {
+    background: white;
+    border-radius: 10px;
+    padding: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+.gallery-item p {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    color: #666;
+    word-break: break-all;
+}

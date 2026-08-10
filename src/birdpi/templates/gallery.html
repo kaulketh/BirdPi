@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BirdPi Gallery</title>
+
+    <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🐦 BirdPi</h1>
+        <p class="subtitle">Gallery</p>
+    </header>
+
+    <section class="card">
+        <h2>Captured images</h2>
+
+        {% if images %}
+
+        <div class="gallery-grid">
+            {% for image in images %}
+            <div class="gallery-item">
+                <img
+                        src="{{ url_for('web.image', filename=image.name) }}"
+                        alt="{{ image.name }}"
+                >
+                <p>{{ image.name }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+
+        <p>No images available.</p>
+
+        {% endif %}
+    </section>
+
+</div>
+
+</body>
+</html>
