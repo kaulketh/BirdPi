@@ -2,27 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>BirdPi</title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='style.css') }}"
+    >
 </head>
 
 <body>
 
-<h1>🐦 BirdPi</h1>
-<p>Nature Observation Node</p>
+<div class="container">
 
-<form action="{{ url_for('capture') }}" method="post">
-    <button type="submit">📸 Capture image</button>
-</form>
+    <header>
+        <h1>🐦 BirdPi</h1>
+        <p class="subtitle">Nature Observation Node</p>
+    </header>
 
-{% if latest_image %}
-    <p>Latest image: {{ latest_image.name }}</p>
-    <img
-        src="{{ url_for('image', filename=latest_image.name) }}"
-        alt="Latest BirdPi image"
-        style="max-width: 100%; height: auto;"
-    >
-{% else %}
-    <p>No images available.</p>
-{% endif %}
+    <section class="card">
+        <h2>Camera</h2>
+
+        <form
+            class="capture-form"
+            action="{{ url_for('capture') }}"
+            method="post"
+        >
+            <button type="submit">
+                📸 Capture image
+            </button>
+        </form>
+    </section>
+
+    <section class="card">
+        <h2>Latest image</h2>
+
+        {% if latest_image %}
+
+            <p class="image-name">
+                {{ latest_image.name }}
+            </p>
+
+            <img
+                class="camera-image"
+                src="{{ url_for('image', filename=latest_image.name) }}"
+                alt="Latest BirdPi image"
+            >
+
+        {% else %}
+
+            <p>No images available.</p>
+
+        {% endif %}
+    </section>
+
+</div>
+
 </body>
 </html>
