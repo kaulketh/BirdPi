@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}BirdPi Image{% endblock %}
+
+{% block content %}
+
+<section class="card">
+    <h2>{{ filename }}</h2>
+
+    <img
+        class="camera-image"
+        src="{{ url_for('web.image', filename=filename) }}"
+        alt="{{ filename }}"
+    >
+</section>
+
+{% endblock %}

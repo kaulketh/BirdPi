@@ -11,10 +11,14 @@
     <div class="gallery-grid">
         {% for image in images %}
         <div class="gallery-item">
-            <img
-                    src="{{ url_for('web.image', filename=image.name) }}"
-                    alt="{{ image.name }}"
-            >
+
+            <a href="{{ url_for('web.gallery_image', filename=image.name) }}">
+                <img
+                        src="{{ url_for('web.image', filename=image.name) }}"
+                        alt="{{ image.name }}"
+                >
+            </a>
+
             <p>{{ image.name }}</p>
         </div>
         {% endfor %}

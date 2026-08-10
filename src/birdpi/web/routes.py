@@ -68,4 +68,11 @@ def register_routes(storage: Storage, camera: Camera, ) -> Blueprint:
             images=images,
         )
 
+    @web.get("/gallery/<path:filename>")
+    def gallery_image(filename: str) -> str:
+        return render_template(
+            "image.html",
+            filename=filename,
+        )
+
     return web
