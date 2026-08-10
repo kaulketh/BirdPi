@@ -17,4 +17,9 @@ def register_routes(app: Flask, storage: Storage) -> None:
 
     @app.get("/")
     def index() -> str:
-        return render_template("index.html")
+        latest_image = storage.latest_image()
+
+        return render_template(
+            "index.html",
+            latest_image=latest_image,
+        )

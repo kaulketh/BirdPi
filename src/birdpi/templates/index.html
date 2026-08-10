@@ -11,5 +11,10 @@
 
 <p>Nature Observation Node</p>
 
+{% if latest_image %}
+    <p>Latest image: {{ latest_image.name }}</p>
+{% else %}
+    <p>No images available.</p>
+{% endif %}
 </body>
 </html>
