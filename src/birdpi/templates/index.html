@@ -13,6 +13,11 @@
 
 {% if latest_image %}
     <p>Latest image: {{ latest_image.name }}</p>
+    <img
+        src="{{ url_for('image', filename=latest_image.name) }}"
+        alt="Latest BirdPi image"
+        style="max-width: 100%; height: auto;"
+    >
 {% else %}
     <p>No images available.</p>
 {% endif %}
