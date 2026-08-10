@@ -7,6 +7,7 @@ such as the camera and application settings.
 """
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
+from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -20,6 +21,7 @@ class BirdPi:
     def __init__(self, config: Config) -> None:
         self.config: Config = config
         self.camera: Camera = Camera(config)
+        self.storage: Storage = Storage(config)
 
     def run(self) -> None:
         """
