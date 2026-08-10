@@ -8,8 +8,11 @@
 <body>
 
 <h1>🐦 BirdPi</h1>
-
 <p>Nature Observation Node</p>
+
+<form action="{{ url_for('capture') }}" method="post">
+    <button type="submit">📸 Capture image</button>
+</form>
 
 {% if latest_image %}
     <p>Latest image: {{ latest_image.name }}</p>

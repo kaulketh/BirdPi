@@ -6,7 +6,13 @@ to handle HTTP requests. The primary purpose of this module is to configure
 the web endpoints required to respond to client requests.
 
 """
-from flask import Flask, render_template, send_from_directory
+from flask import (
+    Flask,
+    redirect,
+    render_template,
+    send_from_directory,
+    url_for,
+)
 
 from birdpi.camera.capture import Camera
 from birdpi.storage import Storage
@@ -29,6 +35,12 @@ def register_routes(
             "index.html",
             latest_image=latest_image,
         )
+
+    @app.post("/capture")
+    def capture():
+        camera.capture()
+
+        return redirect(url_for("index"))
 
     @app.get("/images/<path:filename>")
     def image(filename: str):
