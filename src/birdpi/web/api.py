@@ -30,6 +30,7 @@ def create_app(
         static_folder=package_root / "static",
     )
 
-    register_routes(app, storage, camera)
+    web = register_routes(storage, camera)
+    app.register_blueprint(web)
 
     return app

@@ -1,33 +1,24 @@
 """
-A module for registering and managing web routes for a Flask application.
+This module provides web routes for accessing stored images, the latest captured
+image, and triggering camera operations using the Flask framework.
 
-This module defines and sets up the routes required for the application
-to handle HTTP requests. The primary purpose of this module is to configure
-the web endpoints required to respond to client requests.
-
+The module is structured as a Flask `Blueprint` with several routes for
+front-end integration and for interacting with a camera and storage system.
 """
-from flask import (
-    Flask,
-    redirect,
-    render_template,
-    send_from_directory,
-    url_for,
-)
+from flask import Blueprint, redirect, render_template, send_from_directory, url_for
 
 from birdpi.camera.capture import Camera
 from birdpi.storage import Storage
 
 
+web = Blueprint("web", __name__)
+
+
 def register_routes(
-    app: Flask,
     storage: Storage,
     camera: Camera,
-) -> None:
-    """
-    Register all web routes.
-    """
-
-    @app.get("/")
+) -> Blueprint:
+    @web.get("/")
     def index() -> str:
         latest_image = storage.latest_image()
         image_count = storage.image_count()
@@ -38,15 +29,16 @@ def register_routes(
             image_count=image_count,
         )
 
-    @app.post("/capture")
-    def capture():
-        camera.capture()
-
-        return redirect(url_for("index"))
-
-    @app.get("/images/<path:filename>")
+    @web.get("/images/<path:filename>")
     def image(filename: str):
         return send_from_directory(
             storage.config.image_path,
             filename,
         )
+
+    @web.post("/capture")
+    def capture():
+        camera.capture()
+        return redirect(url_for("web.index"))
+
+    return web

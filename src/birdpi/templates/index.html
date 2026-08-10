@@ -28,7 +28,7 @@
         </p>
         <form
                 class="capture-form"
-                action="{{ url_for('capture') }}"
+                action="{{ url_for('web.capture') }}"
                 method="post"
         >
             <button type="submit">
@@ -48,7 +48,7 @@
 
         <img
                 class="camera-image"
-                src="{{ url_for('image', filename=latest_image.name) }}"
+                src="{{ url_for('web.image', filename=latest_image.name) }}"
                 alt="Latest BirdPi image"
         >
 
