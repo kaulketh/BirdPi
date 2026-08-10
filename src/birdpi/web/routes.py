@@ -7,9 +7,10 @@ the web endpoints required to respond to client requests.
 
 """
 from flask import Flask, render_template
+from birdpi.storage import Storage
 
 
-def register_routes(app: Flask) -> None:
+def register_routes(app: Flask, storage: Storage) -> None:
     """
     Register all web routes.
     """

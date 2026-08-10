@@ -9,10 +9,11 @@ from pathlib import Path
 
 from flask import Flask
 
+from birdpi.storage import Storage
 from birdpi.web.routes import register_routes
 
 
-def create_app() -> Flask:
+def create_app(storage: Storage) -> Flask:
     """
     Create Flask application.
     """
@@ -24,6 +25,6 @@ def create_app() -> Flask:
         static_folder=package_root / "static",
     )
 
-    register_routes(app)
+    register_routes(app, storage)
 
     return app
