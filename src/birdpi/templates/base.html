@@ -22,9 +22,20 @@
     </header>
 
     <nav>
-        <a href="{{ url_for('web.index') }}">Home</a>
-        <a href="{{ url_for('web.gallery') }}">Gallery</a>
-    </nav>
+    <a
+        href="{{ url_for('web.index') }}"
+        class="{% if request.endpoint == 'web.index' %}active{% endif %}"
+    >
+        Home
+    </a>
+
+    <a
+        href="{{ url_for('web.gallery') }}"
+        class="{% if request.endpoint == 'web.gallery' %}active{% endif %}"
+    >
+        Gallery
+    </a>
+</nav>
 
     {% block content %}
     {% endblock %}
