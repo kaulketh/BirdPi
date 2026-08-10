@@ -60,3 +60,34 @@ class Camera:
             ) from error
 
         return output_file
+
+    @property
+    def resolution(self) -> str:
+        return (
+            f"{self.config.camera_width} "
+            f"× {self.config.camera_height}"
+        )
+
+    @property
+    def model(self) -> str:
+        """
+        Return detected camera model.
+        """
+
+        result = subprocess.run(
+            [
+                "rpicam-hello",
+                "--list-cameras",
+            ],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+
+        for line in result.stdout.splitlines():
+            line = line.strip()
+
+            if line.startswith("0 :"):
+                return line.split()[2]
+
+        return "unknown"

@@ -26,10 +26,7 @@ from birdpi.system import format_uptime, get_uptime, get_cpu_temperature
 web = Blueprint("web", __name__)
 
 
-def register_routes(
-        storage: Storage,
-        camera: Camera,
-) -> Blueprint:
+def register_routes(storage: Storage, camera: Camera, ) -> Blueprint:
     @web.app_context_processor
     def inject_storage_status() -> dict:
         return {
@@ -37,6 +34,8 @@ def register_routes(
             "hostname": socket.gethostname(),
             "uptime": format_uptime(get_uptime()),
             "cpu_temperature": get_cpu_temperature(),
+            "camera_resolution": camera.resolution,
+            "camera_model": camera.model,
         }
 
     @web.get("/")
