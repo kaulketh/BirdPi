@@ -20,12 +20,16 @@
         <h1>🐦 BirdPi</h1>
         <p class="subtitle">Nature Observation Node</p>
     </header>
+    <section class="card">
+        <h2>System</h2>
+        <p>Host: {{ hostname }}</p>
+        <p>Uptime: {{ uptime }}</p>
+        <p>CPU temperature: {{ "%.1f"|format(cpu_temperature) }} °C</p>
+    </section>
 
     <section class="card">
         <h2>Camera</h2>
-        <p>
-            Stored images: {{ image_count }}
-        </p>
+        <p>Stored images: {{ image_count }} </p>
         <form
                 class="capture-form"
                 action="{{ url_for('web.capture') }}"
