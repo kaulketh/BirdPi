@@ -49,3 +49,13 @@ class Storage:
         )
 
         return images[0] if images else None
+
+    def image_count(self) -> int:
+        """
+        Return the number of stored images.
+        """
+
+        return sum(
+            1
+            for _ in self.config.image_path.glob("*.jpg")
+        )

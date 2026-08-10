@@ -30,10 +30,12 @@ def register_routes(
     @app.get("/")
     def index() -> str:
         latest_image = storage.latest_image()
+        image_count = storage.image_count()
 
         return render_template(
             "index.html",
             latest_image=latest_image,
+            image_count=image_count,
         )
 
     @app.post("/capture")
