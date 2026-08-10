@@ -59,3 +59,14 @@ class Storage:
             1
             for _ in self.config.image_path.glob("*.jpg")
         )
+
+    def images(self) -> list[Path]:
+        """
+        Return all stored images ordered from newest to oldest.
+        """
+
+        return sorted(
+            self.config.image_path.glob("*.jpg"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
