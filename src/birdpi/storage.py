@@ -103,3 +103,23 @@ class Storage:
             return None
 
         return self.image_from_path(path)
+
+    def adjacent_images(
+            self,
+            image: CapturedImage,
+    ) -> tuple[CapturedImage | None, CapturedImage | None]:
+        """
+        Return the newer and older neighboring images.
+        """
+
+        images = self.images()
+
+        try:
+            index = images.index(image)
+        except ValueError:
+            return None, None
+
+        newer = images[index - 1] if index > 0 else None
+        older = images[index + 1] if index < len(images) - 1 else None
+
+        return newer, older

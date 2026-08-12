@@ -76,9 +76,13 @@ def register_routes(storage: Storage, camera: Camera, ) -> Blueprint:
         if image is None:
             abort(404)
 
+        newer, older = storage.adjacent_images(image)
+
         return render_template(
             "image.html",
             image=image,
+            newer=newer,
+            older=older,
         )
 
     return web

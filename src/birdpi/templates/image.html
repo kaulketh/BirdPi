@@ -22,6 +22,21 @@
             src="{{ url_for('web.image', filename=image.filename) }}"
             alt="{{ image.filename }}"
     >
+    <div class="image-navigation">
+
+        {% if older %}
+        <a href="{{ url_for('web.gallery_image', filename=older.filename) }}">
+            ← Older
+        </a>
+        {% endif %}
+
+        {% if newer %}
+        <a href="{{ url_for('web.gallery_image', filename=newer.filename) }}">
+            Newer →
+        </a>
+        {% endif %}
+
+    </div>
 </section>
 
 {% endblock %}
