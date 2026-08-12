@@ -10,6 +10,9 @@ import threading
 
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
+from birdpi.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class Observer:
@@ -33,10 +36,31 @@ class Observer:
         Run automatic observation loop.
         """
 
-        while not self._stop_event.wait(
-                self.interval_seconds
-        ):
-            self.camera.capture()
+        logger.info(
+            "Observation started with interval %s seconds",
+            self.interval_seconds,
+        )
+
+        try:
+            while not self._stop_event.wait(
+                    self.interval_seconds
+            ):
+                try:
+                    image = self.camera.capture()
+
+                    logger.info(
+                        "Automatic image captured: %s",
+                        image,
+                    )
+
+                except Exception:
+                    logger.exception(
+                        "Automatic image capture failed"
+                    )
+
+        finally:
+            self._running = False
+            logger.info("Observation stopped")
 
     @property
     def running(self) -> bool:
@@ -60,6 +84,7 @@ class Observer:
         """
 
         if self._running:
+            logger.warning("Observation is already running")
             return
 
         self._stop_event.clear()
@@ -67,6 +92,7 @@ class Observer:
         self._thread = threading.Thread(
             target=self._run,
             daemon=True,
+            name="birdpi-observer",
         )
 
         self._running = True
@@ -78,12 +104,14 @@ class Observer:
         """
 
         if not self._running:
+            logger.warning("Observation is not running")
             return
+
+        logger.info("Stopping observation")
 
         self._stop_event.set()
 
         if self._thread is not None:
             self._thread.join()
 
-        self._running = False
         self._thread = None

@@ -8,8 +8,10 @@ specified host and port.
 """
 from birdpi.application import BirdPi
 from birdpi.config import load_config
+from birdpi.utils.logger import configure_logging
 from birdpi.web.api import create_app
 
+configure_logging()
 config = load_config()
 birdpi = BirdPi(config)
 
