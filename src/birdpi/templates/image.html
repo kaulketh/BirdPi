@@ -5,12 +5,14 @@
 {% block content %}
 
 <section class="card">
-    <h2>{{ filename }}</h2>
+    <h2>
+        {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
+    </h2>
 
     <img
-        class="camera-image"
-        src="{{ url_for('web.image', filename=filename) }}"
-        alt="{{ filename }}"
+            class="camera-image"
+            src="{{ url_for('web.image', filename=image.filename) }}"
+            alt="{{ image.filename }}"
     >
 </section>
 

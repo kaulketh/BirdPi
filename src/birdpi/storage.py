@@ -91,3 +91,15 @@ class Storage:
             path=path,
             captured_at=captured_at,
         )
+
+    def get_image(self, filename: str) -> CapturedImage | None:
+        """
+        Return a captured image by filename.
+        """
+
+        path = self.config.image_path / filename
+
+        if not path.is_file():
+            return None
+
+        return self.image_from_path(path)

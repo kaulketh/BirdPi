@@ -16,7 +16,8 @@ Functions:
 """
 import socket
 
-from flask import Blueprint, redirect, render_template, send_from_directory, \
+from flask import abort, Blueprint, redirect, render_template, \
+    send_from_directory, \
     url_for
 
 from birdpi.camera.capture import Camera
@@ -70,9 +71,14 @@ def register_routes(storage: Storage, camera: Camera, ) -> Blueprint:
 
     @web.get("/gallery/<path:filename>")
     def gallery_image(filename: str) -> str:
+        image = storage.get_image(filename)
+
+        if image is None:
+            abort(404)
+
         return render_template(
             "image.html",
-            filename=filename,
+            image=image,
         )
 
     return web
