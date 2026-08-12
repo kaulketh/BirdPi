@@ -5,23 +5,21 @@
 {% block content %}
 
 <section class="card">
-    <h2>Captured images</h2>
+    <h2>Captured images: {{ image_count }}</h2>
 
     {% if images %}
     <div class="gallery-grid">
+
         {% for image in images %}
         <div class="gallery-item">
-
-            <a href="{{ url_for('web.gallery_image', filename=image.name) }}">
-                <img
-                        src="{{ url_for('web.image', filename=image.name) }}"
-                        alt="{{ image.name }}"
-                >
+            <a href="{{ url_for('web.gallery_image', filename=image.filename) }}">
+                <img src="{{ url_for('web.image', filename=image.filename) }}"
+                     alt="{{ image.filename }}">
             </a>
-
-            <p>{{ image.name }}</p>
+            <p>{{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}</p>
         </div>
         {% endfor %}
+
     </div>
     {% else %}
     <p>No images available.</p>

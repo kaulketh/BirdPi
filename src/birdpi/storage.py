@@ -8,6 +8,7 @@ from datetime import datetime
 from pathlib import Path
 
 from birdpi.config import Config
+from birdpi.models import CapturedImage
 
 
 class Storage:
@@ -60,13 +61,33 @@ class Storage:
             for _ in self.config.image_path.glob("*.jpg")
         )
 
-    def images(self) -> list[Path]:
+    def images(self) -> list[CapturedImage]:
         """
         Return all stored images ordered from newest to oldest.
         """
 
-        return sorted(
+        paths = sorted(
             self.config.image_path.glob("*.jpg"),
-            key=lambda path: path.stat().st_mtime,
             reverse=True,
+        )
+
+        return [
+            self.image_from_path(path)
+            for path in paths
+        ]
+
+    @staticmethod
+    def image_from_path(path: Path) -> CapturedImage:
+        """
+        Create a CapturedImage from an image path.
+        """
+
+        captured_at = datetime.strptime(
+            path.stem,
+            "image_%Y%m%d_%H%M%S",
+        )
+
+        return CapturedImage(
+            path=path,
+            captured_at=captured_at,
         )
