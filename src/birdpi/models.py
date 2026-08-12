@@ -15,3 +15,11 @@ class CapturedImage:
     @property
     def filename(self) -> str:
         return self.path.name
+
+    @property
+    def size_bytes(self) -> int:
+        return self.path.stat().st_size
+
+    @property
+    def size_mb(self) -> float:
+        return self.size_bytes / (1024 * 1024)
