@@ -1,22 +1,19 @@
 """
-Entry point for running the BirdPi web application.
+Entry point for initializing and running the BirdPi web application.
 
-This module initializes the BirdPi web application using the `create_app`
-function and runs the application on the specified host and port.
+This module sets up the BirdPi system by loading the configuration, creating an
+instance of BirdPi with the loaded configuration, and initializing the web
+application with the BirdPi instance. Finally, it runs the web server on the
+specified host and port.
 """
-
-from birdpi.camera.capture import Camera
+from birdpi.application import BirdPi
 from birdpi.config import load_config
-from birdpi.storage import Storage
 from birdpi.web.api import create_app
 
-
 config = load_config()
-storage = Storage(config)
-camera = Camera(config)
+birdpi = BirdPi(config)
 
-app = create_app(storage, camera)
-
+app = create_app(birdpi)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000, )

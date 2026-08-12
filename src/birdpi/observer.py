@@ -1,8 +1,9 @@
 """
-Automatic observation management for BirdPi.
+This module provides the Observer class, which manages the automatic observation
+process for BirdPi, using camera captures at configured intervals.
 
-This module provides the Observer class responsible for controlling
-automatic image capture at configured intervals.
+Features include starting and stopping the observation loop, checking the running
+status of the observation process, and retrieving the configured observation interval.
 """
 
 import threading

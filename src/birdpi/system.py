@@ -1,8 +1,9 @@
 """
-Retrieve system uptime in seconds.
+A module to retrieve and format system information such as CPU temperature and uptime.
 
-This module provides a function to calculate the system's uptime based on
-the content of the `/proc/uptime` file in Linux systems.
+This module provides functionality to access information related to the CPU temperature,
+system uptime in seconds, and to convert uptime into a human-readable format including days,
+hours, and minutes.
 """
 from pathlib import Path
 

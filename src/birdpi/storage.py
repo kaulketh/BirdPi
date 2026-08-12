@@ -1,8 +1,14 @@
 """
-Storage management for BirdPi.
+Manage BirdPi file storage.
 
-This module provides the Storage class which is responsible for managing
-directories and generating file paths for captured images.
+This module handles operations related to managing the BirdPi file storage,
+including creating required directories, handling image file paths, counting
+stored images, and retrieving images or their adjacent neighbors.
+
+Classes:
+    Storage: Offers methods for managing file storage operations such as directory
+             management and image retrieval.
+
 """
 from datetime import datetime
 from pathlib import Path

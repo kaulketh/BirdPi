@@ -7,6 +7,7 @@ of the BirdPi application, and starts the application.
 Functions:
     main(): Initializes BirdPi application and starts it.
 """
+
 from birdpi.application import BirdPi
 from birdpi.config import load_config
 from birdpi.utils.logger import configure_logging

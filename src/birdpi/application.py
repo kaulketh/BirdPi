@@ -1,12 +1,13 @@
 """
-Main module for the BirdPi system.
+Main application module for the BirdPi system.
 
-This module provides the main entry point for initializing and running the
-BirdPi application. It configures and integrates the necessary parts
-such as the camera and application settings.
+This module initializes the core components of the BirdPi application, including the
+configuration, camera, storage, and observer systems. It serves as the entry point for
+running the BirdPi system.
 """
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
+from birdpi.observer import Observer
 from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
 
@@ -22,6 +23,7 @@ class BirdPi:
         self.config: Config = config
         self.camera: Camera = Camera(config)
         self.storage: Storage = Storage(config)
+        self.observer: Observer = Observer(config, self.camera,)
 
     def run(self) -> None:
         """

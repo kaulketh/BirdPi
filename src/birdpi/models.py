@@ -1,3 +1,9 @@
+"""
+This module defines the structure and functionality for working with a captured BirdPi image.
+
+The module provides a data class to represent an image, capturing its metadata such as file
+path, timestamp, and size in various units.
+"""
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path

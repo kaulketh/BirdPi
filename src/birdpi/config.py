@@ -1,8 +1,8 @@
 """
-This module provides functionalities to handle configuration for the BirdPi system.
+BirdPi configuration module.
 
-The module defines a `Config` class for storing configuration-related parameters
-and a `load_config` function to generate a default configuration instance.
+This module contains the configuration management for BirdPi, including
+default configuration creation and associated functionality.
 """
 
 from dataclasses import dataclass

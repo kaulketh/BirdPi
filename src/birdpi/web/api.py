@@ -1,23 +1,24 @@
 """
-This module provides the creation and configuration of a Flask application.
+This module provides functionality to create and configure a Flask web application
+with specified routes and templates.
 
-It initializes a Flask application instance, sets the template and static
-folder paths based on the package root directory, and registers application
-routes.
+It utilizes the `BirdPi` application and registers its associated routes through the
+Flask blueprint mechanism. The module helps initialize the necessary components for
+the web application, such as the static and template folder paths.
+
+Functions:
+    create_app(birdpi: BirdPi) -> Flask:
+        Creates and configures a Flask application.
 """
 from pathlib import Path
 
 from flask import Flask
 
-from birdpi.camera.capture import Camera
-from birdpi.storage import Storage
+from birdpi.application import BirdPi
 from birdpi.web.routes import register_routes
 
 
-def create_app(
-    storage: Storage,
-    camera: Camera,
-) -> Flask:
+def create_app(birdpi: BirdPi) -> Flask:
     """
     Create Flask application.
     """
@@ -30,7 +31,7 @@ def create_app(
         static_folder=package_root / "static",
     )
 
-    web = register_routes(storage, camera)
+    web = register_routes(birdpi)
     app.register_blueprint(web)
 
     return app

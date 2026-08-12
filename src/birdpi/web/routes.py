@@ -1,18 +1,12 @@
 """
-Blueprint for the web interface, providing routes for camera image handling
-and system status integration.
+Provides routes and request handling logic for the Flask-based web interface of the BirdPi application.
 
-This module defines a Flask Blueprint that sets up web interface routes
-for interacting with the camera, retrieving stored images, and presenting
-system information such as uptime and hostname. The `register_routes`
-function binds the provided `Storage` and `Camera` instances to the
-created routes.
+This module defines and registers routes within a Flask Blueprint to expose web functionalities such
+as capturing images, viewing galleries, and retrieving system-related data. The routes interact with
+the BirdPi application instance to serve data and handle user actions through the web interface.
 
 Functions:
-    register_routes(storage: Storage, camera: Camera) -> Blueprint:
-        Registers routes for the web interface and configures the necessary
-        context for rendering templates with storage and system status.
-
+    - register_routes: Registers all routes and context processors for the web Blueprint.
 """
 import socket
 
@@ -20,14 +14,16 @@ from flask import abort, Blueprint, redirect, render_template, \
     send_from_directory, \
     url_for
 
-from birdpi.camera.capture import Camera
-from birdpi.storage import Storage
+from birdpi.application import BirdPi
 from birdpi.system import format_uptime, get_uptime, get_cpu_temperature
 
 web = Blueprint("web", __name__)
 
 
-def register_routes(storage: Storage, camera: Camera, ) -> Blueprint:
+def register_routes(birdpi: BirdPi) -> Blueprint:
+    storage = birdpi.storage
+    camera = birdpi.camera
+
     @web.app_context_processor
     def inject_storage_status() -> dict:
         return {
