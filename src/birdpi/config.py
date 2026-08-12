@@ -21,6 +21,8 @@ class Config:
     camera_width: int
     camera_height: int
 
+    observation_interval_seconds: int
+
 
 def load_config() -> Config:
     """
@@ -34,4 +36,5 @@ def load_config() -> Config:
         image_path=data_path / "images",
         camera_width=3280,
         camera_height=2464,
+        observation_interval_seconds=300,
     )

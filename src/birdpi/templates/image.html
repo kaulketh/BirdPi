@@ -5,6 +5,11 @@
 {% block content %}
 
 <section class="card">
+    <p>
+        <a href="{{ url_for('web.gallery') }}">
+            ← Back to Gallery
+        </a>
+    </p>
     <h2>
         {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
     </h2>
@@ -16,12 +21,6 @@
     <p>
         File size: {{ "%.2f"|format(image.size_mb) }} MB
     </p>
-
-    <img
-            class="camera-image"
-            src="{{ url_for('web.image', filename=image.filename) }}"
-            alt="{{ image.filename }}"
-    >
     <div class="image-navigation">
 
         {% if older %}
@@ -37,6 +36,13 @@
         {% endif %}
 
     </div>
+
+    <img
+            class="camera-image"
+            src="{{ url_for('web.image', filename=image.filename) }}"
+            alt="{{ image.filename }}"
+    >
+
 </section>
 
 {% endblock %}
