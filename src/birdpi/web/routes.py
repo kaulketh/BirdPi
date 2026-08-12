@@ -25,7 +25,7 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
     camera = birdpi.camera
 
     @web.app_context_processor
-    def inject_storage_status() -> dict:
+    def inject_status() -> dict:
         return {
             "image_count": storage.image_count(),
             "hostname": socket.gethostname(),
@@ -33,6 +33,8 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
             "cpu_temperature": get_cpu_temperature(),
             "camera_resolution": camera.resolution,
             "camera_model": camera.model,
+            "observer_running": birdpi.observer.running,
+            "observation_interval": birdpi.observer.interval_seconds,
         }
 
     @web.get("/")
@@ -80,5 +82,17 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
             newer=newer,
             older=older,
         )
+
+    @web.post("/observation/start")
+    def observation_start():
+        birdpi.observer.start()
+
+        return redirect(url_for("web.index"))
+
+    @web.post("/observation/stop")
+    def observation_stop():
+        birdpi.observer.stop()
+
+        return redirect(url_for("web.index"))
 
     return web

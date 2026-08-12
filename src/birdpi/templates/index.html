@@ -18,11 +18,47 @@
     <p>Model: {{ camera_model }}</p>
     <p>Resolution: {{ camera_resolution }}</p>
     <p>Stored images: {{ image_count }}</p>
+    <p>
+        Observation:
+        {% if observer_running %}
+        Running
+        {% else %}
+        Stopped
+        {% endif %}
+    </p>
+
+    <p>Interval: {{ observation_interval }} seconds</p>
+
+    {% if observer_running %}
 
     <form
-        class="capture-form"
-        action="{{ url_for('web.capture') }}"
-        method="post"
+            action="{{ url_for('web.observation_stop') }}"
+            method="post"
+    >
+        <button type="submit">
+            ■ Stop observation
+        </button>
+    </form>
+
+    {% else %}
+
+    <form
+            action="{{ url_for('web.observation_start') }}"
+            method="post"
+    >
+        <button type="submit">
+            ▶ Start observation
+        </button>
+    </form>
+
+    {% endif %}
+
+    <p>Interval: {{ observation_interval }} seconds</p>
+
+    <form
+            class="capture-form"
+            action="{{ url_for('web.capture') }}"
+            method="post"
     >
         <button type="submit">
             📸 Capture image
@@ -34,17 +70,17 @@
     <h2>Latest image</h2>
 
     {% if latest_image %}
-        <p class="image-name">
-            {{ latest_image.name }}
-        </p>
+    <p class="image-name">
+        {{ latest_image.name }}
+    </p>
 
-        <img
+    <img
             class="camera-image"
             src="{{ url_for('web.image', filename=latest_image.name) }}"
             alt="Latest BirdPi image"
-        >
+    >
     {% else %}
-        <p>No images available.</p>
+    <p>No images available.</p>
     {% endif %}
 </section>
 
