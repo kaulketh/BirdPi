@@ -225,15 +225,13 @@ class Storage:
             session: ObservationSession,
     ) -> list[CapturedImage]:
         """
-        Return images captured during an observation session.
+        Return images associated with an observation session.
         """
-
-        end = session.stopped_at or datetime.now()
 
         images = [
             image
             for image in self.images()
-            if session.started_at <= image.captured_at <= end
+            if image.session_id == session.id
         ]
 
         return sorted(
