@@ -20,10 +20,16 @@ class BirdPi:
     """
 
     def __init__(self, config: Config) -> None:
-        self.config: Config = config
-        self.camera: Camera = Camera(config)
-        self.storage: Storage = Storage(config)
-        self.observer: Observer = Observer(config, self.camera,)
+        self.config = config
+
+        self.storage = Storage(config)
+        self.storage.ensure_directories()
+
+        self.camera = Camera(config)
+        self.observer = Observer(
+            config,
+            self.camera,
+        )
 
     def run(self) -> None:
         """
@@ -33,3 +39,27 @@ class BirdPi:
         logger.info("BirdPi online")
         image = self.camera.capture()
         logger.info("Image captured: %s", image)
+
+    def start_observation(self) -> None:
+        """
+        Start automatic observation.
+        """
+
+        self.observer.start()
+
+    def stop_observation(self) -> None:
+        """
+        Stop automatic observation and persist the completed session.
+        """
+
+        self.observer.stop()
+
+        session = self.observer.session
+
+        if session is not None and not session.active:
+            path = self.storage.save_session(session)
+
+            logger.info(
+                "Observation session saved: %s",
+                path,
+            )

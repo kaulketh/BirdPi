@@ -10,11 +10,13 @@ Classes:
              management and image retrieval.
 
 """
+import json
 from datetime import datetime
 from pathlib import Path
 
 from birdpi.config import Config
 from birdpi.models import CapturedImage
+from birdpi.models import ObservationSession
 
 
 class Storage:
@@ -33,6 +35,10 @@ class Storage:
         self.config.image_path.mkdir(
             parents=True,
             exist_ok=True
+        )
+        self.config.session_path.mkdir(
+            parents=True,
+            exist_ok=True,
         )
 
     def next_image_path(self, filename: str | None = None) -> Path:
@@ -117,3 +123,43 @@ class Storage:
         older = images[index + 1] if index < len(images) - 1 else None
 
         return newer, older
+
+    def save_session(
+            self,
+            session: ObservationSession,
+    ) -> Path:
+        """
+        Persist an observation session as JSON.
+
+        Returns:
+            Path of the created session file.
+        """
+
+        filename = (
+                session.started_at.strftime("%Y%m%d_%H%M%S")
+                + ".json"
+        )
+
+        output_file = self.config.session_path / filename
+
+        data = {
+            "started_at": session.started_at.isoformat(),
+            "stopped_at": (
+                session.stopped_at.isoformat()
+                if session.stopped_at
+                else None
+            ),
+            "capture_count": session.capture_count,
+        }
+
+        with output_file.open(
+                "w",
+                encoding="utf-8",
+        ) as file:
+            json.dump(
+                data,
+                file,
+                indent=4,
+            )
+
+        return output_file

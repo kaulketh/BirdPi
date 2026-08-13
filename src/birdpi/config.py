@@ -17,6 +17,7 @@ class Config:
 
     data_path: Path
     image_path: Path
+    session_path: Path
 
     camera_width: int
     camera_height: int
@@ -35,14 +36,16 @@ def load_config() -> Config:
     """
 
     data_path = Path("/home/kaulketh/birdpi-data")
-    images_path = data_path / "images"
+    image_path = data_path / "images"
+    session_path = data_path / "sessions"
     resolution = (3280, 2464)
     observer_interval = 300
     web_interval = 10
 
     return Config(
         data_path=data_path,
-        image_path=images_path,
+        session_path=session_path,
+        image_path=image_path,
         camera_width=resolution[0],
         camera_height=resolution[1],
         observation_interval_seconds=observer_interval,

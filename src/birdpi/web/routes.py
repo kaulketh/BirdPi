@@ -90,13 +90,13 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
 
     @web.post("/observation/start")
     def observation_start():
-        birdpi.observer.start()
+        birdpi.start_observation()
 
         return redirect(url_for("web.index"))
 
     @web.post("/observation/stop")
     def observation_stop():
-        birdpi.observer.stop()
+        birdpi.stop_observation()
 
         return redirect(url_for("web.index"))
 
