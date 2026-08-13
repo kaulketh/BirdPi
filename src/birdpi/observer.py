@@ -94,6 +94,8 @@ class Observer:
 
             logger.info("Observation stopped")
 
+
+
     @property
     def session(self) -> ObservationSession | None:
         """

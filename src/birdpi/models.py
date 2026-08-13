@@ -5,7 +5,7 @@ The module provides a data class to represent an image, capturing its metadata s
 path, timestamp, and size in various units.
 """
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 
@@ -44,3 +44,8 @@ class ObservationSession:
     @property
     def active(self) -> bool:
         return self.stopped_at is None
+
+    @property
+    def duration(self) -> timedelta:
+        end = self.stopped_at or datetime.now()
+        return end - self.started_at
