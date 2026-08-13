@@ -109,4 +109,19 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
             observation_sessions=observation_sessions,
         )
 
+    @web.get("/sessions/<session_id>")
+    def session_detail(session_id: str) -> str:
+        session = birdpi.storage.session(session_id)
+
+        if session is None:
+            abort(404)
+
+        images = birdpi.storage.images_for_session(session)
+
+        return render_template(
+            "session.html",
+            session=session,
+            images=images,
+        )
+
     return web

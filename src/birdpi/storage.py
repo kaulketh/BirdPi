@@ -204,3 +204,39 @@ class Storage:
             self._session_from_path(path)
             for path in paths
         ]
+
+    def images_for_session(
+            self,
+            session: ObservationSession,
+    ) -> list[CapturedImage]:
+        """
+        Return images captured during an observation session.
+        """
+
+        end = session.stopped_at or datetime.now()
+
+        images = [
+            image
+            for image in self.images()
+            if session.started_at <= image.captured_at <= end
+        ]
+
+        return sorted(
+            images,
+            key=lambda image: image.captured_at,
+        )
+
+    def session(
+            self,
+            session_id: str,
+    ) -> ObservationSession | None:
+        """
+        Return a stored observation session by session ID.
+        """
+
+        path = self.config.session_path / f"{session_id}.json"
+
+        if not path.is_file():
+            return None
+
+        return self._session_from_path(path)

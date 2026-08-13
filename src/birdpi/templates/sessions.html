@@ -6,37 +6,44 @@
 
 {% if observation_sessions %}
 
-    <table>
-        <thead>
-            <tr>
-                <th>Started</th>
-                <th>Stopped</th>
-                <th>Duration</th>
-                <th>Captures</th>
-            </tr>
-        </thead>
+<table>
+    <thead>
+    <tr>
+        <th>Started</th>
+        <th>Stopped</th>
+        <th>Duration</th>
+        <th>Captures</th>
+    </tr>
+    </thead>
 
-        <tbody>
-            {% for session in observation_sessions %}
-                <tr>
-                    <td>{{ session.started_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
-                    <td>
-                        {% if session.stopped_at %}
-                            {{ session.stopped_at.strftime("%Y-%m-%d %H:%M:%S") }}
-                        {% else %}
-                            Running
-                        {% endif %}
-                    </td>
-                    <td>{{ session.duration_text }}</td>
-                    <td>{{ session.capture_count }}</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <tbody>
+    {% for session in observation_sessions %}
+    <tr>
+        <td>
+            <a href="{{ url_for(
+                'web.session_detail',
+                session_id=session.started_at.strftime('%Y%m%d_%H%M%S')
+            ) }}">
+                {{ session.started_at.strftime("%Y-%m-%d %H:%M:%S") }}
+            </a>
+        </td>
+        <td>
+            {% if session.stopped_at %}
+            {{ session.stopped_at.strftime("%Y-%m-%d %H:%M:%S") }}
+            {% else %}
+            Running
+            {% endif %}
+        </td>
+        <td>{{ session.duration_text }}</td>
+        <td>{{ session.capture_count }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
 
 {% else %}
 
-    <p>No observation sessions stored.</p>
+<p>No observation sessions stored.</p>
 
 {% endif %}
 

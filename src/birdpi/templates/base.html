@@ -32,6 +32,11 @@
         >
             Gallery
         </a>
+        <a      href="{{ url_for('web.sessions') }}"
+                class="{% if request.endpoint == 'web.sessions' %}active{% endif %}"
+        >
+            Sessions
+        </a>
     </nav>
 
     {% block content %}
