@@ -163,3 +163,44 @@ class Storage:
             )
 
         return output_file
+
+    @staticmethod
+    def _session_from_path(
+            path: Path,
+    ) -> ObservationSession:
+        """
+        Create an ObservationSession from a JSON file.
+        """
+
+        with path.open(
+                "r",
+                encoding="utf-8",
+        ) as file:
+            data = json.load(file)
+
+        return ObservationSession(
+            started_at=datetime.fromisoformat(
+                data["started_at"]
+            ),
+            stopped_at=(
+                datetime.fromisoformat(data["stopped_at"])
+                if data["stopped_at"]
+                else None
+            ),
+            capture_count=data["capture_count"],
+        )
+
+    def sessions(self) -> list[ObservationSession]:
+        """
+        Return all stored observation sessions ordered newest first.
+        """
+
+        paths = sorted(
+            self.config.session_path.glob("*.json"),
+            reverse=True,
+        )
+
+        return [
+            self.session_from_path(path)
+            for path in paths
+        ]
