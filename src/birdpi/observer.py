@@ -8,7 +8,7 @@ status of the observation process, and retrieving the configured observation int
 
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
@@ -33,6 +33,7 @@ class Observer:
         self._stop_event = threading.Event()
         self._thread: threading.Thread | None = None
         self._last_capture_at: datetime | None = None
+        self._next_capture_at: datetime | None = None
 
     def _run(self) -> None:
         """
@@ -45,6 +46,9 @@ class Observer:
         )
 
         next_capture = time.monotonic() + self.interval_seconds
+
+        self._next_capture_at = (
+                datetime.now() + timedelta(seconds=self.interval_seconds))
 
         try:
             while not self._stop_event.is_set():
@@ -66,8 +70,16 @@ class Observer:
                     )
 
                 next_capture += self.interval_seconds
+                while next_capture <= time.monotonic():
+                    next_capture += self.interval_seconds
+
+                wait_seconds = max(0, next_capture - time.monotonic(), )
+
+                self._next_capture_at = (
+                        datetime.now() + timedelta(seconds=wait_seconds))
 
         finally:
+            self._next_capture_at = None
             self._running = False
             logger.info("Observation stopped")
 
@@ -94,6 +106,14 @@ class Observer:
         """
 
         return self._last_capture_at
+
+    @property
+    def next_capture_at(self) -> datetime | None:
+        """
+        Return timestamp of the next scheduled automatic capture.
+        """
+
+        return self._next_capture_at
 
     def start(self) -> None:
         """
