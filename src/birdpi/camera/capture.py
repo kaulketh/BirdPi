@@ -8,6 +8,7 @@ to invoke the camera functionality.
 """
 
 import subprocess
+import threading
 from pathlib import Path
 
 from birdpi.config import Config
@@ -22,13 +23,36 @@ class Camera:
     def __init__(self, config: Config) -> None:
         self.config: Config = config
         self.storage: Storage = Storage(config)
+        self._capture_lock = threading.Lock()
 
-    def capture(self, filename: str | None = None) -> Path:
+    def capture(
+            self,
+            filename: str | None = None,
+    ) -> Path:
         """
         Capture a still image.
 
         Returns:
             Path of created image.
+        """
+
+        with self._capture_lock:
+            return self._capture(filename)
+
+    def _capture(self, filename: str | None = None) -> Path:
+        """
+        Capture an image using the configured camera settings and save it to the specified
+        location or to the next available filename in the storage if no filename is
+        explicitly provided. Ensures that the necessary directories for storage are created
+        before capturing the image.
+
+        :param filename: Optional custom filename for the captured image. If None, a new
+                         unique filename is generated automatically by the storage configuration.
+                         The storage determines the file extension and name formatting.
+        :type filename: str | None
+
+        :return: The path to the saved image file.
+        :rtype: Path
         """
         self.storage.ensure_directories()
         output_file: Path = self.storage.next_image_path(filename)
