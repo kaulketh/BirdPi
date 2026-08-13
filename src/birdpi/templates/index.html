@@ -36,6 +36,14 @@
         Never
         {% endif %}
     </p>
+    <p>
+        Next capture:
+        {% if next_capture_at %}
+        {{ next_capture_at.strftime("%d.%m.%Y %H:%M:%S") }}
+        {% else %}
+        —
+        {% endif %}
+    </p>
     {% if observer_running %}
 
     <form
