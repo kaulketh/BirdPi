@@ -2,6 +2,10 @@
 
 {% block title %}BirdPi{% endblock %}
 
+{% block head_extra %}
+<meta http-equiv="refresh" content="{{ web_refresh_interval }}">
+{% endblock %}
+
 {% block content %}
 
 <section class="card">

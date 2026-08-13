@@ -22,6 +22,11 @@ class Config:
     camera_height: int
 
     observation_interval_seconds: int
+    web_refresh_interval_seconds: int
+
+    @property
+    def status_refresh_seconds(self) -> int:
+        return min(self.observation_interval_seconds, 30)
 
 
 def load_config() -> Config:
@@ -33,6 +38,7 @@ def load_config() -> Config:
     images_path = data_path / "images"
     resolution = (3280, 2464)
     observer_interval = 300
+    web_interval = 10
 
     return Config(
         data_path=data_path,
@@ -40,4 +46,5 @@ def load_config() -> Config:
         camera_width=resolution[0],
         camera_height=resolution[1],
         observation_interval_seconds=observer_interval,
+        web_refresh_interval_seconds=web_interval,
     )
