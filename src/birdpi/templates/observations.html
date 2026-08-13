@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Observations</h2>
+
+{% for observation in observations %}
+<div>
+    {{ observation.detected_at }}
+    |
+    {{ observation.image.filename }}
+    |
+    {{ observation.label }}
+    |
+    {{ observation.confidence }}
+</div>
+{% else %}
+<p>No observations available.</p>
+{% endfor %}
+
+{% endblock %}

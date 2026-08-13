@@ -124,4 +124,17 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
             images=images,
         )
 
+    @web.route("/observations")
+    def observations():
+        """
+        Show persisted observations.
+        """
+
+        observations = birdpi.storage.observations()
+
+        return render_template(
+            "observations.html",
+            observations=observations,
+        )
+
     return web

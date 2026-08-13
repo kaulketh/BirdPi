@@ -32,10 +32,14 @@
         >
             Gallery
         </a>
-        <a      href="{{ url_for('web.sessions') }}"
-                class="{% if request.endpoint == 'web.sessions' %}active{% endif %}"
+        <a href="{{ url_for('web.sessions') }}"
+           class="{% if request.endpoint == 'web.sessions' %}active{% endif %}"
         >
             Sessions
+        </a>
+        <a href="{{ url_for('web.observations') }}"
+           class="{% if request.endpoint == 'web.observations' %}active{% endif %}">
+            Observations
         </a>
     </nav>
 
