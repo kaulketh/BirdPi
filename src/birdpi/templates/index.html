@@ -28,7 +28,14 @@
     </p>
 
     <p>Interval: {{ observation_interval }} seconds</p>
-
+    <p>
+        Last automatic capture:
+        {% if last_capture_at %}
+        {{ last_capture_at.strftime("%d.%m.%Y %H:%M:%S") }}
+        {% else %}
+        Never
+        {% endif %}
+    </p>
     {% if observer_running %}
 
     <form
