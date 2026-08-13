@@ -69,3 +69,24 @@ class ObservationSession:
     @property
     def id(self) -> str:
         return self.started_at.strftime("%Y%m%d_%H%M%S")
+
+
+@dataclass(slots=True)
+class Observation:
+    """
+    Represent a detected observation in a captured image.
+    """
+
+    image: CapturedImage
+    detected_at: datetime
+
+    label: str | None = None
+    confidence: float | None = None
+
+    @property
+    def id(self) -> str:
+        """
+        Return the unique observation identifier.
+        """
+
+        return self.detected_at.strftime("%Y%m%d_%H%M%S_%f")
