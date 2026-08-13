@@ -13,13 +13,8 @@ def get_cpu_temperature() -> float:
     Return CPU temperature in degrees Celsius.
     """
 
-    temperature_file = Path(
-        "/sys/class/thermal/thermal_zone0/temp"
-    )
-
-    temperature = int(
-        temperature_file.read_text().strip()
-    )
+    temperature_file = Path("/sys/class/thermal/thermal_zone0/temp")
+    temperature = int(temperature_file.read_text().strip())
 
     return temperature / 1000
 

@@ -31,7 +31,5 @@ class BirdPi:
         """
 
         logger.info("BirdPi online")
-
         image = self.camera.capture()
-
         logger.info("Image captured: %s", image)

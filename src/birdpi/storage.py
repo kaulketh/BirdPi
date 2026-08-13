@@ -62,10 +62,7 @@ class Storage:
         Return the number of stored images.
         """
 
-        return sum(
-            1
-            for _ in self.config.image_path.glob("*.jpg")
-        )
+        return sum(1 for _ in self.config.image_path.glob("*.jpg"))
 
     def images(self) -> list[CapturedImage]:
         """
@@ -77,10 +74,7 @@ class Storage:
             reverse=True,
         )
 
-        return [
-            self.image_from_path(path)
-            for path in paths
-        ]
+        return [self.image_from_path(path) for path in paths]
 
     @staticmethod
     def image_from_path(path: Path) -> CapturedImage:
@@ -88,15 +82,9 @@ class Storage:
         Create a CapturedImage from an image path.
         """
 
-        captured_at = datetime.strptime(
-            path.stem,
-            "image_%Y%m%d_%H%M%S",
-        )
+        captured_at = datetime.strptime(path.stem, "image_%Y%m%d_%H%M%S", )
 
-        return CapturedImage(
-            path=path,
-            captured_at=captured_at,
-        )
+        return CapturedImage(path=path, captured_at=captured_at, )
 
     def get_image(self, filename: str) -> CapturedImage | None:
         """
