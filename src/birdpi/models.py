@@ -1,8 +1,10 @@
 """
-This module defines the structure and functionality for working with a captured BirdPi image.
+This module provides data structures to represent and manage captured images and observation
+sessions for the BirdPi system.
 
-The module provides a data class to represent an image, capturing its metadata such as file
-path, timestamp, and size in various units.
+The CapturedImage class models metadata and properties of individual images captured during
+an observation. The ObservationSession class encapsulates details about observation sessions,
+including duration and status.
 """
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -17,6 +19,7 @@ class CapturedImage:
 
     path: Path
     captured_at: datetime
+    session_id: str | None = None
 
     @property
     def filename(self) -> str:
@@ -62,3 +65,7 @@ class ObservationSession:
         minutes, seconds = divmod(remainder, 60)
 
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+    @property
+    def id(self) -> str:
+        return self.started_at.strftime("%Y%m%d_%H%M%S")

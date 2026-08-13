@@ -83,14 +83,29 @@ class Storage:
         return [self.image_from_path(path) for path in paths]
 
     @staticmethod
-    def image_from_path(path: Path) -> CapturedImage:
+    def image_from_path(
+            path: Path,
+    ) -> CapturedImage:
         """
         Create a CapturedImage from an image path.
         """
 
-        captured_at = datetime.strptime(path.stem, "image_%Y%m%d_%H%M%S", )
+        metadata = Storage._load_image_metadata(path)
 
-        return CapturedImage(path=path, captured_at=captured_at, )
+        captured_at = (
+            datetime.fromisoformat(metadata["captured_at"])
+            if "captured_at" in metadata
+            else datetime.strptime(
+                path.stem,
+                "image_%Y%m%d_%H%M%S",
+            )
+        )
+
+        return CapturedImage(
+            path=path,
+            captured_at=captured_at,
+            session_id=metadata.get("session_id"),
+        )
 
     def get_image(self, filename: str) -> CapturedImage | None:
         """
@@ -240,3 +255,52 @@ class Storage:
             return None
 
         return self._session_from_path(path)
+
+    @staticmethod
+    def save_image_metadata(
+            image: CapturedImage,
+    ) -> Path:
+        """
+        Persist metadata for a captured image as JSON.
+
+        Returns:
+            Path of the created metadata file.
+        """
+
+        metadata_file = image.path.with_suffix(".json")
+
+        data = {
+            "captured_at": image.captured_at.isoformat(),
+            "session_id": image.session_id,
+        }
+
+        with metadata_file.open(
+                "w",
+                encoding="utf-8",
+        ) as file:
+            json.dump(
+                data,
+                file,
+                indent=4,
+            )
+
+        return metadata_file
+
+    @staticmethod
+    def _load_image_metadata(
+            path: Path,
+    ) -> dict:
+        """
+        Load metadata for an image from its JSON sidecar.
+        """
+
+        metadata_file = path.with_suffix(".json")
+
+        if not metadata_file.is_file():
+            return {}
+
+        with metadata_file.open(
+                "r",
+                encoding="utf-8",
+        ) as file:
+            return json.load(file)
