@@ -7,6 +7,7 @@ status of the observation process, and retrieving the configured observation int
 """
 
 import threading
+from datetime import datetime
 
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
@@ -30,6 +31,7 @@ class Observer:
         self._running = False
         self._stop_event = threading.Event()
         self._thread: threading.Thread | None = None
+        self._last_capture_at: datetime | None = None
 
     def _run(self) -> None:
         """
@@ -47,11 +49,8 @@ class Observer:
             ):
                 try:
                     image = self.camera.capture()
-
-                    logger.info(
-                        "Automatic image captured: %s",
-                        image,
-                    )
+                    self._last_capture_at = datetime.now()
+                    logger.info("Automatic image captured: %s", image, )
 
                 except Exception:
                     logger.exception(
@@ -77,6 +76,14 @@ class Observer:
         """
 
         return self.config.observation_interval_seconds
+
+    @property
+    def last_capture_at(self) -> datetime | None:
+        """
+        Return timestamp of the last successful automatic capture.
+        """
+
+        return self._last_capture_at
 
     def start(self) -> None:
         """
