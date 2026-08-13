@@ -114,3 +114,35 @@ nav a.active {
     word-break: break-all;
 }
 
+.observation-card {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.observation-card .observation-image {
+    width: 240px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.observation-info {
+    flex: 1;
+}
+
+@media (max-width: 700px) {
+    .observation-card {
+        flex-direction: column;
+    }
+
+    .observation-card .observation-image {
+        width: 100%;
+    }
+}

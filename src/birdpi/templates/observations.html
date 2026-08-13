@@ -5,17 +5,49 @@
 <h2>Observations</h2>
 
 {% for observation in observations %}
-<div>
-    {{ observation.detected_at }}
-    |
-    {{ observation.image.filename }}
-    |
-    {{ observation.label }}
-    |
-    {{ observation.confidence }}
-</div>
-{% else %}
-<p>No observations available.</p>
-{% endfor %}
 
+<div class="observation-card">
+
+    <a href="{{ url_for('web.image', filename=observation.image.filename) }}">
+        <img
+                src="{{ url_for('web.image', filename=observation.image.filename) }}"
+                alt="{{ observation.label or 'Observation' }}"
+                class="observation-image"
+        >
+    </a>
+
+    <div class="observation-info">
+
+        <h3>
+            {{ observation.label or 'Unknown' }}
+        </h3>
+
+        <p>
+            Detected:
+            {{ observation.detected_at.strftime('%d.%m.%Y %H:%M:%S') }}
+        </p>
+
+        <p>
+            Confidence:
+            {% if observation.confidence is not none %}
+            {{ '%.1f' | format(observation.confidence * 100) }} %
+            {% else %}
+            —
+            {% endif %}
+        </p>
+
+        <p>
+            Session:
+            {{ observation.image.session_id or 'None' }}
+        </p>
+
+    </div>
+
+</div>
+
+{% else %}
+
+<p>No observations available.</p>
+
+{% endfor %}
 {% endblock %}
