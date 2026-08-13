@@ -34,6 +34,7 @@ class Observer:
         self._thread: threading.Thread | None = None
         self._last_capture_at: datetime | None = None
         self._next_capture_at: datetime | None = None
+        self._state_lock = threading.Lock()
 
     def _run(self) -> None:
         """
@@ -79,8 +80,11 @@ class Observer:
                         datetime.now() + timedelta(seconds=wait_seconds))
 
         finally:
-            self._next_capture_at = None
-            self._running = False
+            with self._state_lock:
+                self._next_capture_at = None
+                self._running = False
+                self._thread = None
+
             logger.info("Observation stopped")
 
     @property
@@ -120,35 +124,36 @@ class Observer:
         Start automatic observation.
         """
 
-        if self._running:
-            logger.warning("Observation is already running")
-            return
+        with self._state_lock:
+            if self._running:
+                logger.warning("Observation is already running")
+                return
 
-        self._stop_event.clear()
+            self._stop_event.clear()
 
-        self._thread = threading.Thread(
-            target=self._run,
-            daemon=True,
-            name="birdpi-observer",
-        )
+            self._thread = threading.Thread(
+                target=self._run,
+                daemon=True,
+                name="birdpi-observer",
+            )
 
-        self._running = True
-        self._thread.start()
+            self._running = True
+            self._thread.start()
 
     def stop(self) -> None:
         """
         Stop automatic observation.
         """
 
-        if not self._running:
-            logger.warning("Observation is not running")
-            return
+        with self._state_lock:
+            if not self._running:
+                logger.warning("Observation is not running")
+                return
 
-        logger.info("Stopping observation")
+            logger.info("Stopping observation")
 
-        self._stop_event.set()
+            self._stop_event.set()
+            thread = self._thread
 
-        if self._thread is not None:
-            self._thread.join()
-
-        self._thread = None
+        if thread is not None:
+            thread.join()
