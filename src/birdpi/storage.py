@@ -16,6 +16,7 @@ from pathlib import Path
 
 from birdpi.config import Config
 from birdpi.models import CapturedImage
+from birdpi.models import Observation
 from birdpi.models import ObservationSession
 
 
@@ -37,6 +38,10 @@ class Storage:
             exist_ok=True
         )
         self.config.session_path.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        self.config.observation_path.mkdir(
             parents=True,
             exist_ok=True,
         )
@@ -302,3 +307,85 @@ class Storage:
                 encoding="utf-8",
         ) as file:
             return json.load(file)
+
+    def save_observation(
+            self,
+            observation: Observation,
+    ) -> Path:
+        """
+        Persist an observation as JSON.
+
+        Returns:
+            Path of the created observation file.
+        """
+
+        output_file = (
+                self.config.observation_path
+                / f"{observation.id}.json"
+        )
+
+        data = {
+            "id": observation.id,
+            "detected_at": observation.detected_at.isoformat(),
+            "image_filename": observation.image.filename,
+            "label": observation.label,
+            "confidence": observation.confidence,
+        }
+
+        with output_file.open(
+                "w",
+                encoding="utf-8",
+        ) as file:
+            json.dump(
+                data,
+                file,
+                indent=4,
+            )
+
+        return output_file
+
+    def _observation_from_path(
+            self,
+            path: Path,
+    ) -> Observation:
+        """
+        Create an Observation from a persisted JSON file.
+        """
+
+        with path.open(
+                "r",
+                encoding="utf-8",
+        ) as file:
+            data = json.load(file)
+
+        image_path = (
+                self.config.image_path
+                / data["image_filename"]
+        )
+
+        image = self.image_from_path(image_path)
+
+        return Observation(
+            image=image,
+            detected_at=datetime.fromisoformat(
+                data["detected_at"]
+            ),
+            label=data.get("label"),
+            confidence=data.get("confidence"),
+        )
+
+    def observations(self) -> list[Observation]:
+        """
+        Return all persisted observations.
+        """
+
+        observations = [
+            self._observation_from_path(path)
+            for path in self.config.observation_path.glob("*.json")
+        ]
+
+        return sorted(
+            observations,
+            key=lambda observation: observation.detected_at,
+            reverse=True,
+        )
