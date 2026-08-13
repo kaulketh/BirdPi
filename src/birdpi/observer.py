@@ -64,7 +64,7 @@ class Observer:
 
                     logger.info("Automatic image captured: %s", image, )
 
-                except Exception:
+                except RuntimeError:
                     logger.exception(
                         "Automatic image capture failed"
                     )
