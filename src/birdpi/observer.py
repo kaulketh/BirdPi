@@ -61,7 +61,13 @@ class Observer:
                     break
 
                 try:
-                    image = self.camera.capture()
+                    image = self.camera.capture(
+                        session_id=(
+                            self._session.id
+                            if self._session is not None
+                            else None
+                        ),
+                    )
 
                     self._last_capture_at = datetime.now()
 
@@ -93,8 +99,6 @@ class Observer:
                 self._thread = None
 
             logger.info("Observation stopped")
-
-
 
     @property
     def session(self) -> ObservationSession | None:

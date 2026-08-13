@@ -39,7 +39,7 @@ def load_config() -> Config:
     image_path = data_path / "images"
     session_path = data_path / "sessions"
     resolution = (3280, 2464)
-    observer_interval = 300
+    observer_interval = 10
     web_interval = 10
 
     return Config(

@@ -9,9 +9,11 @@ to invoke the camera functionality.
 
 import subprocess
 import threading
+from datetime import datetime
 from pathlib import Path
 
 from birdpi.config import Config
+from birdpi.models import CapturedImage
 from birdpi.storage import Storage
 
 
@@ -28,18 +30,19 @@ class Camera:
     def capture(
             self,
             filename: str | None = None,
+            session_id: str | None = None,
     ) -> Path:
-        """
-        Capture a still image.
-
-        Returns:
-            Path of created image.
-        """
-
         with self._capture_lock:
-            return self._capture(filename)
+            return self._capture(
+                filename,
+                session_id,
+            )
 
-    def _capture(self, filename: str | None = None) -> Path:
+    def _capture(
+            self,
+            filename: str | None = None,
+            session_id: str | None = None,
+    ) -> Path:
         """
         Capture an image using the configured camera settings and save it to the specified
         location or to the next available filename in the storage if no filename is
@@ -72,11 +75,21 @@ class Camera:
             "--nopreview"
         ]
 
+        captured_at = datetime.now()
+
         try:
             subprocess.run(
                 command,
-                check=True
+                check=True,
             )
+
+            image = CapturedImage(
+                path=output_file,
+                captured_at=captured_at,
+                session_id=session_id,
+            )
+
+            self.storage.save_image_metadata(image)
 
         except subprocess.CalledProcessError as error:
             raise RuntimeError(
