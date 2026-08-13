@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Observation Sessions</h2>
+
+{% if observation_sessions %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Started</th>
+                <th>Stopped</th>
+                <th>Duration</th>
+                <th>Captures</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for session in observation_sessions %}
+                <tr>
+                    <td>{{ session.started_at.strftime("%Y-%m-%d %H:%M:%S") }}</td>
+                    <td>
+                        {% if session.stopped_at %}
+                            {{ session.stopped_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                        {% else %}
+                            Running
+                        {% endif %}
+                    </td>
+                    <td>{{ session.duration_text }}</td>
+                    <td>{{ session.capture_count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% else %}
+
+    <p>No observation sessions stored.</p>
+
+{% endif %}
+
+{% endblock %}

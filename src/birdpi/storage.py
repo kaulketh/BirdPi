@@ -201,6 +201,6 @@ class Storage:
         )
 
         return [
-            self.session_from_path(path)
+            self._session_from_path(path)
             for path in paths
         ]

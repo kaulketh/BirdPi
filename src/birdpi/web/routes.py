@@ -100,4 +100,13 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
 
         return redirect(url_for("web.index"))
 
+    @web.route("/sessions")
+    def sessions():
+        observation_sessions = birdpi.storage.sessions()
+
+        return render_template(
+            "sessions.html",
+            observation_sessions=observation_sessions,
+        )
+
     return web
