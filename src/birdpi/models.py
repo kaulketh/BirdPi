@@ -29,3 +29,18 @@ class CapturedImage:
     @property
     def size_mb(self) -> float:
         return self.size_bytes / (1024 * 1024)
+
+
+@dataclass(slots=True)
+class ObservationSession:
+    """
+    Represent a BirdPi observation session.
+    """
+
+    started_at: datetime
+    stopped_at: datetime | None = None
+    capture_count: int = 0
+
+    @property
+    def active(self) -> bool:
+        return self.stopped_at is None

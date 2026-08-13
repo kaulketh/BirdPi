@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
+from birdpi.models import ObservationSession
 from birdpi.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -35,6 +36,7 @@ class Observer:
         self._last_capture_at: datetime | None = None
         self._next_capture_at: datetime | None = None
         self._state_lock = threading.Lock()
+        self._session: ObservationSession | None = None
 
     def _run(self) -> None:
         """
@@ -63,6 +65,9 @@ class Observer:
 
                     self._last_capture_at = datetime.now()
 
+                    if self._session is not None:
+                        self._session.capture_count += 1
+
                     logger.info("Automatic image captured: %s", image, )
 
                 except RuntimeError:
@@ -81,11 +86,21 @@ class Observer:
 
         finally:
             with self._state_lock:
+                if self._session is not None:
+                    self._session.stopped_at = datetime.now()
                 self._next_capture_at = None
                 self._running = False
                 self._thread = None
 
             logger.info("Observation stopped")
+
+    @property
+    def session(self) -> ObservationSession | None:
+        """
+        Return the current or most recent observation session.
+        """
+
+        return self._session
 
     @property
     def running(self) -> bool:
@@ -130,7 +145,9 @@ class Observer:
                 return
 
             self._stop_event.clear()
-
+            self._session = ObservationSession(
+                started_at=datetime.now(),
+            )
             self._thread = threading.Thread(
                 target=self._run,
                 daemon=True,
