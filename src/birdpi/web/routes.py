@@ -39,6 +39,7 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
             "next_capture_at": birdpi.observer.next_capture_at,
             "status_refresh_seconds": birdpi.config.status_refresh_seconds,
             "web_refresh_interval": birdpi.config.web_refresh_interval_seconds,
+            "observation_session": birdpi.observer.session,
         }
 
     @web.get("/")

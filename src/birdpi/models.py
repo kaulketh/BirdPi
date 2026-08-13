@@ -49,3 +49,16 @@ class ObservationSession:
     def duration(self) -> timedelta:
         end = self.stopped_at or datetime.now()
         return end - self.started_at
+
+    @property
+    def duration_text(self) -> str:
+        """
+        Return session duration formatted as HH:MM:SS.
+        """
+
+        total_seconds = int(self.duration.total_seconds())
+
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d}"

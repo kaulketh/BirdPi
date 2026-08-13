@@ -29,6 +29,28 @@
         {% else %}
         Stopped
         {% endif %}
+        {% if observation_session %}
+
+    <p>
+        Started:
+        {{ observation_session.started_at.strftime("%d.%m.%Y %H:%M:%S") }}
+    </p>
+
+    <p>
+        Duration:
+        {{ observation_session.duration_text }}
+    </p>
+
+    <p>
+        Captures:
+        {{ observation_session.capture_count }}
+    </p>
+
+    {% else %}
+
+    <p>No observation session yet.</p>
+
+    {% endif %}
     </p>
 
     <p>Interval: {{ observation_interval }} seconds</p>
