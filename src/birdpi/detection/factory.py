@@ -18,7 +18,12 @@ def create_detector(config: Config) -> Detector:
             return DummyDetector()
 
         case "motion":
-            return MotionDetector()
+            return MotionDetector(
+                pixel_threshold=config.motion_pixel_threshold,
+                motion_threshold=config.motion_threshold,
+                block_threshold=config.motion_block_threshold,
+                max_active_blocks=config.motion_max_active_blocks,
+            )
 
         case _:
             raise ValueError(
