@@ -8,10 +8,11 @@ status of the observation process, and retrieving the configured observation int
 
 import threading
 import time
+from collections.abc import Callable
 from datetime import datetime, timedelta
 
-from birdpi.camera.capture import Camera
 from birdpi.config import Config
+from birdpi.models import CapturedImage
 from birdpi.models import ObservationSession
 from birdpi.utils.logger import get_logger
 
@@ -26,10 +27,11 @@ class Observer:
     def __init__(
             self,
             config: Config,
-            camera: Camera,
+            capture_callback: Callable[[str | None], CapturedImage],
     ) -> None:
         self.config = config
-        self.camera = camera
+        self._capture_callback = capture_callback
+
         self._running = False
         self._stop_event = threading.Event()
         self._thread: threading.Thread | None = None
@@ -61,12 +63,10 @@ class Observer:
                     break
 
                 try:
-                    image = self.camera.capture(
-                        session_id=(
-                            self._session.id
-                            if self._session is not None
-                            else None
-                        ),
+                    image = self._capture_callback(
+                        self._session.id
+                        if self._session is not None
+                        else None
                     )
 
                     self._last_capture_at = datetime.now()

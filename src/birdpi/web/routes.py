@@ -60,7 +60,7 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
 
     @web.post("/capture")
     def capture():
-        camera.capture()
+        birdpi.capture()
         return redirect(url_for("web.index"))
 
     @web.get("/gallery")

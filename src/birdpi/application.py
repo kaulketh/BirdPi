@@ -5,10 +5,11 @@ This module initializes the core components of the BirdPi application, including
 configuration, camera, storage, and observer systems. It serves as the entry point for
 running the BirdPi system.
 """
-from sys import path
 
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
+from birdpi.detection.dummy import DummyDetector
+from birdpi.models import CapturedImage
 from birdpi.observer import Observer
 from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
@@ -28,9 +29,11 @@ class BirdPi:
         self.storage.ensure_directories()
 
         self.camera = Camera(config)
+        self.detector = DummyDetector()
+
         self.observer = Observer(
             config,
-            self.camera,
+            self.capture,
         )
 
     def run(self) -> None:
@@ -65,3 +68,32 @@ class BirdPi:
                 "Observation session saved: %s",
                 path,
             )
+
+    def capture(
+            self,
+            session_id: str | None = None,
+    ) -> CapturedImage:
+        """
+        Capture an image, run detection, and persist observations.
+        """
+
+        image = self.camera.capture(
+            session_id=session_id,
+        )
+
+        observations = self.detector.detect(image)
+
+        for observation in observations:
+            self.storage.save_observation(observation)
+
+        logger.info(
+            "Image captured: %s",
+            image.path,
+        )
+
+        logger.info(
+            "Detections: %s",
+            len(observations),
+        )
+
+        return image
