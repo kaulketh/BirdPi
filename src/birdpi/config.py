@@ -61,7 +61,6 @@ def load_config() -> Config:
     observation_path = data_path / "observations"
 
     observer_interval = 10
-    web: WebConfig
 
     detector_type = "motion"
 
@@ -76,10 +75,13 @@ def load_config() -> Config:
             height=2464, ),
 
         observation_interval_seconds=observer_interval,
+
         web=WebConfig(
             refresh_interval_seconds=10,
         ),
+
         detector_type=detector_type,
+
         motion=MotionConfig(
             pixel_threshold=25,
             threshold=0.02,
