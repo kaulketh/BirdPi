@@ -5,6 +5,8 @@ This module initializes the core components of the BirdPi application, including
 configuration, camera, storage, and observer systems. It serves as the entry point for
 running the BirdPi system.
 """
+from sys import path
+
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
 from birdpi.observer import Observer
@@ -38,7 +40,7 @@ class BirdPi:
 
         logger.info("BirdPi online")
         image = self.camera.capture()
-        logger.info("Image captured: %s", image)
+        logger.info("Image captured: %s", image.path)
 
     def start_observation(self) -> None:
         """

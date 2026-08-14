@@ -74,7 +74,7 @@ class Observer:
                     if self._session is not None:
                         self._session.capture_count += 1
 
-                    logger.info("Automatic image captured: %s", image, )
+                    logger.info("Automatic image captured: %s", image.path, )
 
                 except RuntimeError:
                     logger.exception(

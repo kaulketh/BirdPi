@@ -31,7 +31,7 @@ class Camera:
             self,
             filename: str | None = None,
             session_id: str | None = None,
-    ) -> Path:
+    ) -> CapturedImage:
         with self._capture_lock:
             return self._capture(
                 filename,
@@ -42,20 +42,22 @@ class Camera:
             self,
             filename: str | None = None,
             session_id: str | None = None,
-    ) -> Path:
+    ) -> CapturedImage:
         """
-        Capture an image using the configured camera settings and save it to the specified
-        location or to the next available filename in the storage if no filename is
-        explicitly provided. Ensures that the necessary directories for storage are created
-        before capturing the image.
+        Captures an image using the camera and saves it to the storage location. The
+        method ensures that required directories for storing images are available
+        before performing the capture. The captured image metadata is also saved
+        into the storage. If the capture process fails, a runtime error is raised.
 
-        :param filename: Optional custom filename for the captured image. If None, a new
-                         unique filename is generated automatically by the storage configuration.
-                         The storage determines the file extension and name formatting.
-        :type filename: str | None
-
-        :return: The path to the saved image file.
-        :rtype: Path
+        :param filename: Optional; Specifies the desired name of the captured image
+            file. If not provided, a default name will be generated.
+        :type filename: str or None
+        :param session_id: Optional; Represents the identifier for the session
+            associated with the captured image. Used for metadata purposes.
+        :type session_id: str or None
+        :return: The `CapturedImage` object representing the captured image with its
+            associated metadata such as path, capture time, and session ID.
+        :rtype: CapturedImage
         """
         self.storage.ensure_directories()
         output_file: Path = self.storage.next_image_path(filename)
@@ -96,7 +98,7 @@ class Camera:
                 "Camera capture failed"
             ) from error
 
-        return output_file
+        return image
 
     @property
     def resolution(self) -> str:
