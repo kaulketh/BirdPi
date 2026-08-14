@@ -8,6 +8,7 @@ running the BirdPi system.
 
 from birdpi.camera.capture import Camera
 from birdpi.config import Config
+from birdpi.detection.detector import Detector
 from birdpi.detection.dummy import DummyDetector
 from birdpi.models import CapturedImage
 from birdpi.observer import Observer
@@ -22,14 +23,18 @@ class BirdPi:
     Main application class for the BirdPi system.
     """
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self,
+                 config: Config,
+                 detector: Detector | None = None,
+                 ) -> None:
         self.config = config
 
         self.storage = Storage(config)
         self.storage.ensure_directories()
 
         self.camera = Camera(config)
-        self.detector = DummyDetector()
+
+        self.detector = detector or DummyDetector()
 
         self.observer = Observer(
             config,
