@@ -66,10 +66,10 @@ class Camera:
             "rpicam-still",
 
             "--width",
-            str(self.config.camera_width),
+            str(self.config.camera.width),
 
             "--height",
-            str(self.config.camera_height),
+            str(self.config.camera.height),
 
             "-o",
             str(output_file),
@@ -103,8 +103,8 @@ class Camera:
     @property
     def resolution(self) -> str:
         return (
-            f"{self.config.camera_width} "
-            f"× {self.config.camera_height}"
+            f"{self.config.camera.width} "
+            f"× {self.config.camera.height}"
         )
 
     @property

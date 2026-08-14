@@ -9,6 +9,25 @@ from dataclasses import dataclass
 from pathlib import Path
 
 
+@dataclass(frozen=True, slots=True)
+class CameraConfig:
+    width: int
+    height: int
+
+
+@dataclass(frozen=True, slots=True)
+class MotionConfig:
+    pixel_threshold: int
+    threshold: float
+    block_threshold: float
+    max_active_blocks: int
+
+
+@dataclass(frozen=True, slots=True)
+class WebConfig:
+    refresh_interval_seconds: int
+
+
 @dataclass(slots=True)
 class Config:
     """
@@ -19,19 +38,12 @@ class Config:
     image_path: Path
     session_path: Path
     observation_path: Path
-
-    camera_width: int
-    camera_height: int
-
     observation_interval_seconds: int
-    web_refresh_interval_seconds: int
-
     detector_type: str
 
-    motion_pixel_threshold: int
-    motion_threshold: float
-    motion_block_threshold: float
-    motion_max_active_blocks: int
+    motion: MotionConfig
+    camera: CameraConfig
+    web: WebConfig
 
     @property
     def status_refresh_seconds(self) -> int:
@@ -48,29 +60,30 @@ def load_config() -> Config:
     session_path = data_path / "sessions"
     observation_path = data_path / "observations"
 
-    resolution = (3280, 2464)
-
     observer_interval = 10
-    web_interval = 10
+    web: WebConfig
 
     detector_type = "motion"
-    motion_pixel_threshold = 25
-    motion_threshold = 0.02
-    motion_block_threshold = 0.05
-    motion_max_active_blocks = 12
 
     return Config(
         data_path=data_path,
         image_path=image_path,
         session_path=session_path,
         observation_path=observation_path,
-        camera_width=resolution[0],
-        camera_height=resolution[1],
+
+        camera=CameraConfig(
+            width=3280,
+            height=2464, ),
+
         observation_interval_seconds=observer_interval,
-        web_refresh_interval_seconds=web_interval,
+        web=WebConfig(
+            refresh_interval_seconds=10,
+        ),
         detector_type=detector_type,
-        motion_pixel_threshold=motion_pixel_threshold,
-        motion_threshold=motion_threshold,
-        motion_block_threshold=motion_block_threshold,
-        motion_max_active_blocks=motion_max_active_blocks,
+        motion=MotionConfig(
+            pixel_threshold=25,
+            threshold=0.02,
+            block_threshold=0.05,
+            max_active_blocks=12,
+        ),
     )
