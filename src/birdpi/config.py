@@ -26,6 +26,8 @@ class Config:
     observation_interval_seconds: int
     web_refresh_interval_seconds: int
 
+    detector_type: str
+
     @property
     def status_refresh_seconds(self) -> int:
         return min(self.observation_interval_seconds, 30)
@@ -46,6 +48,8 @@ def load_config() -> Config:
     observer_interval = 10
     web_interval = 10
 
+    detector_type = "motion"
+
     return Config(
         data_path=data_path,
         image_path=image_path,
@@ -55,4 +59,5 @@ def load_config() -> Config:
         camera_height=resolution[1],
         observation_interval_seconds=observer_interval,
         web_refresh_interval_seconds=web_interval,
+        detector_type=detector_type,
     )
