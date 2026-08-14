@@ -2,8 +2,8 @@
 This module provides functionality to create and configure a Flask web application
 with specified routes and templates.
 
-It utilizes the `BirdPi` application and registers its associated routes through the
-Flask blueprint mechanism. The module helps initialize the necessary components for
+It uses the `BirdPi` application and registers its associated routes through the
+Flask blueprint mechanism. The module helps initialize the necessary parts for
 the web application, such as the static and template folder paths.
 
 Functions:

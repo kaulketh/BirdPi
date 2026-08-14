@@ -1,12 +1,18 @@
 """
-Provides routes and request handling logic for the Flask-based web interface of the BirdPi application.
+Handle the initialization and routing of the web interface for the BirdPi
+application, including rendering templates, serving static files, and
+defining endpoints for observation and session management.
 
-This module defines and registers routes within a Flask Blueprint to expose web functionalities such
-as capturing images, viewing galleries, and retrieving system-related data. The routes interact with
-the BirdPi application instance to serve data and handle user actions through the web interface.
+This module provides the web interface integration for the BirdPi system by
+defining routes, HTML rendering, and API endpoints for capturing images,
+managing observations, viewing galleries, and accessing observation sessions.
 
-Functions:
-    - register_routes: Registers all routes and context processors for the web Blueprint.
+Functions
+---------
+register_routes(birdpi: BirdPi) -> Blueprint
+    Register the web interface routes for the BirdPi application, including
+    rendering templates and defining routes for image gallery handling,
+    observation control, and sessions management.
 """
 import socket
 

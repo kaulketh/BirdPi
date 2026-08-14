@@ -1,9 +1,10 @@
 """
-Main application module for the BirdPi system.
+The main application module of the BirdPi system.
 
-This module initializes the core components of the BirdPi application, including the
-configuration, camera, storage, and observer systems. It serves as the entry point for
-running the BirdPi system.
+This module serves as the entry point for the BirdPi application. It sets up
+and manages the core components such as configuration, storage, camera, detector,
+and observer. It also provides methods to execute the key functionalities of the
+application, including image capture, observation, and session management.
 """
 
 from birdpi.camera.capture import Camera
