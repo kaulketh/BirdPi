@@ -1,4 +1,6 @@
-from dataclasses import replace
+"""
+Dummy classifier for testing the BirdPi classification pipeline.
+"""
 
 from birdpi.classification.classifier import Classifier
 from birdpi.models import Observation
@@ -6,15 +8,14 @@ from birdpi.models import Observation
 
 class DummyClassifier(Classifier):
     """
-    Dummy classifier for testing the classification pipeline.
+    Simulate classification of an observation.
     """
 
     def classify(
-            self,
-            observation: Observation,
+        self,
+        observation: Observation,
     ) -> Observation:
-        return replace(
-            observation,
-            label="bird",
-            confidence=0.95,
-        )
+        observation.classification_label = "bird"
+        observation.classification_confidence = 0.95
+
+        return observation

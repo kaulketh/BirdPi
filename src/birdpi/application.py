@@ -15,6 +15,8 @@ from birdpi.models import CapturedImage
 from birdpi.observer import Observer
 from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
+from birdpi.classification.classifier import Classifier
+from birdpi.classification.factory import create_classifier
 
 logger = get_logger(__name__)
 
@@ -24,10 +26,12 @@ class BirdPi:
     Main application class for the BirdPi system.
     """
 
-    def __init__(self,
-                 config: Config,
-                 detector: Detector | None = None,
-                 ) -> None:
+    def __init__(
+            self,
+            config: Config,
+            detector: Detector | None = None,
+            classifier: Classifier | None = None,
+    ) -> None:
         self.config = config
 
         self.storage = Storage(config)
@@ -36,6 +40,7 @@ class BirdPi:
         self.camera = Camera(config)
 
         self.detector = detector or create_detector(config)
+        self.classifier = classifier or create_classifier(config)
 
         self.observer = Observer(
             config,
@@ -80,7 +85,8 @@ class BirdPi:
             session_id: str | None = None,
     ) -> CapturedImage:
         """
-        Capture an image, run detection, and persist observations.
+
+        Capture an image, run detection, classify, and persist observations.
         """
 
         image = self.camera.capture(
@@ -90,6 +96,7 @@ class BirdPi:
         observations = self.detector.detect(image)
 
         for observation in observations:
+            self.classifier.classify(observation)
             self.storage.save_observation(observation)
 
         logger.info(

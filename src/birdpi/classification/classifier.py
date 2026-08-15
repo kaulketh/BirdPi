@@ -1,5 +1,5 @@
 """
-Classification support for BirdPi.
+Classification interface for BirdPi.
 """
 
 from birdpi.models import Observation
@@ -7,15 +7,18 @@ from birdpi.models import Observation
 
 class Classifier:
     """
-    Refine an observation with a classification result.
+    Base classifier for refining observations.
     """
 
     def classify(
-            self,
-            observation: Observation,
+        self,
+        observation: Observation,
     ) -> Observation:
         """
-        Classify an observation and return the refined result.
+        Classify an observation.
+
+        The base implementation returns the observation unchanged.
         """
 
         return observation
+    

@@ -40,6 +40,7 @@ class Config:
     observation_path: Path
     observation_interval_seconds: int
     detector_type: str
+    classifier_type: str
 
     motion: MotionConfig
     camera: CameraConfig
@@ -60,10 +61,6 @@ def load_config() -> Config:
     session_path = data_path / "sessions"
     observation_path = data_path / "observations"
 
-    observer_interval = 10
-
-    detector_type = "motion"
-
     return Config(
         data_path=data_path,
         image_path=image_path,
@@ -74,18 +71,19 @@ def load_config() -> Config:
             width=3280,
             height=2464, ),
 
-        observation_interval_seconds=observer_interval,
+        observation_interval_seconds=10,
 
         web=WebConfig(
             refresh_interval_seconds=10,
         ),
 
-        detector_type=detector_type,
+        detector_type="motion",
+        classifier_type="dummy",
 
         motion=MotionConfig(
             pixel_threshold=25,
-            threshold=0.02,
+            threshold=0.01,  # 0.02
             block_threshold=0.05,
-            max_active_blocks=12,
+            max_active_blocks=20,  # 12
         ),
     )
