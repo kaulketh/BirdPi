@@ -326,8 +326,10 @@ class Storage:
             "id": observation.id,
             "detected_at": observation.detected_at.isoformat(),
             "image_filename": observation.image.filename,
-            "label": observation.label,
-            "confidence": observation.confidence,
+            "detection_label": observation.detection_label,
+            "detection_confidence": observation.detection_confidence,
+            "classification_label": observation.classification_label,
+            "classification_confidence": observation.classification_confidence,
         }
 
         with output_file.open(
@@ -368,8 +370,10 @@ class Storage:
             detected_at=datetime.fromisoformat(
                 data["detected_at"]
             ),
-            label=data.get("label"),
-            confidence=data.get("confidence"),
+            detection_label=data["detection_label"],
+            detection_confidence=data["detection_confidence"],
+            classification_label=data.get("classification_label"),
+            classification_confidence=data.get("classification_confidence"),
         )
 
     def observations(self) -> list[Observation]:

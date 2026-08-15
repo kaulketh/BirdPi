@@ -102,8 +102,8 @@ class MotionDetector(Detector):
             Observation(
                 image=image,
                 detected_at=datetime.now(),
-                label="motion",
-                confidence=motion_score,
+                detection_label="motion",
+                detection_confidence=motion_score,
             )
         ]
 

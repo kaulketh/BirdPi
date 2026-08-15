@@ -80,8 +80,11 @@ class Observation:
     image: CapturedImage
     detected_at: datetime
 
-    label: str | None = None
-    confidence: float | None = None
+    detection_label: str
+    detection_confidence: float
+
+    classification_label: str | None = None
+    classification_confidence: float | None = None
 
     @property
     def id(self) -> str:
