@@ -6,9 +6,24 @@ The CapturedImage class models metadata and properties of individual images capt
 an observation. The ObservationSession class encapsulates details about observation sessions,
 including duration and status.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from pathlib import Path
+
+
+@dataclass(slots=True)
+class DetectedObject:
+    """
+    Represent one detected object within an image.
+    """
+
+    label: str
+    confidence: float
+
+    x1: float
+    y1: float
+    x2: float
+    y2: float
 
 
 @dataclass(frozen=True, slots=True)
@@ -82,6 +97,8 @@ class Observation:
 
     detection_label: str
     detection_confidence: float
+
+    objects: list[DetectedObject] = field(default_factory=list)
 
     classification_label: str | None = None
     classification_confidence: float | None = None

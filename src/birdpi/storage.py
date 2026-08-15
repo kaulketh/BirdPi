@@ -16,6 +16,7 @@ from birdpi.config import Config
 from birdpi.models import CapturedImage
 from birdpi.models import Observation
 from birdpi.models import ObservationSession
+from birdpi.models import DetectedObject
 
 
 class Storage:
@@ -328,6 +329,17 @@ class Storage:
             "image_filename": observation.image.filename,
             "detection_label": observation.detection_label,
             "detection_confidence": observation.detection_confidence,
+            "objects": [
+                {
+                    "label": obj.label,
+                    "confidence": obj.confidence,
+                    "x1": obj.x1,
+                    "y1": obj.y1,
+                    "x2": obj.x2,
+                    "y2": obj.y2,
+                }
+                for obj in observation.objects
+            ],
             "classification_label": observation.classification_label,
             "classification_confidence": observation.classification_confidence,
         }
@@ -372,6 +384,17 @@ class Storage:
             ),
             detection_label=data["detection_label"],
             detection_confidence=data["detection_confidence"],
+            objects=[
+                DetectedObject(
+                    label=obj["label"],
+                    confidence=obj["confidence"],
+                    x1=obj["x1"],
+                    y1=obj["y1"],
+                    x2=obj["x2"],
+                    y2=obj["y2"],
+                )
+                for obj in data.get("objects", [])
+            ],
             classification_label=data.get("classification_label"),
             classification_confidence=data.get("classification_confidence"),
         )
