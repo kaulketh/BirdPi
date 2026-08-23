@@ -8,6 +8,19 @@ default configuration creation and associated functionality.
 from dataclasses import dataclass
 from pathlib import Path
 
+from birdpi.utils.geo import LOCATIONS
+
+
+@dataclass(frozen=True, slots=True)
+class DaylightConfig:
+    check_interval_seconds: int
+
+
+@dataclass(frozen=True, slots=True)
+class LocationConfig:
+    latitude: float
+    longitude: float
+
 
 @dataclass(frozen=True, slots=True)
 class IRLightConfig:
@@ -49,6 +62,7 @@ class Config:
     """
     BirdPi configuration.
     """
+    location_name: str
 
     data_path: Path
     image_path: Path
@@ -63,18 +77,24 @@ class Config:
     web: WebConfig
     object_detection: ObjectDetectionConfig
 
+    location: LocationConfig
+
+    daylight: DaylightConfig
+
 
 def load_config() -> Config:
     """
     Create the default BirdPi configuration.
     """
 
+    location_name = "HOME"
     data_path = Path("/home/kaulketh/birdpi-data")
     image_path = data_path / "images"
     session_path = data_path / "sessions"
     observation_path = data_path / "observations"
 
     return Config(
+        location_name=location_name,
         data_path=data_path,
         image_path=image_path,
         session_path=session_path,
@@ -112,5 +132,12 @@ def load_config() -> Config:
             confidence_threshold=0.25,
             iou_threshold=0.45,
             input_size=640,
+        ),
+        location=LocationConfig(
+            latitude=LOCATIONS[location_name].latitude,
+            longitude=LOCATIONS[location_name].longitude
+        ),
+        daylight=DaylightConfig(
+            check_interval_seconds=60,
         ),
     )
