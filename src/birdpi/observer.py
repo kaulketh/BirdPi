@@ -18,6 +18,7 @@ import time
 from collections.abc import Callable
 from datetime import datetime, timedelta
 
+from birdpi.camera.ir_lights import IRMode
 from birdpi.config import Config
 from birdpi.models import CapturedImage
 from birdpi.models import ObservationSession
@@ -34,10 +35,12 @@ class Observer:
     def __init__(
             self,
             config: Config,
-            capture_callback: Callable[[str | None], CapturedImage],
+            capture_callback: Callable[[str | None, IRMode], CapturedImage],
+            ir_mode: IRMode = IRMode.OFF,
     ) -> None:
         self.config = config
         self._capture_callback = capture_callback
+        self.ir_mode = ir_mode
 
         self._running = False
         self._stop_event = threading.Event()
@@ -73,7 +76,8 @@ class Observer:
                     image = self._capture_callback(
                         self._session.id
                         if self._session is not None
-                        else None
+                        else None,
+                        self.ir_mode,
                     )
 
                     self._last_capture_at = datetime.now()
