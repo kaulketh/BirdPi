@@ -10,9 +10,25 @@ from pathlib import Path
 
 
 @dataclass(frozen=True, slots=True)
+class IRLightConfig:
+    enabled: bool
+    left_pin: int
+    right_pin: int
+
+
+@dataclass(frozen=True, slots=True)
+class ObjectDetectionConfig:
+    model_path: Path
+    confidence_threshold: float
+    iou_threshold: float
+    input_size: int
+
+
+@dataclass(frozen=True, slots=True)
 class CameraConfig:
     width: int
     height: int
+    ir: IRLightConfig
 
 
 @dataclass(frozen=True, slots=True)
@@ -45,10 +61,7 @@ class Config:
     motion: MotionConfig
     camera: CameraConfig
     web: WebConfig
-
-    @property
-    def status_refresh_seconds(self) -> int:
-        return min(self.observation_interval_seconds, 30)
+    object_detection: ObjectDetectionConfig
 
 
 def load_config() -> Config:
@@ -68,13 +81,19 @@ def load_config() -> Config:
         observation_path=observation_path,
 
         camera=CameraConfig(
-            width=3280,
-            height=2464, ),
+            width=4608,
+            height=2592,
+            ir=IRLightConfig(
+                enabled=True,
+                left_pin=20,
+                right_pin=21,
+            ),
+        ),
 
-        observation_interval_seconds=10,
+        observation_interval_seconds=300,
 
         web=WebConfig(
-            refresh_interval_seconds=10,
+            refresh_interval_seconds=30,
         ),
 
         detector_type="motion",
@@ -85,5 +104,13 @@ def load_config() -> Config:
             threshold=0.01,  # 0.02
             block_threshold=0.05,
             max_active_blocks=20,  # 12
+        ),
+        object_detection=ObjectDetectionConfig(
+            model_path=Path(
+                "/home/kaulketh/birdpi/models/yolo11n.onnx"
+            ),
+            confidence_threshold=0.25,
+            iou_threshold=0.45,
+            input_size=640,
         ),
     )
