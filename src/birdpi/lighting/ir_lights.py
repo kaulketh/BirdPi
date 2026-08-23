@@ -1,7 +1,10 @@
 """
-Control the BirdPi infrared lights.
-"""
+A module for controlling and managing infrared (IR) lights using GPIO pins.
 
+This module provides an enumeration for IR light modes and a class to
+manipulate the state of IR lights, including turning them on, off, and
+specifying which light(s) should be active.
+"""
 from enum import Enum
 
 from gpiozero import DigitalOutputDevice
@@ -15,10 +18,6 @@ class IRMode(Enum):
 
 
 class IRLights:
-    """
-    Control the left and right infrared lights.
-    """
-
     def __init__(
             self,
             left_pin: int,
@@ -28,11 +27,16 @@ class IRLights:
             left_pin,
             initial_value=False,
         )
-
         self.right = DigitalOutputDevice(
             right_pin,
             initial_value=False,
         )
+
+        self._mode = IRMode.OFF
+
+    @property
+    def mode(self) -> IRMode:
+        return self._mode
 
     def set_mode(
             self,
@@ -40,38 +44,34 @@ class IRLights:
     ) -> None:
         match mode:
             case IRMode.OFF:
-                self.off()
+                self.left.off()
+                self.right.off()
 
             case IRMode.LEFT:
-                self.left_on()
-                self.right_off()
+                self.left.on()
+                self.right.off()
 
             case IRMode.RIGHT:
-                self.left_off()
-                self.right_on()
+                self.left.off()
+                self.right.on()
 
             case IRMode.BOTH:
-                self.on()
+                self.left.on()
+                self.right.on()
+
+        self._mode = mode
 
     def on(self) -> None:
-        self.left.on()
-        self.right.on()
+        self.set_mode(IRMode.BOTH)
 
     def off(self) -> None:
-        self.left.off()
-        self.right.off()
+        self.set_mode(IRMode.OFF)
 
     def left_on(self) -> None:
-        self.left.on()
-
-    def left_off(self) -> None:
-        self.left.off()
+        self.set_mode(IRMode.LEFT)
 
     def right_on(self) -> None:
-        self.right.on()
-
-    def right_off(self) -> None:
-        self.right.off()
+        self.set_mode(IRMode.RIGHT)
 
     def close(self) -> None:
         self.off()

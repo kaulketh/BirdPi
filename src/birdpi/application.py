@@ -8,7 +8,7 @@ application, including image capture, observation, and session management.
 """
 
 from birdpi.camera.capture import Camera
-from birdpi.camera.ir_lights import IRMode
+from birdpi.lighting.ir_lights import IRMode
 from birdpi.classification.classifier import Classifier
 from birdpi.classification.factory import create_classifier
 from birdpi.config import Config

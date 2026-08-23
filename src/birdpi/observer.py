@@ -18,7 +18,7 @@ import time
 from collections.abc import Callable
 from datetime import datetime, timedelta
 
-from birdpi.camera.ir_lights import IRMode
+from birdpi.lighting.ir_lights import IRMode
 from birdpi.config import Config
 from birdpi.models import CapturedImage
 from birdpi.models import ObservationSession

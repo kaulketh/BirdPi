@@ -41,7 +41,6 @@ class ObjectDetectionConfig:
 class CameraConfig:
     width: int
     height: int
-    ir: IRLightConfig
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +73,7 @@ class Config:
 
     motion: MotionConfig
     camera: CameraConfig
+    ir: IRLightConfig
     web: WebConfig
     object_detection: ObjectDetectionConfig
 
@@ -100,21 +100,12 @@ def load_config() -> Config:
         session_path=session_path,
         observation_path=observation_path,
 
-        camera=CameraConfig(
-            width=4608,
-            height=2592,
-            ir=IRLightConfig(
-                enabled=True,
-                left_pin=20,
-                right_pin=21,
-            ),
-        ),
+        camera=CameraConfig(width=4608, height=2592),
+        ir=IRLightConfig(enabled=True, left_pin=20, right_pin=21, ),
 
         observation_interval_seconds=300,
 
-        web=WebConfig(
-            refresh_interval_seconds=30,
-        ),
+        web=WebConfig(refresh_interval_seconds=30, ),
 
         detector_type="motion",
         classifier_type="dummy",

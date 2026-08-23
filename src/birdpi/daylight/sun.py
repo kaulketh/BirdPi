@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from astral import LocationInfo
 from astral.sun import sun
 
-from birdpi.camera.ir_lights import IRMode
+from birdpi.lighting.ir_lights import IRMode
 from birdpi.config import Config
 
 

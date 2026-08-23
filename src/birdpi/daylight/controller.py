@@ -6,7 +6,8 @@ This module controls the infrared lighting depending on daylight conditions.
 
 import time
 
-from birdpi.camera.ir_lights import IRLights
+from birdpi.lighting.ir_lights import IRLights
+from birdpi.lighting.ir_lights import IRMode
 from birdpi.daylight.sun import Daylight
 from birdpi.motion.detector import MotionDetector
 
@@ -59,9 +60,9 @@ class DayNightController:
         self._night_mode = is_night
 
         if self._night_mode:
-            self.ir_lights.left_on()
+            self.ir_lights.set_mode(IRMode.LEFT)
         else:
-            self.ir_lights.off()
+            self.ir_lights.set_mode(IRMode.OFF)
 
         self.motion_detector.reset()
 
