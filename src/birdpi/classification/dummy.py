@@ -12,10 +12,24 @@ class DummyClassifier(Classifier):
     """
 
     def classify(
-        self,
-        observation: Observation,
+            self,
+            observation: Observation,
     ) -> Observation:
-        observation.classification_label = "bird"
-        observation.classification_confidence = 0.95
+
+        birds = [
+            obj
+            for obj in observation.objects
+            if obj.label == "bird"
+        ]
+
+        if birds:
+            observation.classification_label = "bird"
+            observation.classification_confidence = max(
+                obj.confidence
+                for obj in birds
+            )
+        else:
+            observation.classification_label = "not_bird"
+            observation.classification_confidence = None
 
         return observation

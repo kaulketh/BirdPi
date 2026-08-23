@@ -8,15 +8,18 @@ application, including image capture, observation, and session management.
 """
 
 from birdpi.camera.capture import Camera
+from birdpi.classification.classifier import Classifier
+from birdpi.classification.factory import create_classifier
 from birdpi.config import Config
 from birdpi.detection.detector import Detector
-from birdpi.detection.factory import create_detector
+from birdpi.detection.factory import (
+    create_detector,
+    create_object_detector,
+)
 from birdpi.models import CapturedImage
 from birdpi.observer import Observer
 from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
-from birdpi.classification.classifier import Classifier
-from birdpi.classification.factory import create_classifier
 
 logger = get_logger(__name__)
 
@@ -40,6 +43,7 @@ class BirdPi:
         self.camera = Camera(config)
 
         self.detector = detector or create_detector(config)
+        self.object_detector = create_object_detector(config)
         self.classifier = classifier or create_classifier(config)
 
         self.observer = Observer(
@@ -96,17 +100,21 @@ class BirdPi:
         observations = self.detector.detect(image)
 
         for observation in observations:
-            self.classifier.classify(observation)
-            self.storage.save_observation(observation)
+            observation.objects = self.object_detector.detect(
+                image
+            )
 
-        logger.info(
-            "Image captured: %s",
-            image.path,
-        )
+            self.classifier.classify(observation)
+
+            self.storage.save_observation(observation)
 
         logger.info(
             "Detections: %s",
             len(observations),
+        )
+        logger.info(
+            "Image captured: %s",
+            image.path,
         )
 
         return image
