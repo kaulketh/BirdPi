@@ -31,7 +31,7 @@ def get_uptime() -> int:
 
 def format_uptime(seconds: int) -> str:
     """
-    Format uptime seconds as days, hours and minutes.
+    Format uptime seconds as days, hours, and minutes.
     """
 
     days, remainder = divmod(seconds, 86400)
