@@ -17,7 +17,6 @@ from birdpi.models import CapturedImage
 from birdpi.models import DetectedObject
 from birdpi.models import MotionEvent
 from birdpi.models import Observation
-from birdpi.models import ObservationSession
 
 
 class Storage:
@@ -36,10 +35,6 @@ class Storage:
         self.config.image_path.mkdir(
             parents=True,
             exist_ok=True
-        )
-        self.config.session_path.mkdir(
-            parents=True,
-            exist_ok=True,
         )
         self.config.observation_path.mkdir(
             parents=True,
@@ -160,121 +155,6 @@ class Storage:
         older = images[index + 1] if index < len(images) - 1 else None
 
         return newer, older
-
-    def save_session(
-            self,
-            session: ObservationSession,
-    ) -> Path:
-        """
-        Persist an observation session as JSON.
-
-        Returns:
-            Path of the created session file.
-        """
-
-        filename = (
-                session.started_at.strftime("%Y%m%d_%H%M%S")
-                + ".json"
-        )
-
-        output_file = self.config.session_path / filename
-
-        data = {
-            "started_at": session.started_at.isoformat(),
-            "stopped_at": (
-                session.stopped_at.isoformat()
-                if session.stopped_at
-                else None
-            ),
-            "capture_count": session.capture_count,
-        }
-
-        with output_file.open(
-                "w",
-                encoding="utf-8",
-        ) as file:
-            json.dump(
-                data,
-                file,
-                indent=4,
-            )
-
-        return output_file
-
-    @staticmethod
-    def _session_from_path(
-            path: Path,
-    ) -> ObservationSession:
-        """
-        Create an ObservationSession from a JSON file.
-        """
-
-        with path.open(
-                "r",
-                encoding="utf-8",
-        ) as file:
-            data = json.load(file)
-
-        return ObservationSession(
-            started_at=datetime.fromisoformat(
-                data["started_at"]
-            ),
-            stopped_at=(
-                datetime.fromisoformat(data["stopped_at"])
-                if data["stopped_at"]
-                else None
-            ),
-            capture_count=data["capture_count"],
-        )
-
-    def sessions(self) -> list[ObservationSession]:
-        """
-        Return all stored observation sessions ordered newest first.
-        """
-
-        paths = sorted(
-            self.config.session_path.glob("*.json"),
-            reverse=True,
-        )
-
-        return [
-            self._session_from_path(path)
-            for path in paths
-        ]
-
-    def images_for_session(
-            self,
-            session: ObservationSession,
-    ) -> list[CapturedImage]:
-        """
-        Return images associated with an observation session.
-        """
-
-        images = [
-            image
-            for image in self.images()
-            if image.session_id == session.id
-        ]
-
-        return sorted(
-            images,
-            key=lambda image: image.captured_at,
-        )
-
-    def session(
-            self,
-            session_id: str,
-    ) -> ObservationSession | None:
-        """
-        Return a stored observation session by session ID.
-        """
-
-        path = self.config.session_path / f"{session_id}.json"
-
-        if not path.is_file():
-            return None
-
-        return self._session_from_path(path)
 
     @staticmethod
     def save_image_metadata(
