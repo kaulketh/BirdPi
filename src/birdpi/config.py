@@ -75,7 +75,6 @@ class Config:
     image_path: Path
     session_path: Path
     observation_path: Path
-    observation_interval_seconds: int
     event_path: Path
     video_path: Path
     log_path: Path
@@ -124,8 +123,6 @@ def load_config() -> Config:
             framerate=30, duration_seconds=5,
         ),
         ir=IRLightConfig(enabled=True, left_pin=20, right_pin=21, ),
-
-        observation_interval_seconds=300,
 
         web=WebConfig(refresh_interval_seconds=30, ),
 

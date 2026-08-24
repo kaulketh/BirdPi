@@ -22,77 +22,7 @@
     <p>Model: {{ camera_model }}</p>
     <p>Resolution: {{ camera_resolution }}</p>
     <p>Stored images: {{ image_count }}</p>
-    <p>
-        Observation:
-        {% if observer_running %}
-        Running
-        {% else %}
-        Stopped
-        {% endif %}
-        {% if observation_session %}
 
-    <p>
-        Started:
-        {{ observation_session.started_at.strftime("%d.%m.%Y %H:%M:%S") }}
-    </p>
-
-    <p>
-        Duration:
-        {{ observation_session.duration_text }}
-    </p>
-
-    <p>
-        Captures:
-        {{ observation_session.capture_count }}
-    </p>
-
-    {% else %}
-
-    <p>No observation session yet.</p>
-
-    {% endif %}
-    </p>
-
-    <p>Interval: {{ observation_interval }} seconds</p>
-    <p>
-        Last automatic capture:
-        {% if last_capture_at %}
-        {{ last_capture_at.strftime("%d.%m.%Y %H:%M:%S") }}
-        {% else %}
-        Never
-        {% endif %}
-    </p>
-    <p>
-        Next capture:
-        {% if next_capture_at %}
-        {{ next_capture_at.strftime("%d.%m.%Y %H:%M:%S") }}
-        {% else %}
-        —
-        {% endif %}
-    </p>
-    {% if observer_running %}
-
-    <form
-            action="{{ url_for('web.observation_stop') }}"
-            method="post"
-    >
-        <button type="submit">
-            ■ Stop observation
-        </button>
-    </form>
-
-    {% else %}
-
-    <form
-            action="{{ url_for('web.observation_start') }}"
-            method="post"
-    >
-        <button type="submit">
-            ▶ Start observation
-        </button>
-    </form>
-
-    {% endif %}
 
     <form
             class="capture-form"

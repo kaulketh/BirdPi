@@ -39,12 +39,8 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
             "cpu_temperature": get_cpu_temperature(),
             "camera_resolution": camera.resolution,
             "camera_model": camera.model,
-            "observer_running": birdpi.observer.running,
-            "observation_interval": birdpi.observer.interval_seconds,
-            "last_capture_at": birdpi.observer.last_capture_at,
-            "next_capture_at": birdpi.observer.next_capture_at,
             "status_refresh_seconds": birdpi.config.web.refresh_interval_seconds,
-            "observation_session": birdpi.observer.session,
+
         }
 
     @web.get("/")
@@ -92,18 +88,6 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
             newer=newer,
             older=older,
         )
-
-    @web.post("/observation/start")
-    def observation_start():
-        birdpi.start_observation()
-
-        return redirect(url_for("web.index"))
-
-    @web.post("/observation/stop")
-    def observation_stop():
-        birdpi.stop_observation()
-
-        return redirect(url_for("web.index"))
 
     @web.route("/sessions")
     def sessions():
