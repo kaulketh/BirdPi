@@ -12,6 +12,14 @@ from birdpi.utils.geo import LOCATIONS
 
 
 @dataclass(frozen=True, slots=True)
+class VideoConfig:
+    width: int
+    height: int
+    framerate: int
+    duration_seconds: int
+
+
+@dataclass(frozen=True, slots=True)
 class DaylightConfig:
     check_interval_seconds: int
 
@@ -69,12 +77,14 @@ class Config:
     observation_path: Path
     observation_interval_seconds: int
     event_path: Path
+    video_path: Path
     detector_type: str
     classifier_type: str
 
-    motion: MotionConfig
     camera: CameraConfig
+    video: VideoConfig
     ir: IRLightConfig
+    motion: MotionConfig
     web: WebConfig
     object_detection: ObjectDetectionConfig
 
@@ -94,6 +104,7 @@ def load_config() -> Config:
     session_path = data_path / "sessions"
     observation_path = data_path / "observations"
     event_path = data_path / "events"
+    video_path = data_path / "videos"
 
     return Config(
         location_name=location_name,
@@ -102,8 +113,14 @@ def load_config() -> Config:
         session_path=session_path,
         observation_path=observation_path,
         event_path=event_path,
+        video_path=video_path,
 
-        camera=CameraConfig(width=4608, height=2592),
+        camera=CameraConfig(
+            width=4608, height=2592),
+        video=VideoConfig(
+            width=1920, height=1080,
+            framerate=30, duration_seconds=5,
+        ),
         ir=IRLightConfig(enabled=True, left_pin=20, right_pin=21, ),
 
         observation_interval_seconds=300,
@@ -134,4 +151,5 @@ def load_config() -> Config:
         daylight=DaylightConfig(
             check_interval_seconds=60,
         ),
+
     )

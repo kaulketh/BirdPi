@@ -45,8 +45,11 @@ class Storage:
             parents=True,
             exist_ok=True,
         )
-
         self.config.event_path.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        self.config.video_path.mkdir(
             parents=True,
             exist_ok=True,
         )
@@ -91,6 +94,15 @@ class Storage:
         )
 
         return [self.image_from_path(path) for path in paths]
+
+    def next_video_path(
+            self,
+            event_id: str,
+    ) -> Path:
+        return (
+                self.config.video_path
+                / f"event_{event_id}.h264"
+        )
 
     @staticmethod
     def image_from_path(
@@ -446,6 +458,7 @@ class Storage:
                 image.filename
                 for image in event.images
             ],
+            "video_filename": event.video_filename,
         }
 
         with output_file.open(

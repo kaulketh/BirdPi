@@ -115,6 +115,7 @@ class MotionEvent:
     started_at: datetime
     ended_at: datetime | None = None
     images: list[CapturedImage] = field(default_factory=list)
+    video_filename: str | None = None
 
     @property
     def active(self) -> bool:
