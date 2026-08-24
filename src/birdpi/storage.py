@@ -14,9 +14,7 @@ from pathlib import Path
 
 from birdpi.config import Config
 from birdpi.models import CapturedImage
-from birdpi.models import DetectedObject
 from birdpi.models import MotionEvent
-from birdpi.models import Observation
 
 
 class Storage:
@@ -35,10 +33,6 @@ class Storage:
         self.config.image_path.mkdir(
             parents=True,
             exist_ok=True
-        )
-        self.config.observation_path.mkdir(
-            parents=True,
-            exist_ok=True,
         )
         self.config.event_path.mkdir(
             parents=True,
@@ -109,14 +103,22 @@ class Storage:
 
         metadata = Storage._load_image_metadata(path)
 
-        captured_at = (
-            datetime.fromisoformat(metadata["captured_at"])
-            if "captured_at" in metadata
-            else datetime.strptime(
-                path.stem,
-                "image_%Y%m%d_%H%M%S",
+        if "captured_at" in metadata:
+            captured_at = datetime.fromisoformat(
+                metadata["captured_at"]
             )
-        )
+
+        else:
+            try:
+                captured_at = datetime.strptime(
+                    path.stem,
+                    "image_%Y%m%d_%H%M%S",
+                )
+
+            except ValueError:
+                captured_at = datetime.fromtimestamp(
+                    path.stat().st_mtime
+                )
 
         return CapturedImage(
             path=path,
@@ -205,114 +207,6 @@ class Storage:
         ) as file:
             return json.load(file)
 
-    def save_observation(
-            self,
-            observation: Observation,
-    ) -> Path:
-        """
-        Persist an observation as JSON.
-
-        Returns:
-            Path of the created observation file.
-        """
-
-        output_file = (
-                self.config.observation_path
-                / f"{observation.id}.json"
-        )
-
-        data = {
-            "id": observation.id,
-            "detected_at": observation.detected_at.isoformat(),
-            "image_filename": observation.image.filename,
-            "detection_label": observation.detection_label,
-            "detection_confidence": observation.detection_confidence,
-            "objects": [
-                {
-                    "label": obj.label,
-                    "confidence": obj.confidence,
-                    "x1": obj.x1,
-                    "y1": obj.y1,
-                    "x2": obj.x2,
-                    "y2": obj.y2,
-                }
-                for obj in observation.objects
-            ],
-            "classification_label": observation.classification_label,
-            "classification_confidence": observation.classification_confidence,
-        }
-
-        with output_file.open(
-                "w",
-                encoding="utf-8",
-        ) as file:
-            json.dump(
-                data,
-                file,
-                indent=4,
-            )
-
-        return output_file
-
-    def _observation_from_path(
-            self,
-            path: Path,
-    ) -> Observation:
-        """
-        Create an Observation from a persisted JSON file.
-        """
-
-        with path.open(
-                "r",
-                encoding="utf-8",
-        ) as file:
-            data = json.load(file)
-
-        image_path = (
-                self.config.image_path
-                / data["image_filename"]
-        )
-
-        image = self.image_from_path(image_path)
-
-        return Observation(
-            image=image,
-            detected_at=datetime.fromisoformat(
-                data["detected_at"]
-            ),
-            detection_label=data["detection_label"],
-            detection_confidence=data["detection_confidence"],
-            objects=[
-                DetectedObject(
-                    label=obj["label"],
-                    confidence=obj["confidence"],
-                    x1=obj["x1"],
-                    y1=obj["y1"],
-                    x2=obj["x2"],
-                    y2=obj["y2"],
-                )
-                for obj in data.get("objects", [])
-            ],
-            classification_label=data.get("classification_label"),
-            classification_confidence=data.get("classification_confidence"),
-        )
-
-    def observations(self) -> list[Observation]:
-        """
-        Return all persisted observations.
-        """
-
-        observations = [
-            self._observation_from_path(path)
-            for path in self.config.observation_path.glob("*.json")
-        ]
-
-        return sorted(
-            observations,
-            key=lambda observation: observation.detected_at,
-            reverse=True,
-        )
-
     def save_event(
             self,
             event: MotionEvent,
@@ -352,3 +246,71 @@ class Storage:
             )
 
         return output_file
+
+    def _event_from_path(
+            self,
+            path: Path,
+    ) -> MotionEvent:
+        """
+        Create a MotionEvent from a persisted JSON file.
+        """
+
+        with path.open(
+                "r",
+                encoding="utf-8",
+        ) as file:
+            data = json.load(file)
+
+        event = MotionEvent(
+            id=data["id"],
+            started_at=datetime.fromisoformat(
+                data["started_at"]
+            ),
+            ended_at=(
+                datetime.fromisoformat(data["ended_at"])
+                if data["ended_at"]
+                else None
+            ),
+            video_filename=data.get("video_filename"),
+        )
+
+        for filename in data.get("images", []):
+            image = self.get_image(filename)
+
+            if image is not None:
+                event.add_image(image)
+
+        return event
+
+    def events(self) -> list[MotionEvent]:
+        """
+        Return all persisted motion events ordered newest first.
+        """
+
+        paths = sorted(
+            self.config.event_path.glob("*.json"),
+            reverse=True,
+        )
+
+        return [
+            self._event_from_path(path)
+            for path in paths
+        ]
+
+    def event(
+            self,
+            event_id: str,
+    ) -> MotionEvent | None:
+        """
+        Return a persisted motion event by ID.
+        """
+
+        path = (
+                self.config.event_path
+                / f"{event_id}.json"
+        )
+
+        if not path.is_file():
+            return None
+
+        return self._event_from_path(path)

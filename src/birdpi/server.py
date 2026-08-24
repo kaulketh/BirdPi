@@ -1,15 +1,18 @@
 """
 Entry point for the BirdPi web server.
 """
+from birdpi.application import BirdPi
 from birdpi.bootstrap import initialize
-from birdpi.web import create_app
+from birdpi.web.api import create_app
 
 
 def main() -> None:
     config = initialize()
 
-    app = create_app(config)
-    app.run()
+    birdpi = BirdPi(config)
+
+    app = create_app(birdpi)
+    app.run(host="0.0.0.0", port=5000, )
 
 
 if __name__ == "__main__":

@@ -87,9 +87,7 @@ class Camera:
             session_id=session_id,
         )
 
-        self.storage.save_image_metadata(
-            image
-        )
+        self.storage.save_image_metadata(image)
 
         return image
 

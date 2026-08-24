@@ -1,32 +1,38 @@
 """
-Handle the initialization and routing of the web interface for the BirdPi
-application, including rendering templates, serving static files, and
-defining endpoints for observation and session management.
+Handle the BirdPi web interface routes.
 
-This module provides the web interface integration for the BirdPi system by
-defining routes, HTML rendering, and API endpoints for capturing images,
-managing observations, viewing galleries, and accessing observation sessions.
-
-Functions
----------
-register_routes(birdpi: BirdPi) -> Blueprint
-    Register the web interface routes for the BirdPi application, including
-    rendering templates and defining routes for image gallery handling,
-    observation control, and sessions management.
+This module provides routes for the system overview, image gallery,
+motion events, and media files.
 """
+
 import socket
 
-from flask import abort, Blueprint, redirect, render_template, \
-    send_from_directory, \
-    url_for
+from flask import (
+    abort,
+    Blueprint,
+    redirect,
+    render_template,
+    send_from_directory,
+    url_for,
+)
 
 from birdpi.application import BirdPi
-from birdpi.system import format_uptime, get_uptime, get_cpu_temperature
+from birdpi.system import (
+    format_uptime,
+    get_cpu_temperature,
+    get_uptime,
+)
 
 web = Blueprint("web", __name__)
 
 
-def register_routes(birdpi: BirdPi) -> Blueprint:
+def register_routes(
+        birdpi: BirdPi,
+) -> Blueprint:
+    """
+    Register BirdPi web interface routes.
+    """
+
     storage = birdpi.storage
     camera = birdpi.camera
 
@@ -35,12 +41,15 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
         return {
             "image_count": storage.image_count(),
             "hostname": socket.gethostname(),
-            "uptime": format_uptime(get_uptime()),
+            "uptime": format_uptime(
+                get_uptime()
+            ),
             "cpu_temperature": get_cpu_temperature(),
             "camera_resolution": camera.resolution,
             "camera_model": camera.model,
-            "status_refresh_seconds": birdpi.config.web.refresh_interval_seconds,
-
+            "status_refresh_seconds": (
+                birdpi.config.web.refresh_interval_seconds
+            ),
         }
 
     @web.get("/")
@@ -53,16 +62,30 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
         )
 
     @web.get("/images/<path:filename>")
-    def image(filename: str):
+    def image(
+            filename: str,
+    ):
         return send_from_directory(
             storage.config.image_path,
+            filename,
+        )
+
+    @web.get("/videos/<path:filename>")
+    def video(
+            filename: str,
+    ):
+        return send_from_directory(
+            storage.config.video_path,
             filename,
         )
 
     @web.post("/capture")
     def capture():
         birdpi.capture()
-        return redirect(url_for("web.index"))
+
+        return redirect(
+            url_for("web.index")
+        )
 
     @web.get("/gallery")
     def gallery() -> str:
@@ -74,13 +97,19 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
         )
 
     @web.get("/gallery/<path:filename>")
-    def gallery_image(filename: str) -> str:
-        image = storage.get_image(filename)
+    def gallery_image(
+            filename: str,
+    ) -> str:
+        image = storage.get_image(
+            filename
+        )
 
         if image is None:
             abort(404)
 
-        newer, older = storage.adjacent_images(image)
+        newer, older = storage.adjacent_images(
+            image
+        )
 
         return render_template(
             "image.html",
@@ -88,3 +117,30 @@ def register_routes(birdpi: BirdPi) -> Blueprint:
             newer=newer,
             older=older,
         )
+
+    @web.get("/events")
+    def events() -> str:
+        motion_events = storage.events()
+
+        return render_template(
+            "events.html",
+            events=motion_events,
+        )
+
+    @web.get("/events/<event_id>")
+    def event_detail(
+            event_id: str,
+    ) -> str:
+        event = storage.event(
+            event_id
+        )
+
+        if event is None:
+            abort(404)
+
+        return render_template(
+            "event.html",
+            event=event,
+        )
+
+    return web
