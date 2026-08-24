@@ -73,7 +73,6 @@ class Config:
 
     data_path: Path
     image_path: Path
-    observation_path: Path
     event_path: Path
     video_path: Path
     log_path: Path
@@ -99,7 +98,6 @@ def load_config() -> Config:
     location_name = "HOME"
     data_path = Path("/home/kaulketh/birdpi-data")
     image_path = data_path / "images"
-    observation_path = data_path / "observations"
     event_path = data_path / "events"
     video_path = data_path / "videos"
     log_path = data_path / "logs" / "birdpi.log"
@@ -108,7 +106,6 @@ def load_config() -> Config:
         location_name=location_name,
         data_path=data_path,
         image_path=image_path,
-        observation_path=observation_path,
         event_path=event_path,
         video_path=video_path,
         log_path=log_path,

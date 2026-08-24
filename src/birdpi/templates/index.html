@@ -3,7 +3,10 @@
 {% block title %}BirdPi{% endblock %}
 
 {% block head_extra %}
-<meta http-equiv="refresh" content="{{ status_refresh_seconds }}">
+<meta
+        http-equiv="refresh"
+        content="{{ status_refresh_seconds }}"
+>
 {% endblock %}
 
 {% block content %}
@@ -13,16 +16,18 @@
 
     <p>Host: {{ hostname }}</p>
     <p>Uptime: {{ uptime }}</p>
-    <p>CPU temperature: {{ "%.1f"|format(cpu_temperature) }} °C</p>
+    <p>
+        CPU temperature:
+        {{ "%.1f"|format(cpu_temperature) }} °C
+    </p>
 </section>
 
 <section class="card">
     <h2>Camera</h2>
 
     <p>Model: {{ camera_model }}</p>
-    <p>Resolution: {{ camera_resolution }}</p>
+    <p>Photo resolution: {{ camera_resolution }}</p>
     <p>Stored images: {{ image_count }}</p>
-
 
     <form
             class="capture-form"
@@ -39,17 +44,24 @@
     <h2>Latest image</h2>
 
     {% if latest_image %}
+
     <p class="image-name">
         {{ latest_image.name }}
     </p>
 
     <img
             class="camera-image"
-            src="{{ url_for('web.image', filename=latest_image.name) }}"
+            src="{{ url_for(
+            'web.image',
+            filename=latest_image.name
+        ) }}"
             alt="Latest BirdPi image"
     >
+
     {% else %}
+
     <p>No images available.</p>
+
     {% endif %}
 </section>
 

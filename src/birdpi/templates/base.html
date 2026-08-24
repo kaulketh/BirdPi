@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}BirdPi{% endblock %}</title>
+
+    <title>
+        {% block title %}BirdPi{% endblock %}
+    </title>
+
     {% block head_extra %}{% endblock %}
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='style.css') }}">
+
+    <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='style.css') }}"
+    >
 </head>
 
 <body>
@@ -15,7 +22,9 @@
 
     <header>
         <h1>🐦 BirdPi</h1>
-        <p class="subtitle">Nature Observation Node</p>
+        <p class="subtitle">
+            Nature Observation Node
+        </p>
     </header>
 
     <nav>
@@ -28,16 +37,13 @@
 
         <a
                 href="{{ url_for('web.gallery') }}"
-                class="{% if request.endpoint == 'web.gallery' %}active{% endif %}"
+                class="{% if request.endpoint in [
+                'web.gallery',
+                'web.gallery_image'
+            ] %}active{% endif %}"
         >
             Gallery
         </a>
-        <a href="{{ url_for('web.sessions') }}"
-           class="{% if request.endpoint == 'web.sessions' %}active{% endif %}"
-        >
-            Sessions
-        </a>
-        
     </nav>
 
     {% block content %}
