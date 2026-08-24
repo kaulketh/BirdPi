@@ -14,6 +14,7 @@ from birdpi.lighting.ir_lights import IRLights
 from birdpi.models import CapturedImage
 from birdpi.motion.detector import MotionDetector
 from birdpi.motion.monitor import MotionMonitor
+from birdpi.recording.video import VideoRecorder
 from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
 
@@ -36,6 +37,8 @@ class BirdPi:
 
         self.camera = Camera(config)
         self.preview = CameraPreview(config)
+
+        self.video_recorder = VideoRecorder(config)
 
         self.motion_detector = MotionDetector(
             pixel_threshold=config.motion.pixel_threshold,
@@ -65,6 +68,7 @@ class BirdPi:
             camera=self.camera,
             day_night=self.day_night,
             storage=self.storage,
+            video_recorder=self.video_recorder,
             event_timeout_seconds=(
                 config.motion.event_timeout_seconds
             ),

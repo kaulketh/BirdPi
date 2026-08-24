@@ -2,7 +2,8 @@
 Runtime motion monitoring for BirdPi.
 
 This module combines camera preview, daylight control,
-motion detection, event creation and full-resolution capture.
+motion detection, event creation, full-resolution capture
+and event video recording.
 """
 
 import time
@@ -13,6 +14,7 @@ from birdpi.camera.preview import CameraPreview
 from birdpi.daylight.controller import DayNightController
 from birdpi.models import MotionEvent
 from birdpi.motion.detector import MotionDetector
+from birdpi.recording.video import VideoRecorder
 from birdpi.storage import Storage
 
 
@@ -22,19 +24,21 @@ class MotionMonitor:
     """
 
     def __init__(
-        self,
-        preview: CameraPreview,
-        detector: MotionDetector,
-        camera: Camera,
-        day_night: DayNightController,
-        storage: Storage,
-        event_timeout_seconds: int,
+            self,
+            preview: CameraPreview,
+            detector: MotionDetector,
+            camera: Camera,
+            day_night: DayNightController,
+            storage: Storage,
+            video_recorder: VideoRecorder,
+            event_timeout_seconds: int,
     ) -> None:
         self.preview = preview
         self.detector = detector
         self.camera = camera
         self.day_night = day_night
         self.storage = storage
+        self.video_recorder = video_recorder
         self.event_timeout_seconds = event_timeout_seconds
 
         self._event: MotionEvent | None = None
@@ -49,8 +53,8 @@ class MotionMonitor:
             self.preview.start()
 
             for index, frame in enumerate(
-                self.preview.frames(),
-                start=1,
+                    self.preview.frames(),
+                    start=1,
             ):
                 self.day_night.update()
 
@@ -58,9 +62,9 @@ class MotionMonitor:
 
                 if self._event is not None:
                     if (
-                        self._last_motion_at is not None
-                        and now - self._last_motion_at
-                        >= self.event_timeout_seconds
+                            self._last_motion_at is not None
+                            and now - self._last_motion_at
+                            >= self.event_timeout_seconds
                     ):
                         self._close_event()
 
@@ -71,10 +75,14 @@ class MotionMonitor:
 
                 self._last_motion_at = now
 
-                if self._event is None:
+                new_event = self._event is None
+
+                if new_event:
                     self._start_event()
 
-                self._capture_event_image()
+                self._capture_event_media(
+                    record_video=new_event
+                )
 
         except KeyboardInterrupt:
             print("\nStopped")
@@ -104,9 +112,13 @@ class MotionMonitor:
             f"Event started: {self._event.id}"
         )
 
-    def _capture_event_image(self) -> None:
+    def _capture_event_media(
+            self,
+            record_video: bool,
+    ) -> None:
         """
-        Capture a full-resolution image and add it to the active event.
+        Capture a full-resolution image and optionally
+        record one video for a newly started event.
         """
 
         if self._event is None:
@@ -114,26 +126,49 @@ class MotionMonitor:
 
         self.preview.stop()
 
-        start = time.monotonic()
+        try:
+            start = time.monotonic()
 
-        image = self.camera.capture()
+            image = self.camera.capture()
 
-        elapsed = time.monotonic() - start
+            elapsed = time.monotonic() - start
 
-        self._event.add_image(image)
+            self._event.add_image(image)
 
-        print(
-            f"Captured: {image.path} "
-            f"({elapsed:.3f} s)"
-        )
+            print(
+                f"Captured: {image.path} "
+                f"({elapsed:.3f} s)"
+            )
 
-        print(
-            f"Event images: "
-            f"{len(self._event.images)}"
-        )
+            print(
+                f"Event images: "
+                f"{len(self._event.images)}"
+            )
 
-        self.detector.reset()
-        self.preview.start()
+            if record_video:
+                video_path = self.storage.next_video_path(
+                    self._event.id
+                )
+
+                print(
+                    f"Recording video: {video_path}"
+                )
+
+                self.video_recorder.record(
+                    output_file=video_path,
+                )
+
+                self._event.video_filename = (
+                    video_path.name
+                )
+
+                print(
+                    f"Video saved: {video_path}"
+                )
+
+        finally:
+            self.detector.reset()
+            self.preview.start()
 
     def _close_event(self) -> None:
         """
