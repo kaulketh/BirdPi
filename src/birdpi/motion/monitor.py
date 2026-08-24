@@ -16,6 +16,9 @@ from birdpi.models import MotionEvent
 from birdpi.motion.detector import MotionDetector
 from birdpi.recording.video import VideoRecorder
 from birdpi.storage import Storage
+from birdpi.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class MotionMonitor:
@@ -71,7 +74,10 @@ class MotionMonitor:
                 if not self.detector.detect(frame):
                     continue
 
-                print(f"{index:06d} MOTION")
+                logger.info(
+                    "Motion detected at preview frame %06d",
+                    index,
+                )
 
                 if self._event is None:
                     self._start_event()
@@ -84,13 +90,15 @@ class MotionMonitor:
                     # Existing event: motion refreshes the timeout.
                     self._last_motion_at = time.monotonic()
 
-                    print(
-                        f"Event active: {self._event.id} "
-                        f"timeout refreshed"
+                    logger.debug(
+                        "Motion event active, timeout refreshed: %s",
+                        self._event.id,
                     )
 
         except KeyboardInterrupt:
-            print("\nStopped")
+            logger.info(
+                "Motion monitoring stopped"
+            )
 
         finally:
             if self._event is not None:
@@ -113,8 +121,9 @@ class MotionMonitor:
             started_at=started_at,
         )
 
-        print(
-            f"Event started: {self._event.id}"
+        logger.info(
+            "Motion event started: %s",
+            self._event.id,
         )
 
     def _capture_event_media(self) -> None:
@@ -137,17 +146,19 @@ class MotionMonitor:
 
             self._event.add_image(image)
 
-            print(
-                f"Captured: {image.path} "
-                f"({elapsed:.3f} s)"
+            logger.info(
+                "Image captured: %s (%.3f s)",
+                image.path,
+                elapsed,
             )
 
             video_path = self.storage.next_video_path(
                 self._event.id
             )
 
-            print(
-                f"Recording video: {video_path}"
+            logger.info(
+                "Recording event video: %s",
+                video_path,
             )
 
             self.video_recorder.record(
@@ -158,8 +169,9 @@ class MotionMonitor:
                 video_path.name
             )
 
-            print(
-                f"Video saved: {video_path}"
+            logger.info(
+                "Event video saved: %s",
+                video_path,
             )
 
         finally:
@@ -180,13 +192,15 @@ class MotionMonitor:
             self._event
         )
 
-        print(
-            f"Event closed: {self._event.id} "
-            f"Images: {len(self._event.images)}"
+        logger.info(
+            "Motion event closed: %s, images=%d",
+            self._event.id,
+            len(self._event.images),
         )
 
-        print(
-            f"Event saved: {event_path}"
+        logger.info(
+            "Motion event saved: %s",
+            event_path,
         )
 
         self._event = None

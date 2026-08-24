@@ -5,6 +5,10 @@ Motion detection for BirdPi preview frames.
 import cv2
 import numpy as np
 
+from birdpi.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class MotionDetector:
     def __init__(
@@ -66,9 +70,10 @@ class MotionDetector:
 
         max_area = max(areas, default=0)
 
-        print(
-            f"contours={len(contours):3d} "
-            f"max_area={max_area:8.1f}"
+        logger.debug(
+            "Motion analysis: contours=%d max_area=%.1f",
+            len(contours),
+            max_area,
         )
 
         self._frame_count += 1

@@ -78,6 +78,8 @@ class Config:
     observation_interval_seconds: int
     event_path: Path
     video_path: Path
+    log_path: Path
+
     detector_type: str
     classifier_type: str
 
@@ -87,9 +89,7 @@ class Config:
     motion: MotionConfig
     web: WebConfig
     object_detection: ObjectDetectionConfig
-
     location: LocationConfig
-
     daylight: DaylightConfig
 
 
@@ -105,6 +105,7 @@ def load_config() -> Config:
     observation_path = data_path / "observations"
     event_path = data_path / "events"
     video_path = data_path / "videos"
+    log_path = data_path / "logs" / "birdpi.log"
 
     return Config(
         location_name=location_name,
@@ -114,6 +115,7 @@ def load_config() -> Config:
         observation_path=observation_path,
         event_path=event_path,
         video_path=video_path,
+        log_path=log_path,
 
         camera=CameraConfig(
             width=4608, height=2592),
