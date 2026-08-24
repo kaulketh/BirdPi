@@ -20,7 +20,7 @@ from birdpi.storage import Storage
 
 class MotionMonitor:
     """
-    Monitor preview frames and group motion captures into events.
+    Monitor preview frames and group motion activity into events.
     """
 
     def __init__(
@@ -73,16 +73,21 @@ class MotionMonitor:
 
                 print(f"{index:06d} MOTION")
 
-                self._last_motion_at = now
-
-                new_event = self._event is None
-
-                if new_event:
+                if self._event is None:
                     self._start_event()
+                    self._capture_event_media()
 
-                self._capture_event_media(
-                    record_video=new_event
-                )
+                    # Start event timeout after photo/video recording.
+                    self._last_motion_at = time.monotonic()
+
+                else:
+                    # Existing event: motion refreshes the timeout.
+                    self._last_motion_at = time.monotonic()
+
+                    print(
+                        f"Event active: {self._event.id} "
+                        f"timeout refreshed"
+                    )
 
         except KeyboardInterrupt:
             print("\nStopped")
@@ -112,13 +117,10 @@ class MotionMonitor:
             f"Event started: {self._event.id}"
         )
 
-    def _capture_event_media(
-            self,
-            record_video: bool,
-    ) -> None:
+    def _capture_event_media(self) -> None:
         """
-        Capture a full-resolution image and optionally
-        record one video for a newly started event.
+        Capture one full-resolution image and one video
+        for a newly started event.
         """
 
         if self._event is None:
@@ -140,31 +142,25 @@ class MotionMonitor:
                 f"({elapsed:.3f} s)"
             )
 
-            print(
-                f"Event images: "
-                f"{len(self._event.images)}"
+            video_path = self.storage.next_video_path(
+                self._event.id
             )
 
-            if record_video:
-                video_path = self.storage.next_video_path(
-                    self._event.id
-                )
+            print(
+                f"Recording video: {video_path}"
+            )
 
-                print(
-                    f"Recording video: {video_path}"
-                )
+            self.video_recorder.record(
+                output_file=video_path,
+            )
 
-                self.video_recorder.record(
-                    output_file=video_path,
-                )
+            self._event.video_filename = (
+                video_path.name
+            )
 
-                self._event.video_filename = (
-                    video_path.name
-                )
-
-                print(
-                    f"Video saved: {video_path}"
-                )
+            print(
+                f"Video saved: {video_path}"
+            )
 
         finally:
             self.detector.reset()
