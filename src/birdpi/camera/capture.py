@@ -65,6 +65,9 @@ class Camera:
             "--height",
             str(self.config.camera.height),
 
+            "--timeout",
+            "500",
+
             "-o",
             str(output_file),
 
