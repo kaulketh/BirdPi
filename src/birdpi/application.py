@@ -1,24 +1,19 @@
 """
 The main application module of the BirdPi system.
 
-This module serves as the entry point for the BirdPi application. It sets up
-and manages the core components such as configuration, storage, camera, detector,
-and observer. It also provides methods to execute the key functionalities of the
-application, including image capture, observation, and session management.
+This module initializes and connects the core BirdPi components used for
+continuous motion monitoring and event-based image capture.
 """
 
 from birdpi.camera.capture import Camera
-from birdpi.lighting.ir_lights import IRMode
-from birdpi.classification.classifier import Classifier
-from birdpi.classification.factory import create_classifier
+from birdpi.camera.preview import CameraPreview
 from birdpi.config import Config
-from birdpi.detection.detector import Detector
-from birdpi.detection.factory import (
-    create_detector,
-    create_object_detector,
-)
+from birdpi.daylight.controller import DayNightController
+from birdpi.daylight.sun import Daylight
+from birdpi.lighting.ir_lights import IRLights
 from birdpi.models import CapturedImage
-from birdpi.observer import Observer
+from birdpi.motion.detector import MotionDetector
+from birdpi.motion.monitor import MotionMonitor
 from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
 
@@ -33,8 +28,6 @@ class BirdPi:
     def __init__(
             self,
             config: Config,
-            detector: Detector | None = None,
-            classifier: Classifier | None = None,
     ) -> None:
         self.config = config
 
@@ -42,79 +35,60 @@ class BirdPi:
         self.storage.ensure_directories()
 
         self.camera = Camera(config)
+        self.preview = CameraPreview(config)
 
-        self.detector = detector or create_detector(config)
-        self.object_detector = create_object_detector(config)
-        self.classifier = classifier or create_classifier(config)
+        self.motion_detector = MotionDetector()
 
-        self.observer = Observer(
-            config,
-            self.capture,
-            ir_mode=IRMode.LEFT,
+        self.daylight = Daylight(config)
+
+        self.ir_lights = IRLights(
+            left_pin=config.ir.left_pin,
+            right_pin=config.ir.right_pin,
+        )
+
+        self.day_night = DayNightController(
+            daylight=self.daylight,
+            ir_lights=self.ir_lights,
+            motion_detector=self.motion_detector,
+            check_interval_seconds=(
+                config.daylight.check_interval_seconds
+            ),
+        )
+
+        self.motion_monitor = MotionMonitor(
+            preview=self.preview,
+            detector=self.motion_detector,
+            camera=self.camera,
+            day_night=self.day_night,
         )
 
     def run(self) -> None:
         """
-        Start BirdPi application.
+        Start BirdPi motion monitoring.
         """
 
         logger.info("BirdPi online")
-        image = self.camera.capture()
-        logger.info("Image captured: %s", image.path)
 
-    def start_observation(self) -> None:
-        """
-        Start automatic observation.
-        """
+        try:
+            self.motion_monitor.run()
 
-        self.observer.start()
+        finally:
+            self.ir_lights.close()
 
-    def stop_observation(self) -> None:
-        """
-        Stop automatic observation and persist the completed session.
-        """
-
-        self.observer.stop()
-
-        session = self.observer.session
-
-        if session is not None and not session.active:
-            path = self.storage.save_session(session)
-
-            logger.info(
-                "Observation session saved: %s",
-                path,
-            )
+            logger.info("BirdPi offline")
 
     def capture(
             self,
-            session_id: str | None = None,
-            ir_mode: IRMode = IRMode.OFF,
+            filename: str | None = None,
     ) -> CapturedImage:
         """
-        Capture an image, run detection, classify, and persist observations.
+        Capture a full-resolution image manually.
         """
 
         image = self.camera.capture(
-            session_id=session_id,
-            ir_mode=ir_mode,
+            filename=filename,
         )
 
-        observations = self.detector.detect(image)
-
-        for observation in observations:
-            observation.objects = self.object_detector.detect(
-                image
-            )
-
-            self.classifier.classify(observation)
-
-            self.storage.save_observation(observation)
-
-        logger.info(
-            "Detections: %s",
-            len(observations),
-        )
         logger.info(
             "Image captured: %s",
             image.path,
