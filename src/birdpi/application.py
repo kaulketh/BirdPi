@@ -60,6 +60,7 @@ class BirdPi:
             detector=self.motion_detector,
             camera=self.camera,
             day_night=self.day_night,
+            storage=self.storage,
         )
 
     def run(self) -> None:

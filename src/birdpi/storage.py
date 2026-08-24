@@ -14,9 +14,10 @@ from pathlib import Path
 
 from birdpi.config import Config
 from birdpi.models import CapturedImage
+from birdpi.models import DetectedObject
+from birdpi.models import MotionEvent
 from birdpi.models import Observation
 from birdpi.models import ObservationSession
-from birdpi.models import DetectedObject
 
 
 class Storage:
@@ -41,6 +42,11 @@ class Storage:
             exist_ok=True,
         )
         self.config.observation_path.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        self.config.event_path.mkdir(
             parents=True,
             exist_ok=True,
         )
@@ -414,3 +420,42 @@ class Storage:
             key=lambda observation: observation.detected_at,
             reverse=True,
         )
+
+    def save_event(
+            self,
+            event: MotionEvent,
+    ) -> Path:
+        """
+        Persist a motion event as JSON.
+        """
+
+        output_file = (
+                self.config.event_path
+                / f"{event.id}.json"
+        )
+
+        data = {
+            "id": event.id,
+            "started_at": event.started_at.isoformat(),
+            "ended_at": (
+                event.ended_at.isoformat()
+                if event.ended_at is not None
+                else None
+            ),
+            "images": [
+                image.filename
+                for image in event.images
+            ],
+        }
+
+        with output_file.open(
+                "w",
+                encoding="utf-8",
+        ) as file:
+            json.dump(
+                data,
+                file,
+                indent=4,
+            )
+
+        return output_file

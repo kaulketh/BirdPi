@@ -1,13 +1,6 @@
-"""
-This module provides data structures to represent and manage captured images and observation
-sessions for the BirdPi system.
-
-The CapturedImage class models metadata and properties of individual images captured during
-an observation. The ObservationSession class encapsulates details about observation sessions,
-including duration and status.
-"""
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
+from datetime import timedelta
 from pathlib import Path
 
 
@@ -110,3 +103,31 @@ class Observation:
         """
 
         return self.detected_at.strftime("%Y%m%d_%H%M%S_%f")
+
+
+@dataclass(slots=True)
+class MotionEvent:
+    """
+    Represent one motion-triggered wildlife event.
+    """
+
+    id: str
+    started_at: datetime
+    ended_at: datetime | None = None
+    images: list[CapturedImage] = field(default_factory=list)
+
+    @property
+    def active(self) -> bool:
+        return self.ended_at is None
+
+    def add_image(
+            self,
+            image: CapturedImage,
+    ) -> None:
+        self.images.append(image)
+
+    def close(
+            self,
+            ended_at: datetime | None = None,
+    ) -> None:
+        self.ended_at = ended_at or datetime.now()

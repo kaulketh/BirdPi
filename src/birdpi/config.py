@@ -68,6 +68,7 @@ class Config:
     session_path: Path
     observation_path: Path
     observation_interval_seconds: int
+    event_path: Path
     detector_type: str
     classifier_type: str
 
@@ -92,6 +93,7 @@ def load_config() -> Config:
     image_path = data_path / "images"
     session_path = data_path / "sessions"
     observation_path = data_path / "observations"
+    event_path = data_path / "events"
 
     return Config(
         location_name=location_name,
@@ -99,6 +101,7 @@ def load_config() -> Config:
         image_path=image_path,
         session_path=session_path,
         observation_path=observation_path,
+        event_path=event_path,
 
         camera=CameraConfig(width=4608, height=2592),
         ir=IRLightConfig(enabled=True, left_pin=20, right_pin=21, ),
