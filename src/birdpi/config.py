@@ -46,9 +46,9 @@ class CameraConfig:
 @dataclass(frozen=True, slots=True)
 class MotionConfig:
     pixel_threshold: int
-    threshold: float
-    block_threshold: float
-    max_active_blocks: int
+    min_area: float
+    reference_interval: int
+    event_timeout_seconds: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -114,10 +114,10 @@ def load_config() -> Config:
         classifier_type="dummy",
 
         motion=MotionConfig(
-            pixel_threshold=25,
-            threshold=0.01,  # 0.02
-            block_threshold=0.05,
-            max_active_blocks=20,  # 12
+            pixel_threshold=60,
+            min_area=1000,
+            reference_interval=5,
+            event_timeout_seconds=8,
         ),
         object_detection=ObjectDetectionConfig(
             model_path=Path(

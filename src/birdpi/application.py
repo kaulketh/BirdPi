@@ -37,7 +37,11 @@ class BirdPi:
         self.camera = Camera(config)
         self.preview = CameraPreview(config)
 
-        self.motion_detector = MotionDetector()
+        self.motion_detector = MotionDetector(
+            pixel_threshold=config.motion.pixel_threshold,
+            min_area=config.motion.min_area,
+            reference_interval=config.motion.reference_interval,
+        )
 
         self.daylight = Daylight(config)
 
@@ -61,6 +65,9 @@ class BirdPi:
             camera=self.camera,
             day_night=self.day_night,
             storage=self.storage,
+            event_timeout_seconds=(
+                config.motion.event_timeout_seconds
+            ),
         )
 
     def run(self) -> None:
