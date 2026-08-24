@@ -5,6 +5,8 @@ This module combines camera preview, daylight control,
 motion detection, and full-resolution capture.
 """
 
+import time
+
 from birdpi.camera.capture import Camera
 from birdpi.camera.preview import CameraPreview
 from birdpi.daylight.controller import DayNightController
@@ -49,11 +51,15 @@ class MotionMonitor:
 
                 self.preview.stop()
 
+                start = time.monotonic()
+
                 image = self.camera.capture()
 
+                elapsed = time.monotonic() - start
+
                 print(
-                    "Captured:",
-                    image.path,
+                    f"Captured: {image.path} "
+                    f"({elapsed:.3f} s)"
                 )
 
                 self.detector.reset()
