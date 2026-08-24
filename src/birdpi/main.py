@@ -1,23 +1,15 @@
 """
-The entry point for running the BirdPi application.
-
-This module initializes the application configuration, creates an instance
-of the BirdPi application, and starts the application.
-
-Functions:
-    main(): Initializes BirdPi application and starts it.
+Main entry point for BirdPi.
 """
-
 from birdpi.application import BirdPi
-from birdpi.config import load_config
-from birdpi.utils.logger import configure_logging
+from birdpi.bootstrap import initialize
 
 
 def main() -> None:
-    configure_logging()
-    config = load_config()
-    app = BirdPi(config)
-    app.run()
+    config = initialize()
+
+    birdpi = BirdPi(config)
+    birdpi.run()
 
 
 if __name__ == "__main__":
