@@ -30,12 +30,12 @@
 
             <div class="media-info">
                 <strong>
-                    {{ image.captured_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                    {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
                 </strong>
 
-                <span>
-                            {{ image.filename }}
-                        </span>
+                <span class="media-filename">
+                    {{ image.filename }}
+                </span>
             </div>
 
         </a>
