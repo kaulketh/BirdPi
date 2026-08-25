@@ -1,12 +1,5 @@
 """
-A module to handle BirdPi file storage operations.
-
-This module provides the `Storage` class, which offers functionalities for
-managing directories, images, observation sessions, and their metadata
-in the BirdPi application.
-
-Classes:
-    Storage: A class for handling files, directories, and metadata related to BirdPi.
+A module to handle BirdPi storage, files, metadata, and directories.
 """
 import json
 from datetime import datetime

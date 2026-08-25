@@ -18,9 +18,6 @@ from birdpi.storage import Storage
 
 
 class Camera:
-    """
-    Raspberry Pi Camera interface.
-    """
 
     def __init__(self, config: Config) -> None:
         self.config: Config = config

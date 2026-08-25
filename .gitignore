@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 .venv/
+.venv*/
 
 .idea/
 
@@ -10,3 +11,4 @@ data/images/*
 data/timelapse/*
 
 .env
+src/birdpi/_version.py

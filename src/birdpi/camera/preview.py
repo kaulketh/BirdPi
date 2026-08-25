@@ -14,9 +14,6 @@ from birdpi.config import Config
 
 
 class CameraPreview:
-    """
-    Provide low-resolution grayscale frames from the camera.
-    """
 
     def __init__(
             self,

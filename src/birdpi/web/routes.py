@@ -1,8 +1,5 @@
 """
 Handle the BirdPi web interface routes.
-
-This module provides routes for the system overview, image gallery,
-motion events, and media files.
 """
 
 import socket

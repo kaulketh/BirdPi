@@ -16,9 +16,6 @@ logger = get_logger(__name__)
 
 
 class DayNightController:
-    """
-    Manage BirdPi day/night mode and infrared lighting.
-    """
 
     def __init__(
             self,

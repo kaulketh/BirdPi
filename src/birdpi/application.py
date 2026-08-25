@@ -22,9 +22,6 @@ logger = get_logger(__name__)
 
 
 class BirdPi:
-    """
-    Main application class for the BirdPi system.
-    """
 
     def __init__(
             self,
@@ -97,7 +94,7 @@ class BirdPi:
         Capture a full-resolution image manually.
         """
         self.day_night.update(force=True)
-        
+
         image = self.camera.capture(
             filename=filename,
         )

@@ -66,9 +66,6 @@ class WebConfig:
 
 @dataclass(slots=True)
 class Config:
-    """
-    BirdPi configuration.
-    """
     location_name: str
 
     data_path: Path
@@ -91,10 +88,6 @@ class Config:
 
 
 def load_config() -> Config:
-    """
-    Create the default BirdPi configuration.
-    """
-
     location_name = "HOME"
     data_path = Path("/home/kaulketh/birdpi-data")
     image_path = data_path / "images"

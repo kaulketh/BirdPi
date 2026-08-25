@@ -2,7 +2,7 @@
 Runtime motion monitoring for BirdPi.
 
 This module combines camera preview, daylight control,
-motion detection, event creation, full-resolution capture
+motion detection, event creation, full-resolution capture,
 and event video recording.
 """
 
@@ -22,9 +22,6 @@ logger = get_logger(__name__)
 
 
 class MotionMonitor:
-    """
-    Monitor preview frames and group motion activity into events.
-    """
 
     def __init__(
             self,

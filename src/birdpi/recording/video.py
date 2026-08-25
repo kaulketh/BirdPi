@@ -1,12 +1,5 @@
 """
 Record short videos using the Raspberry Pi camera.
-
-This module provides functionality to record short video clips using the Raspberry Pi
-camera and save them in the MP4 format. It utilizes the `rpicam-vid` command for video
-recording and `ffmpeg` for format conversion.
-
-Classes:
-    VideoRecorder: A class to manage video recording operations.
 """
 import subprocess
 from pathlib import Path
@@ -15,9 +8,6 @@ from birdpi.config import Config
 
 
 class VideoRecorder:
-    """
-    Record short videos using the Raspberry Pi camera.
-    """
 
     def __init__(
             self,

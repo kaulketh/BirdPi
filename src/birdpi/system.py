@@ -1,8 +1,5 @@
 """
-Utilities for system information such as CPU temperature and system uptime.
-
-This module provides functions to retrieve the CPU temperature, system uptime,
-and utility for formatting uptime into human-readable format.
+Utilities for system information.
 """
 from pathlib import Path
 

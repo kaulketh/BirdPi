@@ -1,14 +1,6 @@
 """
 This module provides functionality to create and configure a Flask web application
 with specified routes and templates.
-
-It uses the `BirdPi` application and registers its associated routes through the
-Flask blueprint mechanism. The module helps initialize the necessary parts for
-the web application, such as the static and template folder paths.
-
-Functions:
-    create_app(birdpi: BirdPi) -> Flask:
-        Creates and configures a Flask application.
 """
 from pathlib import Path
 

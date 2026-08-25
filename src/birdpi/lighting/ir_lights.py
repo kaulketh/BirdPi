@@ -1,9 +1,5 @@
 """
 A module for controlling and managing infrared (IR) lights using GPIO pins.
-
-This module provides an enumeration for IR light modes and a class to
-manipulate the state of IR lights, including turning them on, off, and
-specifying which light(s) should be active.
 """
 from enum import Enum
 
