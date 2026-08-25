@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Gallery - BirdPi{% endblock %}
+
+{% block content %}
+
+<section class="card">
+    <h2>Gallery</h2>
+
+    {% if images %}
+    <div class="media-grid">
+
+        {% for image in images %}
+        <a
+                class="media-card"
+                href="{{ url_for(
+                        'web.gallery_image',
+                        filename=image.filename
+                    ) }}"
+        >
+
+            <img
+                    class="media-thumb"
+                    src="{{ url_for(
+                            'web.image',
+                            filename=image.filename
+                        ) }}"
+                    alt="{{ image.filename }}"
+            >
+
+            <div class="media-info">
+                <strong>
+                    {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
+                </strong>
+
+                <span class="media-filename">
+                    {{ image.filename }}
+                </span>
+            </div>
+
+        </a>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <p>No images available.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

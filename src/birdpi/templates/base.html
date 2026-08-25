@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}BirdPi{% endblock %}
+    </title>
+
+    {% block head_extra %}{% endblock %}
+
+    <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='style.css') }}"
+    >
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <h1>🐦 BirdPi</h1>
+        <p class="subtitle">
+            Nature Observation Node
+        </p>
+    </header>
+
+    <nav>
+        <a
+                href="{{ url_for('web.index') }}"
+                class="{% if request.endpoint == 'web.index' %}active{% endif %}"
+        >
+            Home
+        </a>
+        <a
+                href="{{ url_for('web.events') }}"
+                class="{% if request.endpoint in [
+                'web.events',
+                'web.event_detail'
+               ] %}active{% endif %}"
+        >
+            Events
+        </a>
+        <a
+                href="{{ url_for('web.gallery') }}"
+                class="{% if request.endpoint in [
+                'web.gallery',
+                'web.gallery_image'
+            ] %}active{% endif %}"
+        >
+            Gallery
+        </a>
+
+    </nav>
+
+    {% block content %}
+    {% endblock %}
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=80", "setuptools_scm[toml]>=8"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "birdpi"
+dynamic = ["version"]
+description = "Bird house observation system based on Raspberry Pi"
+readme = "README.md"
+requires-python = ">=3.13"
+
+dependencies = [
+    "Flask>=3.1",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+# automated version detection
+version_file="src/birdpi/_version.py"

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}BirdPi{% endblock %}
+
+{% block head_extra %}
+<meta
+        http-equiv="refresh"
+        content="{{ status_refresh_seconds }}"
+>
+{% endblock %}
+
+{% block content %}
+
+<section class="card">
+    <h2>System</h2>
+
+    <p>Host: {{ hostname }}</p>
+    <p>Uptime: {{ uptime }}</p>
+    <p>
+        CPU temperature:
+        {{ "%.1f"|format(cpu_temperature) }} °C
+    </p>
+    <p>
+        Mode:
+        {% if night_mode is none %}
+        unknown
+        {% elif night_mode %}
+        NIGHT
+        {% else %}
+        DAY
+        {% endif %}
+    </p>
+
+    <p>
+        IR:
+        {{ ir_mode|upper }}
+    </p>
+</section>
+
+<section class="card">
+    <h2>Camera</h2>
+
+    <p>Model: {{ camera_model }}</p>
+    <p>Photo resolution: {{ camera_resolution }}</p>
+    <p>Stored images: {{ image_count }}</p>
+
+    <form
+            class="capture-form"
+            action="{{ url_for('web.capture') }}"
+            method="post"
+    >
+        <button type="submit">
+            📸 Capture image
+        </button>
+    </form>
+</section>
+<section class="card">
+    <h2>Latest event</h2>
+
+    {% if latest_event %}
+
+    <p>
+        <strong>
+            {{ latest_event.started_at.strftime("%d.%m.%Y %H:%M:%S") }}
+        </strong>
+    </p>
+
+    {% if latest_event.ended_at %}
+    <p>
+        Duration:
+        {{ "%.1f"|format(
+        (latest_event.ended_at - latest_event.started_at).total_seconds()
+        ) }} s
+    </p>
+    {% endif %}
+
+    <p>
+        Media:
+        📷 {{ latest_event.images|length }}
+
+        {% if latest_event.video_filename %}
+        &nbsp; 🎥 Video
+        {% endif %}
+    </p>
+
+    <p>
+        {% if latest_event and latest_event.images %}
+        <a href="{{ url_for(
+            'web.event_detail',
+            event_id=latest_event.id) }}">
+            <img class="home-thumb"
+                 src="{{ url_for(
+                    'web.image',
+                    filename=latest_event.images[0].filename
+                ) }}"
+                 alt="Latest motion event"
+            >
+        </a>
+        {% endif %}
+    </p>
+
+    {% else %}
+
+    <p>No motion events available.</p>
+
+    {% endif %}
+</section>
+<section class="card">
+    <h2>Latest image</h2>
+
+    {% if latest_image %}
+
+    <p class="image-name">
+        {{ latest_image.name }}
+    </p>
+
+    <img
+            class="home-thumb"
+            src="{{ url_for(
+        'web.image',
+        filename=latest_image.name
+    ) }}"
+            alt="Latest BirdPi image"
+    >
+
+    {% else %}
+
+    <p>No images available.</p>
+
+    {% endif %}
+</section>
+
+{% endblock %}

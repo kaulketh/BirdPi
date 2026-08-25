@@ -1,0 +1,309 @@
+"""
+A module to handle BirdPi storage, files, metadata, and directories.
+"""
+import json
+from datetime import datetime
+from pathlib import Path
+
+from birdpi.config import Config
+from birdpi.models import CapturedImage
+from birdpi.models import MotionEvent
+
+
+class Storage:
+    """
+    Manage BirdPi file storage.
+    """
+
+    def __init__(self, config: Config) -> None:
+        self.config = config
+
+    def ensure_directories(self) -> None:
+        """
+        Create required directories if they do not exist.
+        """
+
+        self.config.image_path.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+        self.config.event_path.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        self.config.video_path.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+    def next_image_path(self, filename: str | None = None) -> Path:
+        if filename is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            filename = f"image_{timestamp}.jpg"
+
+        return self.config.image_path / filename
+
+    def latest_image(self) -> Path | None:
+        """
+        Return the most recently created image.
+
+        Returns:
+            Path of the latest image, or None if no images exist.
+        """
+        images = sorted(
+            self.config.image_path.glob("*.jpg"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+
+        return images[0] if images else None
+
+    def image_count(self) -> int:
+        """
+        Return the number of stored images.
+        """
+
+        return sum(1 for _ in self.config.image_path.glob("*.jpg"))
+
+    def images(self) -> list[CapturedImage]:
+        """
+        Return all stored images ordered from newest to oldest.
+        """
+
+        paths = sorted(
+            self.config.image_path.glob("*.jpg"),
+            reverse=True,
+        )
+
+        return [self.image_from_path(path) for path in paths]
+
+    def next_video_path(
+            self,
+            event_id: str,
+    ) -> Path:
+        return (
+                self.config.video_path
+                / f"event_{event_id}.mp4"
+        )
+
+    @staticmethod
+    def image_from_path(
+            path: Path,
+    ) -> CapturedImage:
+        """
+        Create a CapturedImage from an image path.
+        """
+
+        metadata = Storage._load_image_metadata(path)
+
+        if "captured_at" in metadata:
+            captured_at = datetime.fromisoformat(
+                metadata["captured_at"]
+            )
+
+        else:
+            try:
+                captured_at = datetime.strptime(
+                    path.stem,
+                    "image_%Y%m%d_%H%M%S",
+                )
+
+            except ValueError:
+                captured_at = datetime.fromtimestamp(
+                    path.stat().st_mtime
+                )
+
+        return CapturedImage(
+            path=path,
+            captured_at=captured_at,
+            session_id=metadata.get("session_id"),
+        )
+
+    def get_image(self, filename: str) -> CapturedImage | None:
+        """
+        Return a captured image by filename.
+        """
+
+        path = self.config.image_path / filename
+
+        if not path.is_file():
+            return None
+
+        return self.image_from_path(path)
+
+    def adjacent_images(
+            self,
+            image: CapturedImage,
+    ) -> tuple[CapturedImage | None, CapturedImage | None]:
+        """
+        Return the newer and older neighboring images.
+        """
+
+        images = self.images()
+
+        try:
+            index = images.index(image)
+        except ValueError:
+            return None, None
+
+        newer = images[index - 1] if index > 0 else None
+        older = images[index + 1] if index < len(images) - 1 else None
+
+        return newer, older
+
+    @staticmethod
+    def save_image_metadata(
+            image: CapturedImage,
+    ) -> Path:
+        """
+        Persist metadata for a captured image as JSON.
+
+        Returns:
+            Path of the created metadata file.
+        """
+
+        metadata_file = image.path.with_suffix(".json")
+
+        data = {
+            "captured_at": image.captured_at.isoformat(),
+            "session_id": image.session_id,
+        }
+
+        with metadata_file.open(
+                "w",
+                encoding="utf-8",
+        ) as file:
+            json.dump(
+                data,
+                file,
+                indent=4,
+            )
+
+        return metadata_file
+
+    @staticmethod
+    def _load_image_metadata(
+            path: Path,
+    ) -> dict:
+        """
+        Load metadata for an image from its JSON sidecar.
+        """
+
+        metadata_file = path.with_suffix(".json")
+
+        if not metadata_file.is_file():
+            return {}
+
+        with metadata_file.open(
+                "r",
+                encoding="utf-8",
+        ) as file:
+            return json.load(file)
+
+    def save_event(
+            self,
+            event: MotionEvent,
+    ) -> Path:
+        """
+        Persist a motion event as JSON.
+        """
+
+        output_file = (
+                self.config.event_path
+                / f"{event.id}.json"
+        )
+
+        data = {
+            "id": event.id,
+            "started_at": event.started_at.isoformat(),
+            "ended_at": (
+                event.ended_at.isoformat()
+                if event.ended_at is not None
+                else None
+            ),
+            "images": [
+                image.filename
+                for image in event.images
+            ],
+            "video_filename": event.video_filename,
+        }
+
+        with output_file.open(
+                "w",
+                encoding="utf-8",
+        ) as file:
+            json.dump(
+                data,
+                file,
+                indent=4,
+            )
+
+        return output_file
+
+    def _event_from_path(
+            self,
+            path: Path,
+    ) -> MotionEvent:
+        """
+        Create a MotionEvent from a persisted JSON file.
+        """
+
+        with path.open(
+                "r",
+                encoding="utf-8",
+        ) as file:
+            data = json.load(file)
+
+        event = MotionEvent(
+            id=data["id"],
+            started_at=datetime.fromisoformat(
+                data["started_at"]
+            ),
+            ended_at=(
+                datetime.fromisoformat(data["ended_at"])
+                if data["ended_at"]
+                else None
+            ),
+            video_filename=data.get("video_filename"),
+        )
+
+        for filename in data.get("images", []):
+            image = self.get_image(filename)
+
+            if image is not None:
+                event.add_image(image)
+
+        return event
+
+    def events(self) -> list[MotionEvent]:
+        """
+        Return all persisted motion events ordered newest first.
+        """
+
+        paths = sorted(
+            self.config.event_path.glob("*.json"),
+            reverse=True,
+        )
+
+        return [
+            self._event_from_path(path)
+            for path in paths
+        ]
+
+    def event(
+            self,
+            event_id: str,
+    ) -> MotionEvent | None:
+        """
+        Return a persisted motion event by ID.
+        """
+
+        path = (
+                self.config.event_path
+                / f"{event_id}.json"
+        )
+
+        if not path.is_file():
+            return None
+
+        return self._event_from_path(path)

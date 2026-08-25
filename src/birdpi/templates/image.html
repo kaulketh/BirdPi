@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}BirdPi Image{% endblock %}
+
+{% block content %}
+
+<section class="card">
+    <p>
+        <a href="{{ url_for('web.gallery') }}">
+            ← Back to Gallery
+        </a>
+    </p>
+    <h2>
+        {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
+    </h2>
+
+    <p class="image-name">
+        {{ image.filename }}
+    </p>
+
+    <p>
+        File size: {{ "%.2f"|format(image.size_mb) }} MB
+    </p>
+    <div class="image-navigation">
+
+        {% if older %}
+        <a href="{{ url_for('web.gallery_image', filename=older.filename) }}">
+            ← Older
+        </a>
+        {% endif %}
+
+        {% if newer %}
+        <a href="{{ url_for('web.gallery_image', filename=newer.filename) }}">
+            Newer →
+        </a>
+        {% endif %}
+
+    </div>
+
+    <img
+            class="camera-image"
+            src="{{ url_for('web.image', filename=image.filename) }}"
+            alt="{{ image.filename }}"
+    >
+
+</section>
+
+{% endblock %}

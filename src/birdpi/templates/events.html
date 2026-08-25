@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Events - BirdPi{% endblock %}
+
+{% block content %}
+
+<section class="card">
+    <h2>Motion Events</h2>
+
+    {% if events %}
+    <div class="media-grid">
+
+        {% for event in events %}
+        <a
+                class="media-card"
+                href="{{ url_for(
+                        'web.event_detail',
+                        event_id=event.id
+                    ) }}"
+        >
+
+            {% if event.images %}
+            <img
+                    class="media-thumb"
+                    src="{{ url_for(
+                                'web.image',
+                                filename=event.images[0].filename
+                            ) }}"
+                    alt="Motion event preview"
+            >
+            {% endif %}
+
+            <div class="media-info">
+                <strong>
+                    {{ event.started_at.strftime("%d.%m.%Y %H:%M:%S") }}
+                </strong>
+
+                <div class="media-meta">
+                    {% if event.ended_at %}
+                    <span>
+                ⏱
+                {{ "%.1f"|format(
+                    (event.ended_at - event.started_at).total_seconds()
+                ) }} s
+            </span>
+                    {% else %}
+                    <span class="badge">ACTIVE</span>
+                    {% endif %}
+
+                    {% if event.video_filename %}
+                    <span class="badge">VIDEO</span>
+                    {% endif %}
+                </div>
+            </div>
+
+        </a>
+        {% endfor %}
+
+    </div>
+    {% else %}
+    <p>No motion events available.</p>
+    {% endif %}
+</section>
+
+{% endblock %}
