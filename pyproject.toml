@@ -21,3 +21,4 @@ where = ["src"]
 
 [tool.setuptools_scm]
 # automated version detection
+version_file="birdpi/version.py"
