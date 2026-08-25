@@ -96,7 +96,8 @@ class BirdPi:
         """
         Capture a full-resolution image manually.
         """
-
+        self.day_night.update(force=True)
+        
         image = self.camera.capture(
             filename=filename,
         )

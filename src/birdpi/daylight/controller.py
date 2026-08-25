@@ -43,25 +43,29 @@ class DayNightController:
 
         return self._night_mode
 
-    def update(self) -> None:
+    def update(
+            self,
+            force: bool = False,
+    ) -> None:
         """
         Check daylight state and switch mode when necessary.
         """
 
         now = time.monotonic()
 
-        if now < self._next_check:
+        if not force and now < self._next_check:
             return
 
         self._next_check = now + self.check_interval_seconds
 
         is_night = self.daylight.is_night()
+
         logger.debug(
             "Daylight check: %s",
             "NIGHT" if is_night else "DAY",
         )
 
-        if is_night == self._night_mode:
+        if is_night == self._night_mode and not force:
             return
 
         self._night_mode = is_night
