@@ -1,3 +1,13 @@
+"""
+Record short videos using the Raspberry Pi camera.
+
+This module provides functionality to record short video clips using the Raspberry Pi
+camera and save them in the MP4 format. It utilizes the `rpicam-vid` command for video
+recording and `ffmpeg` for format conversion.
+
+Classes:
+    VideoRecorder: A class to manage video recording operations.
+"""
 import subprocess
 from pathlib import Path
 
@@ -21,10 +31,7 @@ class VideoRecorder:
             duration_seconds: int | None = None,
     ) -> Path:
         """
-        Record a video.
-
-        Incomplete output files are removed if recording fails
-        or is interrupted.
+        Record a video and store it as MP4.
         """
 
         duration = (
@@ -34,6 +41,9 @@ class VideoRecorder:
         )
 
         timeout_ms = duration * 1000
+
+        raw_file = output_file.with_suffix(".h264")
+        mp4_file = output_file.with_suffix(".mp4")
 
         command = [
             "rpicam-vid",
@@ -49,7 +59,7 @@ class VideoRecorder:
             "h264",
             "--nopreview",
             "-o",
-            str(output_file),
+            str(raw_file),
         ]
 
         try:
@@ -58,10 +68,35 @@ class VideoRecorder:
                 check=True,
             )
 
-        except (subprocess.CalledProcessError, KeyboardInterrupt):
-            if output_file.exists():
-                output_file.unlink()
+            subprocess.run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-framerate",
+                    str(self.config.video.framerate),
+                    "-i",
+                    str(raw_file),
+                    "-c",
+                    "copy",
+                    str(mp4_file),
+                ],
+                check=True,
+            )
+
+        except (
+                subprocess.CalledProcessError,
+                KeyboardInterrupt,
+        ):
+            if raw_file.exists():
+                raw_file.unlink()
+
+            if mp4_file.exists():
+                mp4_file.unlink()
 
             raise
 
-        return output_file
+        finally:
+            if raw_file.exists():
+                raw_file.unlink()
+
+        return mp4_file

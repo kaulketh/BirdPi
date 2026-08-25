@@ -66,20 +66,21 @@
 
     {% if event.video_filename %}
 
-    <p class="image-name">
-        {{ event.video_filename }}
-    </p>
-
-    <p>
-        <a
-                href="{{ url_for(
+    <video
+            controls
+            preload="metadata"
+            style="width: 100%;"
+    >
+        <source
+                src="{{ url_for(
                     'web.video',
                     filename=event.video_filename
                 ) }}"
+                type="video/mp4"
         >
-            Open video
-        </a>
-    </p>
+
+        Your browser does not support HTML5 video.
+    </video>
 
     {% else %}
 

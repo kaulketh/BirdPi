@@ -90,7 +90,7 @@ class Storage:
     ) -> Path:
         return (
                 self.config.video_path
-                / f"event_{event_id}.h264"
+                / f"event_{event_id}.mp4"
         )
 
     @staticmethod

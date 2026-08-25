@@ -175,3 +175,37 @@ nav a.active {
     gap: 0.25rem;
     padding-top: 0.5rem;
 }
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.media-info {
+    overflow-wrap: anywhere;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+button,
+nav a {
+    min-height: 44px;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 0.75rem;
+    }
+
+    .media-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+}
