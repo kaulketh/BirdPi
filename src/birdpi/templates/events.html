@@ -8,68 +8,60 @@
     <h2>Motion Events</h2>
 
     {% if events %}
+        <div class="media-grid">
 
-    <div class="event-list">
-
-        {% for event in events %}
-
-        <article class="event-item">
-
-            <h3>
-                <a href="{{ url_for('web.event_detail', event_id=event.id) }}">
-                    {{ event.started_at.strftime("%Y-%m-%d %H:%M:%S") }}
-                </a>
-            </h3>
-
-            <p>
-                Duration:
-                {% if event.ended_at %}
-                {{ "%.1f"|format(
-                (event.ended_at - event.started_at).total_seconds()
-                ) }} s
-                {% else %}
-                active
-                {% endif %}
-            </p>
-
-            <p>
-                Images: {{ event.images|length }}
-            </p>
-
-            <p>
-                Video:
-                {% if event.video_filename %}
-                {{ event.video_filename }}
-                {% else %}
-                none
-                {% endif %}
-            </p>
-
-            {% if event.images %}
-            <a href="{{ url_for('web.event_detail', event_id=event.id) }}">
-                <img
-                        class="camera-image"
-                        src="{{ url_for(
-                                    'web.image',
-                                    filename=event.images[0].filename
-                                ) }}"
-                        alt="Motion event preview"
+            {% for event in events %}
+                <a
+                    class="media-card"
+                    href="{{ url_for(
+                        'web.event_detail',
+                        event_id=event.id
+                    ) }}"
                 >
-            </a>
-            {% endif %}
 
-        </article>
+                    {% if event.images %}
+                        <img
+                            class="media-thumb"
+                            src="{{ url_for(
+                                'web.image',
+                                filename=event.images[0].filename
+                            ) }}"
+                            alt="Motion event preview"
+                        >
+                    {% endif %}
 
-        {% endfor %}
+                    <div class="media-info">
+                        <strong>
+                            {{ event.started_at.strftime("%Y-%m-%d %H:%M:%S") }}
+                        </strong>
 
-    </div>
+                        <span>
+                            {% if event.ended_at %}
+                                {{ "%.1f"|format(
+                                    (event.ended_at - event.started_at).total_seconds()
+                                ) }} s
+                            {% else %}
+                                active
+                            {% endif %}
+                        </span>
 
+                        <span>
+                            Video:
+                            {% if event.video_filename %}
+                                yes
+                            {% else %}
+                                no
+                            {% endif %}
+                        </span>
+                    </div>
+
+                </a>
+            {% endfor %}
+
+        </div>
     {% else %}
-
-    <p>No motion events available.</p>
-
+        <p>No motion events available.</p>
     {% endif %}
-
 </section>
 
 {% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Event - BirdPi{% endblock %}
+
+{% block content %}
+
+<section class="card">
+    <h2>Motion Event</h2>
+
+    <p>
+        <strong>ID:</strong>
+        {{ event.id }}
+    </p>
+
+    <p>
+        <strong>Started:</strong>
+        {{ event.started_at.strftime("%Y-%m-%d %H:%M:%S") }}
+    </p>
+
+    <p>
+        <strong>Ended:</strong>
+        {% if event.ended_at %}
+        {{ event.ended_at.strftime("%Y-%m-%d %H:%M:%S") }}
+        {% else %}
+        active
+        {% endif %}
+    </p>
+
+    <p>
+        <strong>Duration:</strong>
+        {% if event.ended_at %}
+        {{ "%.1f"|format(
+        (event.ended_at - event.started_at).total_seconds()
+        ) }} s
+        {% else %}
+        active
+        {% endif %}
+    </p>
+</section>
+
+{% if event.images %}
+
+<section class="card">
+    <h2>Image</h2>
+
+    {% for image in event.images %}
+    <p class="image-name">
+        {{ image.filename }}
+    </p>
+
+    <img
+            class="camera-image"
+            src="{{ url_for(
+                'web.image',
+                filename=image.filename
+            ) }}"
+            alt="Motion event image"
+    >
+    {% endfor %}
+</section>
+
+{% endif %}
+
+<section class="card">
+    <h2>Video</h2>
+
+    {% if event.video_filename %}
+
+    <p class="image-name">
+        {{ event.video_filename }}
+    </p>
+
+    <p>
+        <a
+                href="{{ url_for(
+                    'web.video',
+                    filename=event.video_filename
+                ) }}"
+        >
+            Open video
+        </a>
+    </p>
+
+    {% else %}
+
+    <p>No video available.</p>
+
+    {% endif %}
+</section>
+
+<p>
+    <a href="{{ url_for('web.events') }}">
+        ← Back to events
+    </a>
+</p>
+
+{% endblock %}

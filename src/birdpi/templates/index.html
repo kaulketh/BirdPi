@@ -20,6 +20,21 @@
         CPU temperature:
         {{ "%.1f"|format(cpu_temperature) }} °C
     </p>
+    <p>
+        Mode:
+        {% if night_mode is none %}
+        unknown
+        {% elif night_mode %}
+        NIGHT
+        {% else %}
+        DAY
+        {% endif %}
+    </p>
+
+    <p>
+        IR:
+        {{ ir_mode|upper }}
+    </p>
 </section>
 
 <section class="card">
@@ -39,7 +54,25 @@
         </button>
     </form>
 </section>
+<section class="card">
+    <h2>Events</h2>
 
+    <p>Stored events: {{ event_count }}</p>
+
+    {% if latest_event %}
+    <p>
+        Latest event:
+        <a href="{{ url_for(
+                'web.event_detail',
+                event_id=latest_event.id
+            ) }}">
+            {{ latest_event.started_at.strftime("%Y-%m-%d %H:%M:%S") }}
+        </a>
+    </p>
+    {% else %}
+    <p>No events available.</p>
+    {% endif %}
+</section>
 <section class="card">
     <h2>Latest image</h2>
 

@@ -38,6 +38,8 @@ def register_routes(
 
     @web.app_context_processor
     def inject_status() -> dict:
+        events = storage.events()
+        latest_event = events[0] if events else None
         return {
             "image_count": storage.image_count(),
             "hostname": socket.gethostname(),
@@ -47,6 +49,13 @@ def register_routes(
             "cpu_temperature": get_cpu_temperature(),
             "camera_resolution": camera.resolution,
             "camera_model": camera.model,
+
+            "night_mode": birdpi.day_night.night_mode,
+            "ir_mode": birdpi.ir_lights.mode.value,
+
+            "event_count": len(events),
+            "latest_event": latest_event,
+
             "status_refresh_seconds": (
                 birdpi.config.web.refresh_interval_seconds
             ),

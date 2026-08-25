@@ -146,3 +146,32 @@ nav a.active {
         width: 100%;
     }
 }
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(220px, 1fr)
+    );
+    gap: 1rem;
+}
+
+.media-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.media-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+}
+
+.media-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-top: 0.5rem;
+}
