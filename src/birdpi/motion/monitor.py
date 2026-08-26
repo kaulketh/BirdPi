@@ -7,6 +7,7 @@ and event video recording.
 """
 
 import time
+from collections.abc import Callable
 from datetime import datetime
 
 from birdpi.camera.capture import Camera
@@ -32,6 +33,8 @@ class MotionMonitor:
             storage: Storage,
             video_recorder: VideoRecorder,
             event_timeout_seconds: int,
+            status_callback: Callable[[bool, str | None], None] | None = None,
+
     ) -> None:
         self.preview = preview
         self.detector = detector
@@ -43,6 +46,8 @@ class MotionMonitor:
 
         self._event: MotionEvent | None = None
         self._last_motion_at: float | None = None
+
+        self.status_callback = status_callback
 
     def run(self) -> None:
         """
@@ -118,6 +123,12 @@ class MotionMonitor:
             started_at=started_at,
         )
 
+        if self.status_callback is not None:
+            self.status_callback(
+                True,
+                self._event.id,
+            )
+
         logger.info(
             "Motion event started: %s",
             self._event.id,
@@ -188,6 +199,12 @@ class MotionMonitor:
         event_path = self.storage.save_event(
             self._event
         )
+
+        if self.status_callback is not None:
+            self.status_callback(
+                False,
+                self._event.id,
+            )
 
         logger.info(
             "Motion event closed: %s, images=%d",

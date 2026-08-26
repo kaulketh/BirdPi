@@ -12,75 +12,107 @@
 {% block content %}
 
 <section class="card">
-    <h2>System</h2>
+    <h2>Host: {{ hostname }}</h2>
+    <p>Uptime:{{ uptime }}  CPU temp.:{{
+        "%.1f"|format(cpu_temperature) }} °C</p>
 
-    <p>Host: {{ hostname }}</p>
-    <p>Uptime: {{ uptime }}</p>
+
+</section>
+<section class="card">
+    <h2>BirdPi Status</h2>
+
     <p>
-        CPU temperature:
-        {{ "%.1f"|format(cpu_temperature) }} °C
+        Service:
+        {% if birdpi_running %}
+        RUNNING
+        {% else %}
+        STOPPED
+        {% endif %}
     </p>
 
     <p>
         Mode:
-        {% if night_mode is none %}
-        unknown
-        {% elif night_mode %}
-        NIGHT
-        {% else %}
-        DAY
-        {% endif %}
+        {{ runtime_mode|upper }}
     </p>
 
     <p>
         IR:
-        {{ ir_mode|upper }}
+        {{ runtime_ir_mode|upper }}
     </p>
-</section>
-<section class="card">
-    <h2>BirdPi Service</h2>
 
     <p>
-        Status:
-        {% if birdpi_running %}
-            RUNNING
+        Motion:
+        {% if motion_active %}
+        ACTIVE
         {% else %}
-            STOPPED
+        IDLE
         {% endif %}
     </p>
+
+    {% if current_event_id %}
+    <p>
+        Current event:
+        <a href="{{ url_for(
+                'web.event_detail',
+                event_id=current_event_id
+            ) }}">
+            {{ current_event_id }}
+        </a>
+    </p>
+    {% endif %}
+
+    {% if last_event_id %}
+    <p>
+        Last event:
+        <a href="{{ url_for(
+                'web.event_detail',
+                event_id=last_event_id
+            ) }}">
+            {{ last_event_id }}
+        </a>
+    </p>
+    {% endif %}
+
+    {% if runtime_last_update %}
+    <p>
+        Last update:
+        {{ runtime_last_update }}
+    </p>
+    {% endif %}
+
 
     <div class="service-actions">
 
         {% if birdpi_running %}
 
-            <form
+        <form
                 action="{{ url_for('web.service_stop') }}"
                 method="post"
-            >
-                <button type="submit">
-                    Stop
-                </button>
-            </form>
+        >
+            <button type="submit">
+                Stop
+            </button>
+        </form>
 
-            <form
+        <form
                 action="{{ url_for('web.service_restart') }}"
                 method="post"
-            >
-                <button type="submit">
-                    Restart
-                </button>
-            </form>
+        >
+            <button type="submit">
+                Restart
+            </button>
+        </form>
 
         {% else %}
 
-            <form
+        <form
                 action="{{ url_for('web.service_start') }}"
                 method="post"
-            >
-                <button type="submit">
-                    Start
-                </button>
-            </form>
+        >
+            <button type="submit">
+                Start
+            </button>
+        </form>
 
         {% endif %}
 

@@ -14,6 +14,7 @@ from flask import (
 )
 
 from birdpi.config import Config
+from birdpi.runtime.status import RuntimeStatusStore
 from birdpi.storage import Storage
 from birdpi.system import (
     format_uptime,
@@ -33,26 +34,43 @@ def register_routes(
     Register BirdPi web interface routes.
     """
     service = BirdPiService()
+    runtime_status = RuntimeStatusStore(
+        config.runtime_status_path
+    )
 
     @web.app_context_processor
     def inject_status() -> dict:
         events = storage.events()
         latest_event = events[0] if events else None
+        status = runtime_status.read()
         return {
-            "image_count": storage.image_count(),
+
             "hostname": socket.gethostname(),
             "uptime": format_uptime(
                 get_uptime()
             ),
             "cpu_temperature": get_cpu_temperature(),
 
+            "camera_model": status.camera_model,
+            "camera_resolution": status.camera_resolution,
+
+            "image_count": storage.image_count(),
+
             "event_count": len(events),
             "latest_event": latest_event,
+
+            "birdpi_running": service.running(),
+
+            "runtime_mode": status.mode,
+            "runtime_ir_mode": status.ir_mode,
+            "motion_active": status.motion_active,
+            "current_event_id": status.current_event_id,
+            "last_event_id": status.last_event_id,
+            "runtime_last_update": status.last_update,
 
             "status_refresh_seconds": (
                 config.web.refresh_interval_seconds
             ),
-            "birdpi_running": service.running(),
         }
 
     @web.get("/")

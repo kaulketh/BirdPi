@@ -73,6 +73,7 @@ class Config:
     event_path: Path
     video_path: Path
     log_path: Path
+    runtime_status_path: Path
 
     detector_type: str
     classifier_type: str
@@ -94,6 +95,11 @@ def load_config() -> Config:
     event_path = data_path / "events"
     video_path = data_path / "videos"
     log_path = data_path / "logs" / "birdpi.log"
+    runtime_status_path = (
+            data_path
+            / "status"
+            / "runtime.json"
+    )
 
     return Config(
         location_name=location_name,
@@ -102,6 +108,7 @@ def load_config() -> Config:
         event_path=event_path,
         video_path=video_path,
         log_path=log_path,
+        runtime_status_path=runtime_status_path,
 
         camera=CameraConfig(
             width=4608, height=2592),

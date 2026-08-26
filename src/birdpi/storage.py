@@ -35,6 +35,10 @@ class Storage:
             parents=True,
             exist_ok=True,
         )
+        self.config.runtime_status_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
 
     def next_image_path(self, filename: str | None = None) -> Path:
         if filename is None:

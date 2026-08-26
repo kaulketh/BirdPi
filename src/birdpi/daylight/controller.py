@@ -5,6 +5,7 @@ This module controls the infrared lighting depending on daylight conditions.
 """
 
 import time
+from collections.abc import Callable
 
 from birdpi.daylight.sun import Daylight
 from birdpi.lighting.ir_lights import IRLights
@@ -23,6 +24,8 @@ class DayNightController:
             ir_lights: IRLights,
             motion_detector: MotionDetector,
             check_interval_seconds: int,
+            status_callback: Callable[
+                                 [bool, IRMode], None] | None = None,
     ) -> None:
         self.daylight = daylight
         self.ir_lights = ir_lights
@@ -32,6 +35,8 @@ class DayNightController:
         self._night_mode: bool | None = None
         self._next_check = 0.0
 
+        self.status_callback = status_callback
+
     @property
     def night_mode(self) -> bool | None:
         """
@@ -40,10 +45,7 @@ class DayNightController:
 
         return self._night_mode
 
-    def update(
-            self,
-            force: bool = False,
-    ) -> None:
+    def update(self, force: bool = False, ) -> None:
         """
         Check daylight state and switch mode when necessary.
         """
@@ -73,11 +75,18 @@ class DayNightController:
             logger.info(
                 "Switched to NIGHT mode, IR lighting enabled"
             )
+
         else:
             self.ir_lights.set_mode(IRMode.OFF)
 
             logger.info(
                 "Switched to DAY mode, IR lighting disabled"
+            )
+
+        if self.status_callback is not None:
+            self.status_callback(
+                is_night,
+                self.ir_lights.mode,
             )
 
         self.motion_detector.reset()

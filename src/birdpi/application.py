@@ -11,10 +11,12 @@ from birdpi.config import Config
 from birdpi.daylight.controller import DayNightController
 from birdpi.daylight.sun import Daylight
 from birdpi.lighting.ir_lights import IRLights
+from birdpi.lighting.ir_lights import IRMode
 from birdpi.models import CapturedImage
 from birdpi.motion.detector import MotionDetector
 from birdpi.motion.monitor import MotionMonitor
 from birdpi.recording.video import VideoRecorder
+from birdpi.runtime.status import RuntimeStatus, RuntimeStatusStore
 from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
 
@@ -32,7 +34,18 @@ class BirdPi:
         self.storage = Storage(config)
         self.storage.ensure_directories()
 
+        self.runtime_status = RuntimeStatusStore(config.runtime_status_path)
+        self.status = RuntimeStatus()
+
         self.camera = Camera(config)
+        self.status.camera_model = self.camera.model
+        self.status.camera_resolution = str(
+            self.camera.resolution
+        )
+
+        self.runtime_status.write(
+            self.status
+        )
         self.preview = CameraPreview(config)
 
         self.video_recorder = VideoRecorder(config)
@@ -57,6 +70,7 @@ class BirdPi:
             check_interval_seconds=(
                 config.daylight.check_interval_seconds
             ),
+            status_callback=self._update_day_night_status,
         )
 
         self.motion_monitor = MotionMonitor(
@@ -69,6 +83,7 @@ class BirdPi:
             event_timeout_seconds=(
                 config.motion.event_timeout_seconds
             ),
+            status_callback=self._update_motion_status,
         )
 
     def run(self) -> None:
@@ -105,3 +120,29 @@ class BirdPi:
         )
 
         return image
+
+    def _update_day_night_status(
+            self,
+            night_mode: bool,
+            ir_mode: IRMode,
+    ) -> None:
+        self.status.mode = ("night" if night_mode else "day")
+        self.status.ir_mode = ir_mode.value
+        self.runtime_status.write(self.status)
+
+    def _update_motion_status(
+            self,
+            motion_active: bool,
+            event_id: str | None,
+    ) -> None:
+        self.status.motion_active = motion_active
+
+        if motion_active:
+            self.status.current_event_id = event_id
+        else:
+            self.status.current_event_id = None
+            self.status.last_event_id = event_id
+
+        self.runtime_status.write(
+            self.status
+        )
