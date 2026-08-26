@@ -105,7 +105,6 @@ class MotionMonitor:
         finally:
             if self._event is not None:
                 self._close_event()
-
             self.preview.stop()
             self.day_night.close()
 

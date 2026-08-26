@@ -271,3 +271,63 @@ nav a {
 .service-actions form {
     margin: 0;
 }
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.status-grid h3 {
+    margin-top: 0;
+}
+
+.status-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.25rem 0.65rem;
+
+    border-radius: 999px;
+    background: #e8e8e8;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-ok {
+    background: #dff3e4;
+}
+
+.status-off {
+    background: #ececec;
+}
+
+.status-active {
+    background: #fff0c9;
+}
+
+.status-time {
+    font-size: 0.85rem;
+    opacity: 0.65;
+}
+
+.home-media-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (max-width: 700px) {
+    .status-grid,
+    .home-media-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -3,6 +3,7 @@ Handle the BirdPi web interface routes.
 """
 
 import socket
+from datetime import datetime
 
 from flask import (
     abort,
@@ -43,6 +44,11 @@ def register_routes(
         events = storage.events()
         latest_event = events[0] if events else None
         status = runtime_status.read()
+        runtime_last_update = (
+            datetime.fromisoformat(status.last_update)
+            if status.last_update
+            else None
+        )
         return {
 
             "hostname": socket.gethostname(),
@@ -66,7 +72,7 @@ def register_routes(
             "motion_active": status.motion_active,
             "current_event_id": status.current_event_id,
             "last_event_id": status.last_event_id,
-            "runtime_last_update": status.last_update,
+            "runtime_last_update": runtime_last_update,
 
             "status_refresh_seconds": (
                 config.web.refresh_interval_seconds

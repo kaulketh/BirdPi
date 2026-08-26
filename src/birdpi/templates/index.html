@@ -12,46 +12,66 @@
 {% block content %}
 
 <section class="card">
-    <h2>Host: {{ hostname }}</h2>
-    <p>Uptime:{{ uptime }}  CPU temp.:{{
-        "%.1f"|format(cpu_temperature) }} °C</p>
+    <h2>System</h2>
 
+    <div class="status-grid">
+        <div>
+            <h3>Host</h3>
 
+            <p><strong>Name:</strong> {{ hostname }}</p>
+            <p><strong>Uptime:</strong> {{ uptime }}</p>
+            <p>
+                <strong>CPU:</strong>
+                {{ "%.1f"|format(cpu_temperature) }} °C
+            </p>
+        </div>
+
+        <div>
+            <h3>Camera</h3>
+
+            <p><strong>Model:</strong> {{ camera_model }}</p>
+            <p><strong>Resolution:</strong> {{ camera_resolution }}</p>
+            <p><strong>Images:</strong> {{ image_count }}</p>
+        </div>
+    </div>
 </section>
+
+
 <section class="card">
     <h2>BirdPi Status</h2>
 
-    <p>
-        Service:
-        {% if birdpi_running %}
-        RUNNING
-        {% else %}
-        STOPPED
-        {% endif %}
-    </p>
+    <div class="status-badges">
+    <span class="status-badge status-ok">
+        ● RUNNING
+    </span>
 
-    <p>
-        Mode:
-        {{ runtime_mode|upper }}
-    </p>
+        <span class="status-badge">
+            {% if runtime_mode == "night" %}
+                🌙 NIGHT
+            {% elif runtime_mode == "day" %}
+                ☀ DAY
+            {% else %}
+                ? UNKNOWN
+            {% endif %}
+        </span>
 
-    <p>
-        IR:
-        {{ runtime_ir_mode|upper }}
-    </p>
+        <span class="status-badge">
+            ◉ IR {{ runtime_ir_mode|upper }}
+        </span>
 
-    <p>
-        Motion:
-        {% if motion_active %}
-        ACTIVE
-        {% else %}
-        IDLE
-        {% endif %}
-    </p>
+        <span class="status-badge
+            {% if motion_active %}status-active{% endif %}">
+            {% if motion_active %}
+                ⚡ MOTION
+            {% else %}
+                ○ IDLE
+            {% endif %}
+        </span>
+    </div>
 
     {% if current_event_id %}
     <p>
-        Current event:
+        <strong>Current event:</strong>
         <a href="{{ url_for(
                 'web.event_detail',
                 event_id=current_event_id
@@ -63,7 +83,7 @@
 
     {% if last_event_id %}
     <p>
-        Last event:
+        <strong>Last event:</strong>
         <a href="{{ url_for(
                 'web.event_detail',
                 event_id=last_event_id
@@ -74,12 +94,11 @@
     {% endif %}
 
     {% if runtime_last_update %}
-    <p>
+    <p class="status-time">
         Last update:
-        {{ runtime_last_update }}
+        {{ runtime_last_update.strftime("%d.%m.%Y %H:%M:%S") }}
     </p>
     {% endif %}
-
 
     <div class="service-actions">
 
@@ -89,18 +108,14 @@
                 action="{{ url_for('web.service_stop') }}"
                 method="post"
         >
-            <button type="submit">
-                Stop
-            </button>
+            <button type="submit">Stop</button>
         </form>
 
         <form
                 action="{{ url_for('web.service_restart') }}"
                 method="post"
         >
-            <button type="submit">
-                Restart
-            </button>
+            <button type="submit">Restart</button>
         </form>
 
         {% else %}
@@ -109,98 +124,99 @@
                 action="{{ url_for('web.service_start') }}"
                 method="post"
         >
-            <button type="submit">
-                Start
-            </button>
+            <button type="submit">Start</button>
         </form>
 
         {% endif %}
 
     </div>
 </section>
-<section class="card">
-    <h2>Camera</h2>
-
-    <p>Model: {{ camera_model }}</p>
-    <p>Photo resolution: {{ camera_resolution }}</p>
-    <p>Stored images: {{ image_count }}</p>
 
 
-</section>
-<section class="card">
-    <h2>Latest event</h2>
+<section class="home-media-grid">
 
-    {% if latest_event %}
+    <section class="card">
+        <h2>Latest event</h2>
 
-    <p>
-        <strong>
-            {{ latest_event.started_at.strftime("%d.%m.%Y %H:%M:%S") }}
-        </strong>
-    </p>
+        {% if latest_event %}
 
-    {% if latest_event.ended_at %}
-    <p>
-        Duration:
-        {{ "%.1f"|format(
-        (latest_event.ended_at - latest_event.started_at).total_seconds()
-        ) }} s
-    </p>
-    {% endif %}
+        <p>
+            <strong>
+                {{ latest_event.started_at.strftime(
+                "%d.%m.%Y %H:%M:%S"
+                ) }}
+            </strong>
+        </p>
 
-    <p>
-        Media:
-        📷 {{ latest_event.images|length }}
-
-        {% if latest_event.video_filename %}
-        &nbsp; 🎥 Video
+        {% if latest_event.ended_at %}
+        <p>
+            Duration:
+            {{ "%.1f"|format(
+            (
+            latest_event.ended_at
+            - latest_event.started_at
+            ).total_seconds()
+            ) }} s
+        </p>
         {% endif %}
-    </p>
 
-    <p>
-        {% if latest_event and latest_event.images %}
+        <p>
+            📷 {{ latest_event.images|length }}
+
+            {% if latest_event.video_filename %}
+            &nbsp; 🎥 Video
+            {% endif %}
+        </p>
+
+        {% if latest_event.images %}
         <a href="{{ url_for(
-            'web.event_detail',
-            event_id=latest_event.id) }}">
-            <img class="home-thumb"
-                 src="{{ url_for(
-                    'web.image',
-                    filename=latest_event.images[0].filename
-                ) }}"
-                 alt="Latest motion event"
+                    'web.event_detail',
+                    event_id=latest_event.id
+                ) }}">
+            <img
+                    class="home-thumb"
+                    src="{{ url_for(
+                            'web.image',
+                            filename=latest_event.images[0].filename
+                        ) }}"
+                    alt="Latest motion event"
             >
         </a>
         {% endif %}
-    </p>
 
-    {% else %}
+        {% else %}
 
-    <p>No motion events available.</p>
+        <p>No motion events available.</p>
 
-    {% endif %}
-</section>
-<section class="card">
-    <h2>Latest image</h2>
+        {% endif %}
+    </section>
 
-    {% if latest_image %}
 
-    <p class="image-name">
-        {{ latest_image.name }}
-    </p>
+    <section class="card">
+        <h2>Latest image</h2>
 
-    <img
-            class="home-thumb"
-            src="{{ url_for(
-        'web.image',
-        filename=latest_image.name
-    ) }}"
-            alt="Latest BirdPi image"
-    >
+        {% if latest_image %}
 
-    {% else %}
+        <p class="image-name">
+            {{ latest_image.name }}
+        </p>
 
-    <p>No images available.</p>
+        <img
+                class="home-thumb"
+                src="{{ url_for(
+                    'web.image',
+                    filename=latest_image.name
+                ) }}"
+                alt="Latest BirdPi image"
+        >
 
-    {% endif %}
+        {% else %}
+
+        <p>No images available.</p>
+
+        {% endif %}
+    </section>
+
 </section>
 
 {% endblock %}

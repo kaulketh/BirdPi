@@ -98,7 +98,6 @@ class BirdPi:
 
         finally:
             self.ir_lights.close()
-
             logger.info("BirdPi offline")
 
     def capture(
