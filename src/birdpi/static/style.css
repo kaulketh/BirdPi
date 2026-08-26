@@ -261,3 +261,13 @@ nav a {
     border-radius: 8px;
     display: block;
 }
+
+.service-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.service-actions form {
+    margin: 0;
+}

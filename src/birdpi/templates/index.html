@@ -20,6 +20,7 @@
         CPU temperature:
         {{ "%.1f"|format(cpu_temperature) }} °C
     </p>
+
     <p>
         Mode:
         {% if night_mode is none %}
@@ -36,7 +37,55 @@
         {{ ir_mode|upper }}
     </p>
 </section>
+<section class="card">
+    <h2>BirdPi Service</h2>
 
+    <p>
+        Status:
+        {% if birdpi_running %}
+            RUNNING
+        {% else %}
+            STOPPED
+        {% endif %}
+    </p>
+
+    <div class="service-actions">
+
+        {% if birdpi_running %}
+
+            <form
+                action="{{ url_for('web.service_stop') }}"
+                method="post"
+            >
+                <button type="submit">
+                    Stop
+                </button>
+            </form>
+
+            <form
+                action="{{ url_for('web.service_restart') }}"
+                method="post"
+            >
+                <button type="submit">
+                    Restart
+                </button>
+            </form>
+
+        {% else %}
+
+            <form
+                action="{{ url_for('web.service_start') }}"
+                method="post"
+            >
+                <button type="submit">
+                    Start
+                </button>
+            </form>
+
+        {% endif %}
+
+    </div>
+</section>
 <section class="card">
     <h2>Camera</h2>
 
@@ -44,15 +93,7 @@
     <p>Photo resolution: {{ camera_resolution }}</p>
     <p>Stored images: {{ image_count }}</p>
 
-    <form
-            class="capture-form"
-            action="{{ url_for('web.capture') }}"
-            method="post"
-    >
-        <button type="submit">
-            📸 Capture image
-        </button>
-    </form>
+
 </section>
 <section class="card">
     <h2>Latest event</h2>

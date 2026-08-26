@@ -13,25 +13,26 @@ from flask import (
     url_for,
 )
 
-from birdpi.application import BirdPi
+from birdpi.config import Config
+from birdpi.storage import Storage
 from birdpi.system import (
     format_uptime,
     get_cpu_temperature,
     get_uptime,
 )
+from birdpi.web.service import BirdPiService
 
 web = Blueprint("web", __name__)
 
 
 def register_routes(
-        birdpi: BirdPi,
+        config: Config,
+        storage: Storage,
 ) -> Blueprint:
     """
     Register BirdPi web interface routes.
     """
-
-    storage = birdpi.storage
-    camera = birdpi.camera
+    service = BirdPiService()
 
     @web.app_context_processor
     def inject_status() -> dict:
@@ -44,18 +45,14 @@ def register_routes(
                 get_uptime()
             ),
             "cpu_temperature": get_cpu_temperature(),
-            "camera_resolution": camera.resolution,
-            "camera_model": camera.model,
-
-            "night_mode": birdpi.day_night.night_mode,
-            "ir_mode": birdpi.ir_lights.mode.value,
 
             "event_count": len(events),
             "latest_event": latest_event,
 
             "status_refresh_seconds": (
-                birdpi.config.web.refresh_interval_seconds
+                config.web.refresh_interval_seconds
             ),
+            "birdpi_running": service.running(),
         }
 
     @web.get("/")
@@ -83,14 +80,6 @@ def register_routes(
         return send_from_directory(
             storage.config.video_path,
             filename,
-        )
-
-    @web.post("/capture")
-    def capture():
-        birdpi.capture()
-
-        return redirect(
-            url_for("web.index")
         )
 
     @web.get("/gallery")
@@ -147,6 +136,30 @@ def register_routes(
         return render_template(
             "event.html",
             event=event,
+        )
+
+    @web.post("/service/start")
+    def service_start():
+        service.start()
+
+        return redirect(
+            url_for("web.index")
+        )
+
+    @web.post("/service/stop")
+    def service_stop():
+        service.stop()
+
+        return redirect(
+            url_for("web.index")
+        )
+
+    @web.post("/service/restart")
+    def service_restart():
+        service.restart()
+
+        return redirect(
+            url_for("web.index")
         )
 
     return web
