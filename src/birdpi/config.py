@@ -114,7 +114,7 @@ def load_config() -> Config:
             width=4608, height=2592),
         video=VideoConfig(
             width=1920, height=1080,
-            framerate=30, duration_seconds=5,
+            framerate=30, duration_seconds=15,
         ),
         ir=IRLightConfig(enabled=True, left_pin=20, right_pin=21, ),
 
