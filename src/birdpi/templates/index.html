@@ -41,9 +41,15 @@
     <h2>BirdPi Status</h2>
 
     <div class="status-badges">
-    <span class="status-badge status-ok">
-        ● RUNNING
-    </span>
+        {% if birdpi_running %}
+            <span class="status-badge status-ok">
+                ● RUNNING
+            </span>
+        {% else %}
+            <span class="status-badge status-off">
+                ○ STOPPED
+            </span>
+        {% endif %}
 
         <span class="status-badge">
             {% if runtime_mode == "night" %}
