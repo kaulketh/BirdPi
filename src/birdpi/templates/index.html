@@ -33,6 +33,39 @@
             <p><strong>Resolution:</strong> {{ camera_resolution }}</p>
             <p><strong>Images:</strong> {{ image_count }}</p>
         </div>
+
+        <div>
+            <h3>Storage</h3>
+
+            <p>
+                <strong>Used:</strong>
+                {{ "%.1f"|format(storage_used_gib) }} GiB
+            </p>
+
+            <p>
+                <strong>Free:</strong>
+                {{ "%.1f"|format(storage_free_gib) }} GiB
+            </p>
+
+            <p>
+                <strong>Total:</strong>
+                {{ "%.1f"|format(storage_total_gib) }} GiB
+            </p>
+            <div class="storage-bar">
+                <div
+                        class="storage-bar-fill {{ storage_level }}"
+                        style="width: {{ storage_used_percent }}%;"
+                ></div>
+            </div>
+
+            <p class="status-time">
+                {{ "%.0f"|format(storage_used_percent) }}% used,
+                automatic cleanup below
+                {{ "%.0f"|format(storage_min_free_percent) }}% free
+                up to
+                {{ "%.0f"|format(storage_target_free_percent) }}%
+            </p>
+        </div>
     </div>
 </section>
 
@@ -42,11 +75,11 @@
 
     <div class="status-badges">
         {% if birdpi_running %}
-            <span class="status-badge status-ok">
+        <span class="status-badge status-ok">
                 ● RUNNING
             </span>
         {% else %}
-            <span class="status-badge status-off">
+        <span class="status-badge status-off">
                 ○ STOPPED
             </span>
         {% endif %}

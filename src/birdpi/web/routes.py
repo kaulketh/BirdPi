@@ -49,6 +49,20 @@ def register_routes(
             if status.last_update
             else None
         )
+
+        disk = storage.disk_usage()
+
+        storage_used_percent = (
+                100.0 - disk["free_percent"]
+        )
+
+        if storage_used_percent >= 80:
+            storage_level = "critical"
+        elif storage_used_percent >= 70:
+            storage_level = "warning"
+        else:
+            storage_level = "normal"
+
         return {
 
             "hostname": socket.gethostname(),
@@ -56,6 +70,15 @@ def register_routes(
                 get_uptime()
             ),
             "cpu_temperature": get_cpu_temperature(),
+
+            "storage_total_gib": disk["total_gib"],
+            "storage_used_gib": disk["used_gib"],
+            "storage_free_gib": disk["free_gib"],
+            "storage_free_percent": disk["free_percent"],
+            "storage_min_free_percent": config.storage_min_free_percent,
+            "storage_target_free_percent": config.storage_target_free_percent,
+            "storage_used_percent": storage_used_percent,
+            "storage_level": storage_level,
 
             "camera_model": status.camera_model,
             "camera_resolution": status.camera_resolution,
