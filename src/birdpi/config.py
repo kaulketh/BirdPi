@@ -12,16 +12,21 @@ from birdpi.utils.geo import LOCATIONS
 
 
 @dataclass(frozen=True, slots=True)
-class VideoConfig:
+class CameraConfig:
     width: int
     height: int
-    framerate: int
-    duration_seconds: int
 
 
 @dataclass(frozen=True, slots=True)
 class DaylightConfig:
     check_interval_seconds: int
+
+
+@dataclass(frozen=True, slots=True)
+class IRLightConfig:
+    enabled: bool
+    left_pin: int
+    right_pin: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,10 +36,11 @@ class LocationConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class IRLightConfig:
-    enabled: bool
-    left_pin: int
-    right_pin: int
+class MotionConfig:
+    pixel_threshold: int
+    min_area: float
+    reference_interval: int
+    event_timeout_seconds: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,17 +52,11 @@ class ObjectDetectionConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class CameraConfig:
+class VideoConfig:
     width: int
     height: int
-
-
-@dataclass(frozen=True, slots=True)
-class MotionConfig:
-    pixel_threshold: int
-    min_area: float
-    reference_interval: int
-    event_timeout_seconds: int
+    framerate: int
+    duration_seconds: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +73,7 @@ class Config:
     event_path: Path
     video_path: Path
     log_path: Path
+    runtime_status_path: Path
 
     detector_type: str
     classifier_type: str
@@ -86,6 +87,9 @@ class Config:
     location: LocationConfig
     daylight: DaylightConfig
 
+    storage_min_free_percent: float
+    storage_target_free_percent: float
+
 
 def load_config() -> Config:
     location_name = "HOME"
@@ -94,6 +98,11 @@ def load_config() -> Config:
     event_path = data_path / "events"
     video_path = data_path / "videos"
     log_path = data_path / "logs" / "birdpi.log"
+    runtime_status_path = (
+            data_path
+            / "status"
+            / "runtime.json"
+    )
 
     return Config(
         location_name=location_name,
@@ -102,12 +111,13 @@ def load_config() -> Config:
         event_path=event_path,
         video_path=video_path,
         log_path=log_path,
+        runtime_status_path=runtime_status_path,
 
         camera=CameraConfig(
             width=4608, height=2592),
         video=VideoConfig(
             width=1920, height=1080,
-            framerate=30, duration_seconds=5,
+            framerate=30, duration_seconds=15,
         ),
         ir=IRLightConfig(enabled=True, left_pin=20, right_pin=21, ),
 
@@ -137,5 +147,8 @@ def load_config() -> Config:
         daylight=DaylightConfig(
             check_interval_seconds=60,
         ),
+
+        storage_min_free_percent=20.0,
+        storage_target_free_percent=30.0,
 
     )

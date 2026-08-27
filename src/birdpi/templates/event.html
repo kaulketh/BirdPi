@@ -73,14 +73,27 @@
     >
         <source
                 src="{{ url_for(
-                    'web.video',
-                    filename=event.video_filename
-                ) }}"
+                'web.video',
+                filename=event.video_filename
+            ) }}"
                 type="video/mp4"
         >
 
         Your browser does not support HTML5 video.
     </video>
+
+    <form
+            action="{{ url_for(
+            'web.delete_video',
+            filename=event.video_filename
+        ) }}"
+            method="post"
+            onsubmit="return confirm('Delete this video?');"
+    >
+        <button type="submit">
+            🗑
+        </button>
+    </form>
 
     {% else %}
 

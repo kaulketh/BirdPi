@@ -1,0 +1,15 @@
+# /etc/systemd/system/birdpi-web.service
+[Unit]
+Description=BirdPi Web Interface
+After=network.target birdpi.service
+
+[Service]
+Type=simple
+User=kaulketh
+WorkingDirectory=/home/kaulketh/birdpi
+ExecStart=/home/kaulketh/birdpi/.venv/bin/python -m birdpi.server
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
