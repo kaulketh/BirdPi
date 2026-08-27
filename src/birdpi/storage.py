@@ -204,6 +204,26 @@ class Storage:
         ) as file:
             return json.load(file)
 
+    @staticmethod
+    def _delete_empty_event(
+            event_path: Path,
+            data: dict,
+    ) -> bool:
+        """
+        Delete an event JSON if it no longer references any media.
+
+        Return True if the event was deleted.
+        """
+
+        if (
+                not data.get("images")
+                and data.get("video_filename") is None
+        ):
+            event_path.unlink()
+            return True
+
+        return False
+
     def save_event(
             self,
             event: MotionEvent,
@@ -311,3 +331,205 @@ class Storage:
             return None
 
         return self._event_from_path(path)
+
+    def delete_image(
+            self,
+            filename: str,
+    ) -> bool:
+        """
+        Delete an image and its JSON metadata sidecar.
+
+        Return True if the image existed and was deleted.
+        """
+
+        image_path = (
+                self.config.image_path
+                / filename
+        )
+
+        if not image_path.is_file():
+            return False
+
+        metadata_path = image_path.with_suffix(".json")
+
+        image_path.unlink()
+
+        if metadata_path.is_file():
+            metadata_path.unlink()
+
+        for event_path in self.config.event_path.glob("*.json"):
+            with event_path.open(
+                    "r",
+                    encoding="utf-8",
+            ) as file:
+                data = json.load(file)
+
+            images = data.get("images", [])
+
+            if filename not in images:
+                continue
+
+            data["images"] = [
+                image_filename
+                for image_filename in images
+                if image_filename != filename
+            ]
+            if self._delete_empty_event(
+                    event_path,
+                    data,
+            ):
+                continue
+
+            with event_path.open(
+                    "w",
+                    encoding="utf-8",
+            ) as file:
+                json.dump(
+                    data,
+                    file,
+                    indent=4,
+                )
+
+        return True
+
+    def clear_images(self) -> int:
+        """
+        Delete all stored images and their metadata sidecars.
+
+        Return the number of deleted images.
+        """
+
+        deleted = 0
+
+        for image_path in self.config.image_path.glob("*.jpg"):
+            metadata_path = image_path.with_suffix(".json")
+
+            image_path.unlink()
+
+            if metadata_path.is_file():
+                metadata_path.unlink()
+
+            deleted += 1
+
+        for event_path in self.config.event_path.glob("*.json"):
+            with event_path.open(
+                    "r",
+                    encoding="utf-8",
+            ) as file:
+                data = json.load(file)
+
+            if not data.get("images"):
+                continue
+
+            data["images"] = []
+
+            if self._delete_empty_event(
+                    event_path,
+                    data,
+            ):
+                continue
+
+            with event_path.open(
+                    "w",
+                    encoding="utf-8",
+            ) as file:
+                json.dump(
+                    data,
+                    file,
+                    indent=4,
+                )
+
+        return deleted
+
+    def delete_video(
+            self,
+            filename: str,
+    ) -> bool:
+        """
+        Delete a video and remove its reference from persisted events.
+
+        Return True if the video existed and was deleted.
+        """
+
+        video_path = (
+                self.config.video_path
+                / filename
+        )
+
+        if not video_path.is_file():
+            return False
+
+        video_path.unlink()
+
+        for event_path in self.config.event_path.glob("*.json"):
+            with event_path.open(
+                    "r",
+                    encoding="utf-8",
+            ) as file:
+                data = json.load(file)
+
+            if data.get("video_filename") != filename:
+                continue
+
+            data["video_filename"] = None
+
+            if self._delete_empty_event(
+                    event_path,
+                    data,
+            ):
+                continue
+
+            with event_path.open(
+                    "w",
+                    encoding="utf-8",
+            ) as file:
+                json.dump(
+                    data,
+                    file,
+                    indent=4,
+                )
+
+        return True
+
+    def clear_videos(self) -> int:
+        """
+        Delete all stored videos and remove their event references.
+
+        Return the number of deleted videos.
+        """
+
+        deleted = 0
+
+        for video_path in self.config.video_path.glob("*.mp4"):
+            video_path.unlink()
+            deleted += 1
+
+        for event_path in self.config.event_path.glob("*.json"):
+            with event_path.open(
+                    "r",
+                    encoding="utf-8",
+            ) as file:
+                data = json.load(file)
+
+            if data.get("video_filename") is None:
+                continue
+
+            data["video_filename"] = None
+
+            if self._delete_empty_event(
+                    event_path,
+                    data,
+            ):
+                continue
+
+            with event_path.open(
+                    "w",
+                    encoding="utf-8",
+            ) as file:
+                json.dump(
+                    data,
+                    file,
+                    indent=4,
+                )
+
+        return deleted

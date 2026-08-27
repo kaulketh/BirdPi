@@ -186,4 +186,40 @@ def register_routes(
             url_for("web.index")
         )
 
+    @web.post("/images/<path:filename>/delete")
+    def delete_image(
+            filename: str,
+    ):
+        storage.delete_image(filename)
+
+        return redirect(
+            url_for("web.gallery")
+        )
+
+    @web.post("/images/clear")
+    def clear_images():
+        storage.clear_images()
+
+        return redirect(
+            url_for("web.gallery")
+        )
+
+    @web.post("/videos/<path:filename>/delete")
+    def delete_video(
+            filename: str,
+    ):
+        storage.delete_video(filename)
+
+        return redirect(
+            url_for("web.events")
+        )
+
+    @web.post("/videos/clear")
+    def clear_videos():
+        storage.clear_videos()
+
+        return redirect(
+            url_for("web.events")
+        )
+
     return web

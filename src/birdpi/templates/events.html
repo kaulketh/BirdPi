@@ -6,7 +6,15 @@
 
 <section class="card">
     <h2>Motion Events</h2>
-
+    <form
+            action="{{ url_for('web.clear_videos') }}"
+            method="post"
+            onsubmit="return confirm('Delete ALL videos?');"
+    >
+        <button type="submit">
+            ♻️
+        </button>
+    </form>
     {% if events %}
     <div class="media-grid">
 

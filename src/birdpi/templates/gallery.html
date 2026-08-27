@@ -6,27 +6,38 @@
 
 <section class="card">
     <h2>Gallery</h2>
+        <form
+                action="{{ url_for('web.clear_images') }}"
+                method="post"
+                onsubmit="return confirm('Delete ALL images?');"
+        >
+            <button type="submit">
+                ♻️
+            </button>
+
+        </form>
 
     {% if images %}
     <div class="media-grid">
 
         {% for image in images %}
-        <a
-                class="media-card"
-                href="{{ url_for(
+        <div class="media-card">
+
+            <a
+                    href="{{ url_for(
                         'web.gallery_image',
                         filename=image.filename
-                    ) }}"
-        >
-
-            <img
-                    class="media-thumb"
-                    src="{{ url_for(
+                       ) }}"
+            >
+                <img
+                        class="media-thumb"
+                        src="{{ url_for(
                             'web.image',
                             filename=image.filename
                         ) }}"
-                    alt="{{ image.filename }}"
-            >
+                        alt="{{ image.filename }}"
+                >
+            </a>
 
             <div class="media-info">
                 <strong>
@@ -34,11 +45,24 @@
                 </strong>
 
                 <span class="media-filename">
-                    {{ image.filename }}
-                </span>
+            {{ image.filename }}
+        </span>
+
+                <form
+                        action="{{ url_for(
+                            'web.delete_image',
+                            filename=image.filename
+                        ) }}"
+                        method="post"
+                        onsubmit="return confirm('Delete this image?');"
+                >
+                    <button type="submit">
+                        🗑
+                    </button>
+                </form>
             </div>
 
-        </a>
+        </div>
         {% endfor %}
 
     </div>
