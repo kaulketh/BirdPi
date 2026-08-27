@@ -2,6 +2,7 @@
 A module to handle BirdPi storage, files, metadata, and directories.
 """
 import json
+import shutil
 from datetime import datetime
 from pathlib import Path
 
@@ -17,6 +18,101 @@ class Storage:
 
     def __init__(self, config: Config) -> None:
         self.config = config
+
+    def disk_usage(self) -> dict:
+        """
+        Return disk usage information for the BirdPi data filesystem.
+        """
+
+        usage = shutil.disk_usage(
+            self.config.data_path
+        )
+
+        total = usage.total
+        used = usage.used
+        free = usage.free
+
+        free_percent = (
+            free / total * 100
+            if total
+            else 0.0
+        )
+
+        return {
+            "total_bytes": total,
+            "used_bytes": used,
+            "free_bytes": free,
+            "total_gib": total / (1024 ** 3),
+            "used_gib": used / (1024 ** 3),
+            "free_gib": free / (1024 ** 3),
+            "free_percent": free_percent,
+        }
+
+    def cleanup_oldest_events(self) -> int:
+        """
+        Delete oldest motion events until the configured
+        target free space is reached.
+
+        Return the number of deleted events.
+        """
+
+        usage = self.disk_usage()
+
+        if (
+                usage["free_percent"]
+                > self.config.storage_min_free_percent
+        ):
+            return 0
+
+        deleted = 0
+
+        event_paths = sorted(
+            self.config.event_path.glob("*.json")
+        )
+
+        for event_path in event_paths:
+            if (
+                    self.disk_usage()["free_percent"]
+                    >= self.config.storage_target_free_percent
+            ):
+                break
+
+            with event_path.open(
+                    "r",
+                    encoding="utf-8",
+            ) as file:
+                data = json.load(file)
+
+            for filename in data.get("images", []):
+                image_path = (
+                        self.config.image_path
+                        / filename
+                )
+
+                if image_path.is_file():
+                    image_path.unlink()
+
+                metadata_path = image_path.with_suffix(".json")
+
+                if metadata_path.is_file():
+                    metadata_path.unlink()
+
+            video_filename = data.get("video_filename")
+
+            if video_filename:
+                video_path = (
+                        self.config.video_path
+                        / video_filename
+                )
+
+                if video_path.is_file():
+                    video_path.unlink()
+
+            event_path.unlink()
+
+            deleted += 1
+
+        return deleted
 
     def ensure_directories(self) -> None:
         """

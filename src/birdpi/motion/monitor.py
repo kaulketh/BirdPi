@@ -199,6 +199,14 @@ class MotionMonitor:
             self._event
         )
 
+        deleted_events = self.storage.cleanup_oldest_events()
+
+        if deleted_events:
+            logger.info(
+                "Storage cleanup removed %d old event(s)",
+                deleted_events,
+            )
+
         if self.status_callback is not None:
             self.status_callback(
                 False,

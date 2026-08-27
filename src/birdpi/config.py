@@ -12,16 +12,21 @@ from birdpi.utils.geo import LOCATIONS
 
 
 @dataclass(frozen=True, slots=True)
-class VideoConfig:
+class CameraConfig:
     width: int
     height: int
-    framerate: int
-    duration_seconds: int
 
 
 @dataclass(frozen=True, slots=True)
 class DaylightConfig:
     check_interval_seconds: int
+
+
+@dataclass(frozen=True, slots=True)
+class IRLightConfig:
+    enabled: bool
+    left_pin: int
+    right_pin: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,10 +36,11 @@ class LocationConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class IRLightConfig:
-    enabled: bool
-    left_pin: int
-    right_pin: int
+class MotionConfig:
+    pixel_threshold: int
+    min_area: float
+    reference_interval: int
+    event_timeout_seconds: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,17 +52,11 @@ class ObjectDetectionConfig:
 
 
 @dataclass(frozen=True, slots=True)
-class CameraConfig:
+class VideoConfig:
     width: int
     height: int
-
-
-@dataclass(frozen=True, slots=True)
-class MotionConfig:
-    pixel_threshold: int
-    min_area: float
-    reference_interval: int
-    event_timeout_seconds: int
+    framerate: int
+    duration_seconds: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,6 +86,9 @@ class Config:
     object_detection: ObjectDetectionConfig
     location: LocationConfig
     daylight: DaylightConfig
+
+    storage_min_free_percent: float
+    storage_target_free_percent: float
 
 
 def load_config() -> Config:
@@ -144,5 +147,8 @@ def load_config() -> Config:
         daylight=DaylightConfig(
             check_interval_seconds=60,
         ),
+
+        storage_min_free_percent=20.0,
+        storage_target_free_percent=30.0,
 
     )
