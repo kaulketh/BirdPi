@@ -4,70 +4,75 @@
 
 {% block content %}
 
-<section class="card">
-    <h2>Motion Events</h2>
-    <form
-            action="{{ url_for('web.clear_videos') }}"
-            method="post"
-            onsubmit="return confirm('Delete ALL videos?');"
-    >
-        <button type="submit">
-            ♻️
-        </button>
-    </form>
-    {% if events %}
-    <div class="media-grid">
+    <section class="card">
+        <h2>Motion Events</h2>
+        <form
+                action="{{ url_for('web.clear_videos') }}"
+                method="post"
+                onsubmit="return confirm('Delete ALL videos?');"
+        >
+            <button
+                    type="submit"
+                    class="icon-button"
+                    title="Clear all videos"
+                    aria-label="Clear all videos"
+            >
+                <span aria-hidden="true">♻️</span>
+            </button>
+        </form>
+        {% if events %}
+            <div class="media-grid">
 
-        {% for event in events %}
-        <a
-                class="media-card"
-                href="{{ url_for(
+                {% for event in events %}
+                    <a
+                            class="media-card"
+                            href="{{ url_for(
                         'web.event_detail',
                         event_id=event.id
                     ) }}"
-        >
+                    >
 
-            {% if event.images %}
-            <img
-                    class="media-thumb"
-                    src="{{ url_for(
+                        {% if event.images %}
+                            <img
+                                    class="media-thumb"
+                                    src="{{ url_for(
                                 'web.image',
                                 filename=event.images[0].filename
                             ) }}"
-                    alt="Motion event preview"
-            >
-            {% endif %}
+                                    alt="Motion event preview"
+                            >
+                        {% endif %}
 
-            <div class="media-info">
-                <strong>
-                    {{ event.started_at.strftime("%d.%m.%Y %H:%M:%S") }}
-                </strong>
+                        <div class="media-info">
+                            <strong>
+                                {{ event.started_at.strftime("%d.%m.%Y %H:%M:%S") }}
+                            </strong>
 
-                <div class="media-meta">
-                    {% if event.ended_at %}
-                    <span>
+                            <div class="media-meta">
+                                {% if event.ended_at %}
+                                    <span>
                 ⏱
                 {{ "%.1f"|format(
                     (event.ended_at - event.started_at).total_seconds()
                 ) }} s
             </span>
-                    {% else %}
-                    <span class="badge">ACTIVE</span>
-                    {% endif %}
+                                {% else %}
+                                    <span class="badge">ACTIVE</span>
+                                {% endif %}
 
-                    {% if event.video_filename %}
-                    <span class="badge">VIDEO</span>
-                    {% endif %}
-                </div>
+                                {% if event.video_filename %}
+                                    <span class="badge">VIDEO</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                    </a>
+                {% endfor %}
+
             </div>
-
-        </a>
-        {% endfor %}
-
-    </div>
-    {% else %}
-    <p>No motion events available.</p>
-    {% endif %}
-</section>
+        {% else %}
+            <p>No motion events available.</p>
+        {% endif %}
+    </section>
 
 {% endblock %}

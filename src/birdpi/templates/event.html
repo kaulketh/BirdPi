@@ -4,108 +4,113 @@
 
 {% block content %}
 
-<section class="card">
-    <h2>Motion Event</h2>
+    <section class="card">
+        <h2>Motion Event</h2>
 
-    <p>
-        <strong>ID:</strong>
-        {{ event.id }}
-    </p>
+        <p>
+            <strong>ID:</strong>
+            {{ event.id }}
+        </p>
 
-    <p>
-        <strong>Started:</strong>
-        {{ event.started_at.strftime("%Y-%m-%d %H:%M:%S") }}
-    </p>
+        <p>
+            <strong>Started:</strong>
+            {{ event.started_at.strftime("%Y-%m-%d %H:%M:%S") }}
+        </p>
 
-    <p>
-        <strong>Ended:</strong>
-        {% if event.ended_at %}
-        {{ event.ended_at.strftime("%Y-%m-%d %H:%M:%S") }}
-        {% else %}
-        active
-        {% endif %}
-    </p>
+        <p>
+            <strong>Ended:</strong>
+            {% if event.ended_at %}
+                {{ event.ended_at.strftime("%Y-%m-%d %H:%M:%S") }}
+            {% else %}
+                active
+            {% endif %}
+        </p>
 
-    <p>
-        <strong>Duration:</strong>
-        {% if event.ended_at %}
-        {{ "%.1f"|format(
+        <p>
+            <strong>Duration:</strong>
+            {% if event.ended_at %}
+                {{ "%.1f"|format(
         (event.ended_at - event.started_at).total_seconds()
         ) }} s
-        {% else %}
-        active
-        {% endif %}
-    </p>
-</section>
+            {% else %}
+                active
+            {% endif %}
+        </p>
+    </section>
 
-{% if event.images %}
+    {% if event.images %}
 
-<section class="card">
-    <h2>Image</h2>
+        <section class="card">
+            <h2>Image</h2>
 
-    {% for image in event.images %}
-    <p class="image-name">
-        {{ image.filename }}
-    </p>
+            {% for image in event.images %}
+                <p class="image-name">
+                    {{ image.filename }}
+                </p>
 
-    <img
-            class="camera-image"
-            src="{{ url_for(
+                <img
+                        class="camera-image"
+                        src="{{ url_for(
                 'web.image',
                 filename=image.filename
             ) }}"
-            alt="Motion event image"
-    >
-    {% endfor %}
-</section>
+                        alt="Motion event image"
+                >
+            {% endfor %}
+        </section>
 
-{% endif %}
+    {% endif %}
 
-<section class="card">
-    <h2>Video</h2>
+    <section class="card">
+        <h2>Video</h2>
 
-    {% if event.video_filename %}
+        {% if event.video_filename %}
 
-    <video
-            controls
-            preload="metadata"
-            style="width: 100%;"
-    >
-        <source
-                src="{{ url_for(
+            <video
+                    controls
+                    preload="metadata"
+                    style="width: 100%;"
+            >
+                <source
+                        src="{{ url_for(
                 'web.video',
                 filename=event.video_filename
             ) }}"
-                type="video/mp4"
-        >
+                        type="video/mp4"
+                >
 
-        Your browser does not support HTML5 video.
-    </video>
+                Your browser does not support HTML5 video.
+            </video>
 
-    <form
-            action="{{ url_for(
+            <form
+                    action="{{ url_for(
             'web.delete_video',
             filename=event.video_filename
         ) }}"
-            method="post"
-            onsubmit="return confirm('Delete this video?');"
-    >
-        <button type="submit">
-            🗑
-        </button>
-    </form>
+                    method="post"
+                    onsubmit="return confirm('Delete this video?');"
+            >
+                <button
+                        type="submit"
+                        class="icon-button"
+                        title="Delete video"
+                        aria-label="Delete video"
+                >
+                    <span aria-hidden="true">🗑</span>
+                </button>
+            </form>
 
-    {% else %}
+        {% else %}
 
-    <p>No video available.</p>
+            <p>No video available.</p>
 
-    {% endif %}
-</section>
+        {% endif %}
+    </section>
 
-<p>
-    <a href="{{ url_for('web.events') }}">
-        ← Back to events
-    </a>
-</p>
+    <p>
+        <a href="{{ url_for('web.events') }}">
+            ← Back to events
+        </a>
+    </p>
 
 {% endblock %}
