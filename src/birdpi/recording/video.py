@@ -30,7 +30,7 @@ class VideoRecorder:
             else self.config.video.duration_seconds
         )
 
-        timeout_ms = duration * 1000
+        timeout_ms = (duration * 1000) + 1000
 
         raw_file = output_file.with_suffix(".h264")
         mp4_file = output_file.with_suffix(".mp4")

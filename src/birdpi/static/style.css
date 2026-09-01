@@ -363,3 +363,15 @@ nav a {
 .storage-bar-fill.critical {
     background: #c0392b;
 }
+
+.icon-button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.icon-button:hover {
+    opacity: 0.75;
+}

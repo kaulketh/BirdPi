@@ -4,71 +4,81 @@
 
 {% block content %}
 
-<section class="card">
-    <h2>Gallery</h2>
+    <section class="card">
+        <h2>Gallery</h2>
         <form
                 action="{{ url_for('web.clear_images') }}"
                 method="post"
                 onsubmit="return confirm('Delete ALL images?');"
         >
-            <button type="submit">
-                ♻️
+            <button
+                    type="submit"
+                    class="icon-button"
+                    title="Clear all images"
+                    aria-label="Clear all images"
+            >
+                <span aria-hidden="true">♻️</span>
             </button>
 
         </form>
 
-    {% if images %}
-    <div class="media-grid">
+        {% if images %}
+            <div class="media-grid">
 
-        {% for image in images %}
-        <div class="media-card">
+                {% for image in images %}
+                    <div class="media-card">
 
-            <a
-                    href="{{ url_for(
+                        <a
+                                href="{{ url_for(
                         'web.gallery_image',
                         filename=image.filename
                        ) }}"
-            >
-                <img
-                        class="media-thumb"
-                        src="{{ url_for(
+                        >
+                            <img
+                                    class="media-thumb"
+                                    src="{{ url_for(
                             'web.image',
                             filename=image.filename
                         ) }}"
-                        alt="{{ image.filename }}"
-                >
-            </a>
+                                    alt="{{ image.filename }}"
+                            >
+                        </a>
 
-            <div class="media-info">
-                <strong>
-                    {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
-                </strong>
+                        <div class="media-info">
+                            <strong>
+                                {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
+                            </strong>
 
-                <span class="media-filename">
+                            <span class="media-filename">
             {{ image.filename }}
         </span>
 
-                <form
-                        action="{{ url_for(
+                            <form
+                                    action="{{ url_for(
                             'web.delete_image',
                             filename=image.filename
                         ) }}"
-                        method="post"
-                        onsubmit="return confirm('Delete this image?');"
-                >
-                    <button type="submit">
-                        🗑
-                    </button>
-                </form>
+                                    method="post"
+                                    onsubmit="return confirm('Delete this image?');"
+                            >
+                                <button
+                                        type="submit"
+                                        class="icon-button"
+                                        title="Delete image"
+                                        aria-label="Delete image"
+                                >
+                                    <span aria-hidden="true">🗑</span>
+                                </button>
+                            </form>
+                        </div>
+
+                    </div>
+                {% endfor %}
+
             </div>
-
-        </div>
-        {% endfor %}
-
-    </div>
-    {% else %}
-    <p>No images available.</p>
-    {% endif %}
-</section>
+        {% else %}
+            <p>No images available.</p>
+        {% endif %}
+    </section>
 
 {% endblock %}

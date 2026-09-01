@@ -127,8 +127,8 @@ def load_config() -> Config:
         classifier_type="dummy",
 
         motion=MotionConfig(
-            pixel_threshold=60,
-            min_area=1000,
+            pixel_threshold=20,  # 60,
+            min_area=2000,  # 1000,
             reference_interval=5,
             event_timeout_seconds=8,
         ),
