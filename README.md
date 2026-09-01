@@ -1,12 +1,14 @@
-# BirdPi ![GitHub Tag](https://img.shields.io/github/v/tag/kaulketh/birdpi) ![GitHub Release](https://img.shields.io/github/v/release/kaulketh/birdpi)
+# BirdPi 
 
-**BirdPi** is a Raspberry Pi based nature observation node for monitoring birds and other small wildlife.
+... is a Raspberry Pi based nature observation node for monitoring birds and other small wildlife.
 
 The system continuously watches the camera image for motion. When motion is detected, BirdPi creates an event containing a full-resolution still image and an MP4 video. Day/night switching is calculated from the configured geographic location, and infrared illumination can be enabled automatically at night.
 
 BirdPi also provides a responsive web interface for status monitoring, event browsing, image/video playback, storage management and control of the BirdPi runtime service.
 
-> Current project status: **v0.4.0-rc2**
+> Current project status
+> 
+> ![GitHub Tag](https://img.shields.io/github/v/tag/kaulketh/birdpi) ![GitHub Release](https://img.shields.io/github/v/release/kaulketh/birdpi)
 
 ---
 
