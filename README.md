@@ -115,7 +115,7 @@ The current power/control chain is:
 5 V supply
     |
     v
-Adjustable buck converter
+LM2596 adjustable buck converter
 (set to 3.3 V)
     |
     v
@@ -136,12 +136,10 @@ Right IR: GPIO 21
 ```
 
 The Raspberry Pi GPIO pins are used only as control signals.
-
 **Do not power the IR LED modules directly from Raspberry Pi GPIO pins.**
 
 The IR LED supply current is provided through the buck converter and
 driver stage.
-
 BirdPi currently enables the left IR channel automatically during night
 mode.
 
