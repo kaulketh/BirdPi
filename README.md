@@ -1,12 +1,14 @@
-# BirdPi ![GitHub Tag](https://img.shields.io/github/v/tag/kaulketh/birdpi) ![GitHub Release](https://img.shields.io/github/v/release/kaulketh/birdpi)
+# BirdPi 
 
-**BirdPi** is a Raspberry Pi based nature observation node for monitoring birds and other small wildlife.
+... is a Raspberry Pi based nature observation node for monitoring birds and other small wildlife.
 
 The system continuously watches the camera image for motion. When motion is detected, BirdPi creates an event containing a full-resolution still image and an MP4 video. Day/night switching is calculated from the configured geographic location, and infrared illumination can be enabled automatically at night.
 
 BirdPi also provides a responsive web interface for status monitoring, event browsing, image/video playback, storage management and control of the BirdPi runtime service.
 
-> Current project status: **v0.4.0-rc2**
+> Current project status
+> 
+> ![GitHub Tag](https://img.shields.io/github/v/tag/kaulketh/birdpi) ![GitHub Release](https://img.shields.io/github/v/release/kaulketh/birdpi)
 
 ---
 
@@ -115,7 +117,7 @@ The current power/control chain is:
 5 V supply
     |
     v
-Adjustable buck converter
+LM2596 adjustable buck converter
 (set to 3.3 V)
     |
     v
@@ -136,12 +138,10 @@ Right IR: GPIO 21
 ```
 
 The Raspberry Pi GPIO pins are used only as control signals.
-
 **Do not power the IR LED modules directly from Raspberry Pi GPIO pins.**
 
 The IR LED supply current is provided through the buck converter and
 driver stage.
-
 BirdPi currently enables the left IR channel automatically during night
 mode.
 
