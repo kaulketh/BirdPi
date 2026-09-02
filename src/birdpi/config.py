@@ -52,6 +52,13 @@ class ObjectDetectionConfig:
 
 
 @dataclass(frozen=True, slots=True)
+class TelegramConfig:
+    enabled: bool
+    token_env: str
+    chat_id_env: str
+
+
+@dataclass(frozen=True, slots=True)
 class VideoConfig:
     width: int
     height: int
@@ -89,6 +96,8 @@ class Config:
 
     storage_min_free_percent: float
     storage_target_free_percent: float
+
+    telegram: TelegramConfig
 
 
 def load_config() -> Config:
@@ -151,4 +160,9 @@ def load_config() -> Config:
         storage_min_free_percent=20.0,
         storage_target_free_percent=30.0,
 
+        telegram=TelegramConfig(
+            enabled=True,
+            token_env="BIRDPI_TELEGRAM_TOKEN",
+            chat_id_env="BIRDPI_TELEGRAM_CHAT_ID",
+        ),
     )
