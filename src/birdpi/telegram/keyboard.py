@@ -330,3 +330,41 @@ def confirm_delete_event_video() -> InlineKeyboardMarkup:
             ],
         ]
     )
+
+
+def latest_image_menu() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "🗑 Delete Image",
+                    callback_data="latest_image_delete",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "⬅ Back",
+                    callback_data="latest_image_back",
+                )
+            ],
+        ]
+    )
+
+
+def confirm_delete_latest_image() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "✅ Yes, delete image",
+                    callback_data="confirm_latest_image_delete",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "❌ Cancel",
+                    callback_data="latest_image_cancel",
+                )
+            ],
+        ]
+    )

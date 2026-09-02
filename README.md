@@ -1,13 +1,19 @@
-# BirdPi 
+# BirdPi
 
-... is a Raspberry Pi based nature observation node for monitoring birds and other small wildlife.
+... is a Raspberry Pi based nature observation node for monitoring birds and
+other small wildlife.
 
-The system continuously watches the camera image for motion. When motion is detected, BirdPi creates an event containing a full-resolution still image and an MP4 video. Day/night switching is calculated from the configured geographic location, and infrared illumination can be enabled automatically at night.
+The system continuously watches the camera image for motion. When motion is
+detected, BirdPi creates an event containing a full-resolution still image and
+an MP4 video. Day/night switching is calculated from the configured geographic
+location, and infrared illumination can be enabled automatically at night.
 
-BirdPi also provides a responsive web interface for status monitoring, event browsing, image/video playback, storage management and control of the BirdPi runtime service.
+BirdPi also provides a responsive web interface and a Telegram bot interface
+for status monitoring, event browsing, image/video playback, storage management
+and control of the BirdPi runtime service.
 
 > Current project status
-> 
+>
 > ![GitHub Tag](https://img.shields.io/github/v/tag/kaulketh/birdpi) ![GitHub Release](https://img.shields.io/github/v/release/kaulketh/birdpi)
 
 ---
@@ -34,6 +40,8 @@ BirdPi also provides a responsive web interface for status monitoring, event bro
 - Automatic deletion of the oldest complete events when disk space becomes low
 - Rotating logfile
 - systemd integration
+- Telegram bot for remote status, event browsing and service control
+- Telegram access restricted to a configured chat ID
 - Graceful shutdown on `SIGTERM`
 
 ---
@@ -64,11 +72,23 @@ birdpi-web.service
     +-- Video playback
     +-- Media deletion
     +-- Start / Stop / Restart birdpi.service
+
+birdpi-bot.service
+    |
+    +-- Telegram bot
+    +-- Runtime and storage status
+    +-- Latest image / latest event
+    +-- Paginated event browser
+    +-- Send images and videos
+    +-- Delete media
+    +-- Start / Stop / Restart birdpi.service
 ```
 
-The WebUI does **not** initialize camera or GPIO hardware. This avoids conflicts with the running BirdPi service.
+The WebUI does **not** initialize camera or GPIO hardware. This avoids
+conflicts with the running BirdPi service.
 
-Runtime information such as camera model, day/night state, IR mode and motion state is written by `birdpi.service` to:
+Runtime information such as camera model, day/night state, IR mode and motion
+state is written by `birdpi.service` to:
 
 ```text
 birdpi-data/status/runtime.json
@@ -86,7 +106,8 @@ BirdPi requires a Raspberry Pi with:
 
 - CSI camera interface
 - GPIO pins for IR-light control
-- enough CPU performance for camera preview, OpenCV motion detection and video recording
+- enough CPU performance for camera preview, OpenCV motion detection and video
+  recording
 - Raspberry Pi OS with the current `rpicam-*` camera tools
 
 The project currently runs with Python 3.13.
@@ -94,56 +115,36 @@ The project currently runs with Python 3.13.
 ## Camera
 
 The current BirdPi hardware uses:
+
 **Raspberry Pi Camera Module 3 NoIR**
 
 Default still-image resolution:
+
 ```text
 4608 × 2592
 ```
 
-The NoIR version has no infrared-cut filter and can therefore be used together with external IR illumination at night.
+The NoIR version has no infrared-cut filter and can therefore be used together
+with external IR illumination at night.
 
 ## Infrared illumination
 
-The current BirdPi hardware uses two independently controllable
-**850 nm IR LED modules**.
-
-Each module is powered from 3.3 V and draws approximately 280 mA.
-During testing, both IR modules together consumed approximately 520 mA.
-
-The current power/control chain is:
-
-```text
-5 V supply
-    |
-    v
-LM2596 adjustable buck converter
-(set to 3.3 V)
-    |
-    v
-TC1508A dual motor driver
-    |
-    +-- Channel 1 -> Left IR LED module
-    |
-    +-- Channel 2 -> Right IR LED module
-```
-The TC1508A provides two independently controllable channels, allowing
-BirdPi to switch the left and right IR illumination separately.
-
-The current GPIO configuration is:
+The current configuration uses two independently controllable IR-light
+channels:
 
 ```text
 Left IR:  GPIO 20
 Right IR: GPIO 21
 ```
 
-The Raspberry Pi GPIO pins are used only as control signals.
-**Do not power the IR LED modules directly from Raspberry Pi GPIO pins.**
+The GPIO pins are control signals only.
 
-The IR LED supply current is provided through the buck converter and
-driver stage.
-BirdPi currently enables the left IR channel automatically during night
-mode.
+**Do not power IR LEDs directly from Raspberry Pi GPIO pins.**
+
+Use a suitable transistor/MOSFET driver stage and an appropriate external power
+supply for the IR LEDs.
+
+BirdPi currently enables the left IR channel automatically during night mode.
 
 ---
 
@@ -163,6 +164,7 @@ Typical requirements include:
 - OpenCV
 - gpiozero
 - Astral
+- python-telegram-bot
 
 Install FFmpeg system-wide:
 
@@ -289,7 +291,7 @@ BirdPi is currently configured in:
 src/birdpi/config.py
 ```
 
-The **_most important settings_** are described below.
+The most important settings are described below.
 
 ---
 
@@ -353,7 +355,8 @@ LocationConfig(
 )
 ```
 
-For another installation, either add the desired location to `LOCATIONS` or configure the corresponding latitude and longitude.
+For another installation, either add the desired location to `LOCATIONS` or
+configure the corresponding latitude and longitude.
 
 This setting should be reviewed before using BirdPi at another location.
 
@@ -387,14 +390,15 @@ VideoConfig(
 
 Options:
 
-| Setting | Description |
-|---|---|
-| `width` | Video width |
-| `height` | Video height |
-| `framerate` | Frames per second |
+| Setting            | Description                  |
+|--------------------|------------------------------|
+| `width`            | Video width                  |
+| `height`           | Video height                 |
+| `framerate`        | Frames per second            |
 | `duration_seconds` | Recording duration per event |
 
-BirdPi records H.264 using `rpicam-vid` and remuxes the result into MP4 using FFmpeg.
+BirdPi records H.264 using `rpicam-vid` and remuxes the result into MP4 using
+FFmpeg.
 
 The temporary raw H.264 file is removed afterwards.
 
@@ -412,11 +416,11 @@ IRLightConfig(
 
 Options:
 
-| Setting | Description |
-|---|---|
-| `enabled` | IR-light configuration switch |
-| `left_pin` | GPIO for left IR channel |
-| `right_pin` | GPIO for right IR channel |
+| Setting     | Description                   |
+|-------------|-------------------------------|
+| `enabled`   | IR-light configuration switch |
+| `left_pin`  | GPIO for left IR channel      |
+| `right_pin` | GPIO for right IR channel     |
 
 The GPIO values must match the actual hardware wiring.
 
@@ -437,7 +441,8 @@ MotionConfig(
 
 Minimum pixel difference considered a change.
 
-Higher values make the detector less sensitive to small brightness changes and image noise.
+Higher values make the detector less sensitive to small brightness changes and
+image noise.
 
 This value will usually require tuning for the actual installation.
 
@@ -473,7 +478,8 @@ BirdPi periodically recalculates the current daylight state.
 
 The sunrise/sunset calculation is based on the configured geographic location.
 
-The current implementation uses offsets around sunrise and sunset before changing the operating mode.
+The current implementation uses offsets around sunrise and sunset before
+changing the operating mode.
 
 At night, BirdPi enables the configured IR illumination.
 
@@ -510,8 +516,8 @@ BirdPi monitors the filesystem that contains the BirdPi data directory.
 Current defaults:
 
 ```python
-storage_min_free_percent=20.0
-storage_target_free_percent=30.0
+storage_min_free_percent = 20.0
+storage_target_free_percent = 30.0
 ```
 
 Behavior:
@@ -537,7 +543,8 @@ A complete event cleanup removes:
 - event video
 - event JSON metadata
 
-This prevents a forgotten BirdPi installation from filling the SD card completely.
+This prevents a forgotten BirdPi installation from filling the SD card
+completely.
 
 The WebUI displays:
 
@@ -564,15 +571,17 @@ ObjectDetectionConfig(
 )
 ```
 
-Object detection is currently **not part of the main v0.4 motion-event workflow**.
+Object detection is currently **not part of the main v0.4 motion-event workflow
+**.
 
-The model path must be adapted if this feature is enabled on another installation.
+The model path must be adapted if this feature is enabled on another
+installation.
 
 The following configuration values are also currently present:
 
 ```python
-detector_type="motion"
-classifier_type="dummy"
+detector_type = "motion"
+classifier_type = "dummy"
 ```
 
 These are intended for detector/classifier selection and future extensions.
@@ -593,19 +602,21 @@ Example event metadata:
 
 ```json
 {
-    "id": "20260827_143343_886466",
-    "started_at": "2026-08-27T14:33:43.886466",
-    "ended_at": "2026-08-27T14:34:04.298045",
-    "images": [
-        "image_20260827_143343.jpg"
-    ],
-    "video_filename": "event_20260827_143343_886466.mp4"
+  "id": "20260827_143343_886466",
+  "started_at": "2026-08-27T14:33:43.886466",
+  "ended_at": "2026-08-27T14:34:04.298045",
+  "images": [
+    "image_20260827_143343.jpg"
+  ],
+  "video_filename": "event_20260827_143343_886466.mp4"
 }
 ```
 
-If an image or video is deleted through the WebUI, the corresponding event metadata is updated automatically.
+If an image or video is deleted through the WebUI, the corresponding event
+metadata is updated automatically.
 
-If an event no longer contains any media, its event JSON file is deleted as well.
+If an event no longer contains any media, its event JSON file is deleted as
+well.
 
 ---
 
@@ -660,6 +671,104 @@ Image metadata and event references are updated automatically.
 
 ---
 
+# Telegram bot
+
+BirdPi includes an optional Telegram bot for remote monitoring and control.
+
+The bot runs independently from the BirdPi runtime and does **not**
+initialize camera or GPIO hardware.
+
+It uses the same shared components as the WebUI:
+
+- `Storage`
+- `RuntimeStatusStore`
+- `BirdPiService`
+
+The bot can currently:
+
+- show BirdPi runtime status
+- show free/used storage
+- show the latest image
+- show the latest motion event
+- browse recent events with pagination
+- send event images
+- send event videos
+- delete individual event images or videos
+- clear all stored images
+- clear all stored videos
+- start `birdpi.service`
+- stop `birdpi.service`
+- restart `birdpi.service`
+
+Destructive and service-control actions use confirmation dialogs.
+
+## Telegram configuration
+
+The bot token and allowed chat ID are **not stored in the repository**.
+
+BirdPi references environment-variable names:
+
+```python
+TelegramConfig(
+    enabled=True,
+    token_env="BIRDPI_TELEGRAM_TOKEN",
+    chat_id_env="BIRDPI_TELEGRAM_CHAT_ID",
+)
+```
+
+Create a protected environment file on the Raspberry Pi:
+
+```bash
+sudo mkdir -p /etc/birdpi
+sudo nano /etc/birdpi/birdpi.env
+```
+
+Example:
+
+```text
+BIRDPI_TELEGRAM_TOKEN=<telegram-bot-token>
+BIRDPI_TELEGRAM_CHAT_ID=<allowed-chat-id>
+```
+
+Protect the file:
+
+```bash
+sudo chmod 600 /etc/birdpi/birdpi.env
+sudo chown root:root /etc/birdpi/birdpi.env
+```
+
+The configured chat ID is used as an access-control check.
+Messages and button actions from other chats are ignored.
+
+Do not commit the Telegram token to Git.
+
+## Telegram commands
+
+The current bot supports:
+
+```text
+/start
+/status
+```
+
+`/start` opens the inline main menu.
+
+The menu provides:
+
+```text
+Status
+Latest Event
+Latest Image
+Events
+Storage
+Service
+```
+
+Event videos can be relatively large. BirdPi therefore uses an extended
+Telegram upload timeout when sending MP4 files.
+
+---
+
 # systemd services
 
 BirdPi is designed to run as two separate systemd services.
@@ -670,19 +779,19 @@ Example:
 
 ```ini
 [Unit]
-Description=BirdPi Nature Observation Runtime
-After=network.target
+Description = BirdPi Nature Observation Runtime
+After = network.target
 
 [Service]
-Type=simple
-User=<user>
-WorkingDirectory=/home/<user>/birdpi
-ExecStart=/home/<user>/birdpi/.venv/bin/python -m birdpi.main
-Restart=on-failure
-RestartSec=3
+Type = simple
+User = <user>
+WorkingDirectory = /home/<user>/birdpi
+ExecStart = /home/<user>/birdpi/.venv/bin/python -m birdpi.main
+Restart = on-failure
+RestartSec = 3
 
 [Install]
-WantedBy=multi-user.target
+WantedBy = multi-user.target
 ```
 
 Save as:
@@ -699,19 +808,19 @@ Example:
 
 ```ini
 [Unit]
-Description=BirdPi Web Interface
-After=network.target birdpi.service
+Description = BirdPi Web Interface
+After = network.target birdpi.service
 
 [Service]
-Type=simple
-User=<user>
-WorkingDirectory=/home/<user>/birdpi
-ExecStart=/home/<user>/birdpi/.venv/bin/python -m birdpi.server
-Restart=on-failure
-RestartSec=3
+Type = simple
+User = <user>
+WorkingDirectory = /home/<user>/birdpi
+ExecStart = /home/<user>/birdpi/.venv/bin/python -m birdpi.server
+Restart = on-failure
+RestartSec = 3
 
 [Install]
-WantedBy=multi-user.target
+WantedBy = multi-user.target
 ```
 
 Save as:
@@ -726,6 +835,42 @@ Do not configure `birdpi-web.service` with `Requires=birdpi.service`.
 
 ---
 
+## BirdPi Telegram bot
+
+Example:
+
+```ini
+[Unit]
+Description = BirdPi Telegram Bot
+After = network.target
+
+[Service]
+Type = simple
+User = <user>
+WorkingDirectory = /home/<user>/birdpi
+
+EnvironmentFile = /etc/birdpi/birdpi.env
+
+ExecStart = /home/<user>/birdpi/.venv/bin/python -m birdpi.telegram.bot
+
+Restart = on-failure
+RestartSec = 3
+
+[Install]
+WantedBy = multi-user.target
+```
+
+Save as:
+
+```text
+/etc/systemd/system/birdpi-bot.service
+```
+
+The Telegram bot is independent from the BirdPi runtime and remains
+available when `birdpi.service` is stopped.
+
+---
+
 ## Enable services
 
 ```bash
@@ -733,9 +878,11 @@ sudo systemctl daemon-reload
 
 sudo systemctl enable birdpi.service
 sudo systemctl enable birdpi-web.service
+sudo systemctl enable birdpi-bot.service
 
 sudo systemctl start birdpi.service
 sudo systemctl start birdpi-web.service
+sudo systemctl start birdpi-bot.service
 ```
 
 Check status:
@@ -743,15 +890,17 @@ Check status:
 ```bash
 systemctl status birdpi.service
 systemctl status birdpi-web.service
+systemctl status birdpi-bot.service
 ```
 
 ---
 
-# WebUI service control
+# Remote service control
 
-The WebUI can start, stop and restart the BirdPi runtime.
+The WebUI and Telegram bot can start, stop and restart the BirdPi runtime.
 
-To allow this without giving the WebUI unrestricted root privileges, create a tightly restricted sudoers rule.
+To allow this without giving the WebUI unrestricted root privileges, create a
+tightly restricted sudoers rule.
 
 Open:
 
@@ -767,7 +916,8 @@ Example:
 
 Replace `<user>` with the Linux account running the BirdPi WebUI.
 
-The WebUI can then execute only the explicitly allowed service-control commands.
+The WebUI can then execute only the explicitly allowed service-control
+commands.
 
 ---
 
@@ -791,7 +941,8 @@ Restart:
 sudo systemctl restart birdpi.service
 ```
 
-BirdPi handles `SIGTERM` during service shutdown and performs a graceful cleanup:
+BirdPi handles `SIGTERM` during service shutdown and performs a graceful
+cleanup:
 
 - current motion event is closed
 - metadata is saved
@@ -900,13 +1051,14 @@ git push --tags
 
 # Development status
 
-BirdPi is currently a **release candidate** and remains under active development.
+BirdPi is currently a **release candidate** and remains under active
+development.
 
 Current focus areas include:
 
 - long-term outdoor testing
 - motion-detection tuning
-- WebUI refinement
+- WebUI and Telegram bot refinement
 - runtime monitoring
 - optional object detection and classification
 - possible pre-recording/ring-buffer support for future event recording
@@ -920,7 +1072,8 @@ Current focus areas include:
 - Verify GPIO numbering before connecting hardware.
 - Protect the Raspberry Pi and camera electronics against moisture.
 - Monitor SD-card wear and storage usage for long-term installations.
-- BirdPi automatically removes old events when disk space becomes low, but backups are recommended for important recordings.
+- BirdPi automatically removes old events when disk space becomes low, but
+  backups are recommended for important recordings.
 
 ---
 
@@ -928,7 +1081,8 @@ Current focus areas include:
 
 No license has been specified in the current project configuration.
 
-If BirdPi is published for general reuse, add an appropriate open-source license before distribution.
+If BirdPi is published for general reuse, add an appropriate open-source
+license before distribution.
 
 ---
 
@@ -946,4 +1100,3 @@ If BirdPi is published for general reuse, add an appropriate open-source license
 ```
 
 Happy bird watching! 🐦
-

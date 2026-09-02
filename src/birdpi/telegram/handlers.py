@@ -21,12 +21,15 @@ from birdpi.telegram.keyboard import (
     storage_menu,
     confirm_delete_event_image,
     confirm_delete_event_video,
+    confirm_delete_latest_image,
+    latest_image_menu,
 )
 from birdpi.telegram.messages import (
     build_event_text,
     build_service_text,
     build_status_text,
     build_storage_text,
+
 )
 
 
@@ -147,7 +150,78 @@ async def menu_callback(
                 build_status_text(context)
             )
 
-        # event and image actions
+        # image actions
+        case "latest_image":
+            storage = context.application.bot_data["storage"]
+
+            latest_image = storage.latest_image()
+
+            if latest_image is None:
+                await query.answer(
+                    "No image available.",
+                    show_alert=True,
+                )
+                return
+
+            context.application.bot_data[
+                "selected_image_filename"
+            ] = latest_image.name
+
+            with latest_image.open("rb") as file:
+                await context.bot.send_photo(
+                    chat_id=query.message.chat_id,
+                    photo=file,
+                    caption=f"🖼 {latest_image.name}",
+                    reply_markup=latest_image_menu(),
+                )
+
+        case "latest_image_delete":
+            await query.edit_message_caption(
+                "⚠ Delete latest image?",
+                reply_markup=confirm_delete_latest_image(),
+            )
+
+        case "confirm_latest_image_delete":
+            storage = context.application.bot_data["storage"]
+
+            filename = context.application.bot_data.get(
+                "selected_image_filename"
+            )
+
+            if filename is None:
+                return
+
+            deleted = storage.delete_image(
+                filename
+            )
+
+            await query.edit_message_caption(
+                "🗑 Image deleted."
+                if deleted
+                else "Image not found.",
+                reply_markup=main_menu(),
+            )
+
+        case "latest_image_cancel":
+            filename = context.application.bot_data.get(
+                "selected_image_filename"
+            )
+
+            await query.edit_message_caption(
+                caption=f"🖼 {filename}",
+                reply_markup=latest_image_menu(),
+            )
+
+        case "latest_image_back":
+            await query.message.delete()
+
+            await context.bot.send_message(
+                chat_id=query.message.chat_id,
+                text="🐦 BirdPi",
+                reply_markup=main_menu(),
+            )
+
+        # event actions
         case "latest_event":
             storage = context.application.bot_data["storage"]
 
@@ -171,25 +245,6 @@ async def menu_callback(
                     has_video=bool(event.video_filename),
                 ),
             )
-
-        case "latest_image":
-            storage = context.application.bot_data["storage"]
-
-            latest_image = storage.latest_image()
-
-            if latest_image is None:
-                await query.answer(
-                    "No image available.",
-                    show_alert=True,
-                )
-                return
-
-            with latest_image.open("rb") as file:
-                await context.bot.send_photo(
-                    chat_id=query.message.chat_id,
-                    photo=file,
-                    caption=f"🖼 {latest_image.name}",
-                )
 
         case "events":
             await show_events_page(
