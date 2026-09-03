@@ -375,3 +375,19 @@ nav a {
 .icon-button:hover {
     opacity: 0.75;
 }
+
+.site-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 1rem 0;
+}
+
+.site-banner {
+    display: block;
+
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+}

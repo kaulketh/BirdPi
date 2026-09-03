@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/png"
+          href="{{ url_for('static', filename='icons/BirdPi_icon.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -20,11 +22,15 @@
 
 <div class="container">
 
-    <header>
-        <h1>🐦 BirdPi</h1>
-        <p class="subtitle">
-            Nature Observation Node
-        </p>
+    <header class="site-header">
+        <img
+                class="site-banner"
+                src="{{ url_for(
+            'static',
+            filename='icons/BirdPi_banner.png'
+        ) }}"
+                alt="BirdPi - Nature Observation Node"
+        >
     </header>
 
     <nav>
