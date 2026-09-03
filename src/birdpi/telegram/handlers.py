@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 from telegram import Update
 from telegram.ext import ContextTypes
+from telegram.error import BadRequest
 
 from birdpi.telegram.keyboard import (
     confirm_clear_images,
@@ -134,7 +135,13 @@ async def menu_callback(
     if query is None:
         return
 
-    await query.answer()
+    try:
+        await query.answer()
+    except BadRequest as exc:
+        logger.warning(
+            "Ignoring stale callback query: %s",
+            exc,
+        )
 
     match query.data:
 
