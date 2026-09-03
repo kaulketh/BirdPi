@@ -1,4 +1,4 @@
-# BirdPi
+![BirdPi_icon_small.png](src/birdpi/static/icons/BirdPi_icon_small.png)
 
 ... is a Raspberry Pi based nature observation node for monitoring birds and
 other small wildlife.
