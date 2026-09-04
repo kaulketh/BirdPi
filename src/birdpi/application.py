@@ -108,6 +108,8 @@ class BirdPi:
         self.manual_video_path: Path | None = None
         self.manual_video_started_at: float | None = None
         self.manual_video_stop_event = threading.Event()
+        self.manual_video_started_event = threading.Event()
+        self.manual_video_finished_event = threading.Event()
 
     def run(self) -> None:
         """
@@ -181,13 +183,17 @@ class BirdPi:
                 if self.manual_video_process is not None:
                     return "VIDEO ALREADY RUNNING"
                 self.command_queue.put("video_start")
-                return "VIDEO START QUEUED"
+                if not self.manual_video_started_event.wait(timeout=5):
+                    return "VIDEO START TIMEOUT"
+                return "VIDEO STARTED"
 
             case "video_stop":
                 if self.manual_video_process is None:
                     return "VIDEO NOT RUNNING"
                 self.manual_video_stop_event.set()
-                return "VIDEO STOP REQUESTED"
+                if not self.manual_video_finished_event.wait(timeout=10):
+                    return "VIDEO STOP TIMEOUT"
+                return "VIDEO STOPPED"
 
             case "capture_image":
                 self.command_queue.put("capture_image")
@@ -260,6 +266,8 @@ class BirdPi:
         self.manual_video_started_at = time.monotonic()
 
         self.manual_video_stop_event.clear()
+        self.manual_video_started_event.clear()
+        self.manual_video_finished_event.clear()
 
         self.preview.stop()
 
@@ -280,9 +288,10 @@ class BirdPi:
             str(raw_path),
         ]
 
-        self.manual_video_process = subprocess.Popen(
-            command
-        )
+        self.manual_video_process = subprocess.Popen(command)
+        self.status.manual_video_active = True
+        self.runtime_status.write(self.status)
+        self.manual_video_started_event.set()
 
         logger.info("Manual video started: %s", self.manual_video_path, )
 
@@ -332,3 +341,6 @@ class BirdPi:
         logger.info("Manual video saved: %s", self.manual_video_path, )
         self.manual_video_started_at = None
         self.preview.start()
+        self.status.manual_video_active = False
+        self.runtime_status.write(self.status)
+        self.manual_video_finished_event.set()

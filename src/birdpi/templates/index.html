@@ -3,259 +3,317 @@
 {% block title %}BirdPi{% endblock %}
 
 {% block head_extra %}
-<meta
-        http-equiv="refresh"
-        content="{{ status_refresh_seconds }}"
->
+    <meta
+            http-equiv="refresh"
+            content="{{ status_refresh_seconds }}"
+    >
 {% endblock %}
 
 {% block content %}
 
-<section class="card">
-    <h2>System</h2>
+    <section class="card">
+        <h2>System</h2>
 
-    <div class="status-grid">
-        <div>
-            <h3>Host</h3>
+        <div class="status-grid">
+            <div>
+                <h3>Host</h3>
 
-            <p><strong>Name:</strong> {{ hostname }}</p>
-            <p><strong>Uptime:</strong> {{ uptime }}</p>
-            <p>
-                <strong>CPU:</strong>
-                {{ "%.1f"|format(cpu_temperature) }} °C
-            </p>
-        </div>
-
-        <div>
-            <h3>Camera</h3>
-
-            <p><strong>Model:</strong> {{ camera_model }}</p>
-            <p><strong>Resolution:</strong> {{ camera_resolution }}</p>
-            <p><strong>Images:</strong> {{ image_count }}</p>
-        </div>
-
-        <div>
-            <h3>Storage</h3>
-
-            <p>
-                <strong>Used:</strong>
-                {{ "%.1f"|format(storage_used_gib) }} GiB
-            </p>
-
-            <p>
-                <strong>Free:</strong>
-                {{ "%.1f"|format(storage_free_gib) }} GiB
-            </p>
-
-            <p>
-                <strong>Total:</strong>
-                {{ "%.1f"|format(storage_total_gib) }} GiB
-            </p>
-            <div class="storage-bar">
-                <div
-                        class="storage-bar-fill {{ storage_level }}"
-                        style="width: {{ storage_used_percent }}%;"
-                ></div>
+                <p><strong>Name:</strong> {{ hostname }}</p>
+                <p><strong>Uptime:</strong> {{ uptime }}</p>
+                <p>
+                    <strong>CPU:</strong>
+                    {{ "%.1f"|format(cpu_temperature) }} °C
+                </p>
             </div>
 
-            <p class="status-time">
-                {{ "%.0f"|format(storage_used_percent) }}% used,
-                automatic cleanup below
-                {{ "%.0f"|format(storage_min_free_percent) }}% free
-                up to
-                {{ "%.0f"|format(storage_target_free_percent) }}%
-            </p>
+            <div>
+                <h3>Camera</h3>
+
+                <p><strong>Model:</strong> {{ camera_model }}</p>
+                <p><strong>Resolution:</strong> {{ camera_resolution }}</p>
+                <p><strong>Images:</strong> {{ image_count }}</p>
+            </div>
+
+            <div>
+                <h3>Storage</h3>
+
+                <p>
+                    <strong>Used:</strong>
+                    {{ "%.1f"|format(storage_used_gib) }} GiB
+                </p>
+
+                <p>
+                    <strong>Free:</strong>
+                    {{ "%.1f"|format(storage_free_gib) }} GiB
+                </p>
+
+                <p>
+                    <strong>Total:</strong>
+                    {{ "%.1f"|format(storage_total_gib) }} GiB
+                </p>
+                <div class="storage-bar">
+                    <div
+                            class="storage-bar-fill {{ storage_level }}"
+                            style="width: {{ storage_used_percent }}%;"
+                    ></div>
+                </div>
+
+                <p class="status-time">
+                    {{ "%.0f"|format(storage_used_percent) }}% used,
+                    automatic cleanup below
+                    {{ "%.0f"|format(storage_min_free_percent) }}% free
+                    up to
+                    {{ "%.0f"|format(storage_target_free_percent) }}%
+                </p>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
 
 
-<section class="card">
-    <h2>BirdPi Status</h2>
+    <section class="card">
+        <h2>BirdPi Status</h2>
 
-    <div class="status-badges">
-        {% if birdpi_running %}
-        <span class="status-badge status-ok">
-                ● RUNNING
+        <div class="status-badges">
+            {% if birdpi_running %}
+                <span class="status-badge status-ok">
+                RUNNING
             </span>
-        {% else %}
-        <span class="status-badge status-off">
-                ○ STOPPED
+            {% else %}
+                <span class="status-badge status-off">
+                STOPPED
             </span>
-        {% endif %}
+            {% endif %}
 
-        <span class="status-badge">
+            <span class="status-badge">
             {% if runtime_mode == "night" %}
-                🌙 NIGHT
+                NIGHT
             {% elif runtime_mode == "day" %}
-                ☀ DAY
+                DAY
             {% else %}
                 ? UNKNOWN
             {% endif %}
         </span>
 
-        <span class="status-badge">
-            ◉ IR {{ runtime_ir_mode|upper }}
+            <span class="status-badge">
+            IR {{ runtime_ir_mode|upper }}
         </span>
 
-        <span class="status-badge
+            <span class="status-badge
             {% if motion_active %}status-active{% endif %}">
             {% if motion_active %}
-                ⚡ MOTION
+                MOTION
             {% else %}
-                ○ IDLE
+                IDLE
             {% endif %}
         </span>
-    </div>
+        </div>
 
-    {% if current_event_id %}
-    <p>
-        <strong>Current event:</strong>
-        <a href="{{ url_for(
+        {% if current_event_id %}
+            <p>
+                <strong>Current event:</strong>
+                <a href="{{ url_for(
                 'web.event_detail',
                 event_id=current_event_id
             ) }}">
-            {{ current_event_id }}
-        </a>
-    </p>
-    {% endif %}
+                    {{ current_event_id }}
+                </a>
+            </p>
+        {% endif %}
 
-    {% if last_event_id %}
-    <p>
-        <strong>Last event:</strong>
-        <a href="{{ url_for(
+        {% if last_event_id %}
+            <p>
+                <strong>Last event:</strong>
+                <a href="{{ url_for(
                 'web.event_detail',
                 event_id=last_event_id
             ) }}">
-            {{ last_event_id }}
-        </a>
-    </p>
-    {% endif %}
-
-    {% if runtime_last_update %}
-    <p class="status-time">
-        Last update:
-        {{ runtime_last_update.strftime("%d.%m.%Y %H:%M:%S") }}
-    </p>
-    {% endif %}
-
-    <div class="service-actions">
-
-        {% if birdpi_running %}
-
-        <form
-                action="{{ url_for('web.service_stop') }}"
-                method="post"
-        >
-            <button type="submit">Stop</button>
-        </form>
-
-        <form
-                action="{{ url_for('web.service_restart') }}"
-                method="post"
-        >
-            <button type="submit">Restart</button>
-        </form>
-
-        {% else %}
-
-        <form
-                action="{{ url_for('web.service_start') }}"
-                method="post"
-        >
-            <button type="submit">Start</button>
-        </form>
-
+                    {{ last_event_id }}
+                </a>
+            </p>
         {% endif %}
 
-    </div>
-</section>
+        {% if runtime_last_update %}
+            <p class="status-time">
+                Last update:
+                {{ runtime_last_update.strftime("%d.%m.%Y %H:%M:%S") }}
+            </p>
+        {% endif %}
+
+        <div class="service-actions">
+
+            {% if birdpi_running %}
+
+                <form
+                        action="{{ url_for('web.service_stop') }}"
+                        method="post"
+                >
+                    <button type="submit">Stop</button>
+                </form>
+
+                <form
+                        action="{{ url_for('web.service_restart') }}"
+                        method="post"
+                >
+                    <button type="submit">Restart</button>
+                </form>
+                <button
+                        type="button"
+                        class="manual-toggle"
+                        onclick="toggleManualControl()">Manual Control
+                </button>
+
+                <div
+                        id="manual-control-panel"
+                        class="manual-control-panel"
+                >
+                    <div class="manual-actions">
+
+                        <form
+                                action="{{ url_for('web.capture') }}"
+                                method="post"
+                        >
+                            <button type="submit">Capture</button>
+                        </form>
+
+                        {% if manual_video_active %}
+                            <form
+                                    action="{{ url_for('web.video_stop') }}"
+                                    method="post"
+                            >
+                                <button type="submit">Video Stop</button>
+                            </form>
+                        {% else %}
+                            <form
+                                    action="{{ url_for('web.video_start') }}"
+                                    method="post"
+                            >
+                                <button type="submit"> Video Start</button>
+                            </form>
+                        {% endif %}
+
+                        <form action="{{ url_for('web.ir_off') }}"
+                              method="post">
+                            <button type="submit">IR Off</button>
+                        </form>
+
+                        <form action="{{ url_for('web.ir_left') }}"
+                              method="post">
+                            <button type="submit">IR Left</button>
+                        </form>
+
+                        <form action="{{ url_for('web.ir_right') }}"
+                              method="post">
+                            <button type="submit">IR Right</button>
+                        </form>
+
+                        <form action="{{ url_for('web.ir_both') }}"
+                              method="post">
+                            <button type="submit">IR Both</button>
+                        </form>
+
+                    </div>
+                </div>
+            {% else %}
+
+                <form
+                        action="{{ url_for('web.service_start') }}"
+                        method="post"
+                >
+                    <button type="submit">Start</button>
+                </form>
+
+            {% endif %}
 
 
-<section class="home-media-grid">
+        </div>
 
-    <section class="card">
-        <h2>Latest event</h2>
+    </section>
 
-        {% if latest_event %}
 
-        <p>
-            <strong>
-                {{ latest_event.started_at.strftime(
+    <section class="home-media-grid">
+
+        <section class="card">
+            <h2>Latest event</h2>
+
+            {% if latest_event %}
+
+                <p>
+                    <strong>
+                        {{ latest_event.started_at.strftime(
                 "%d.%m.%Y %H:%M:%S"
                 ) }}
-            </strong>
-        </p>
+                    </strong>
+                </p>
 
-        {% if latest_event.ended_at %}
-        <p>
-            Duration:
-            {{ "%.1f"|format(
+                {% if latest_event.ended_at %}
+                    <p>
+                        Duration:
+                        {{ "%.1f"|format(
             (
             latest_event.ended_at
             - latest_event.started_at
             ).total_seconds()
             ) }} s
-        </p>
-        {% endif %}
+                    </p>
+                {% endif %}
 
-        <p>
-            📷 {{ latest_event.images|length }}
+                <p>
+                    📷 {{ latest_event.images|length }}
 
-            {% if latest_event.video_filename %}
-            &nbsp; 🎥 Video
-            {% endif %}
-        </p>
+                    {% if latest_event.video_filename %}
+                        &nbsp; 🎥 Video
+                    {% endif %}
+                </p>
 
-        {% if latest_event.images %}
-        <a href="{{ url_for(
+                {% if latest_event.images %}
+                    <a href="{{ url_for(
                     'web.event_detail',
                     event_id=latest_event.id
                 ) }}">
-            <img
-                    class="home-thumb"
-                    src="{{ url_for(
+                        <img
+                                class="home-thumb"
+                                src="{{ url_for(
                             'web.image',
                             filename=latest_event.images[0].filename
                         ) }}"
-                    alt="Latest motion event"
-            >
-        </a>
-        {% endif %}
+                                alt="Latest motion event"
+                        >
+                    </a>
+                {% endif %}
 
-        {% else %}
+            {% else %}
 
-        <p>No motion events available.</p>
+                <p>No motion events available.</p>
 
-        {% endif %}
-    </section>
+            {% endif %}
+        </section>
 
 
-    <section class="card">
-        <h2>Latest image</h2>
+        <section class="card">
+            <h2>Latest image</h2>
 
-        {% if latest_image %}
+            {% if latest_image %}
 
-        <p class="image-name">
-            {{ latest_image.name }}
-        </p>
+                <p class="image-name">
+                    {{ latest_image.name }}
+                </p>
 
-        <img
-                class="home-thumb"
-                src="{{ url_for(
+                <img
+                        class="home-thumb"
+                        src="{{ url_for(
                     'web.image',
                     filename=latest_image.name
                 ) }}"
-                alt="Latest BirdPi image"
-        >
+                        alt="Latest BirdPi image"
+                >
 
-        {% else %}
+            {% else %}
 
-        <p>No images available.</p>
+                <p>No images available.</p>
 
-        {% endif %}
+            {% endif %}
+        </section>
+
     </section>
-
-</section>
 
 {% endblock %}

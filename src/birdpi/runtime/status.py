@@ -25,6 +25,7 @@ class RuntimeStatus:
     last_update: str | None = None
     camera_model: str | None = None
     camera_resolution: str | None = None
+    manual_video_active: bool = False
 
 
 class RuntimeStatusStore:
@@ -32,40 +33,20 @@ class RuntimeStatusStore:
     Persist and load BirdPi runtime status.
     """
 
-    def __init__(
-            self,
-            path: Path,
-    ) -> None:
+    def __init__(self, path: Path, ) -> None:
         self.path = path
 
-    def write(
-            self,
-            status: RuntimeStatus,
-    ) -> None:
+    def write(self, status: RuntimeStatus, ) -> None:
         """
         Persist the current runtime status.
         """
 
-        self.path.parent.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
+        self.path.parent.mkdir(parents=True, exist_ok=True, )
 
-        status.last_update = (
-            datetime.now()
-            .astimezone()
-            .isoformat()
-        )
+        status.last_update = (datetime.now().astimezone().isoformat())
 
-        with self.path.open(
-                "w",
-                encoding="utf-8",
-        ) as file:
-            json.dump(
-                asdict(status),
-                file,
-                indent=4,
-            )
+        with self.path.open("w", encoding="utf-8", ) as file:
+            json.dump(asdict(status), file, indent=4, )
 
     def read(self) -> RuntimeStatus:
         """
@@ -77,28 +58,17 @@ class RuntimeStatusStore:
         if not self.path.is_file():
             return RuntimeStatus()
 
-        with self.path.open(
-                "r",
-                encoding="utf-8",
-        ) as file:
+        with self.path.open("r", encoding="utf-8", ) as file:
             data = json.load(file)
 
         return RuntimeStatus(
             mode=data.get("mode", "unknown"),
             ir_mode=data.get("ir_mode", "off"),
-            motion_active=data.get(
-                "motion_active",
-                False,
-            ),
-            current_event_id=data.get(
-                "current_event_id"
-            ),
-            last_event_id=data.get(
-                "last_event_id"
-            ),
-            last_update=data.get(
-                "last_update"
-            ),
+            motion_active=data.get("motion_active", False, ),
+            current_event_id=data.get("current_event_id"),
+            last_event_id=data.get("last_event_id"),
+            last_update=data.get("last_update"),
             camera_model=data.get("camera_model"),
             camera_resolution=data.get("camera_resolution"),
+            manual_video_active=data.get("manual_video_active", False, ),
         )

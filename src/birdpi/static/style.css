@@ -391,3 +391,41 @@ nav a {
     max-width: 500px;
     height: auto;
 }
+
+.manual-toggle {
+    min-height: 44px;
+}
+
+.manual-control-panel {
+    display: none;
+    flex-basis: 100%;
+    width: 100%;
+
+    margin-top: 0.75rem;
+    padding: 1rem;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #f8f8f6;
+}
+
+.manual-control-panel.open {
+    display: block;
+}
+
+.manual-actions {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(130px, 1fr)
+    );
+    gap: 0.6rem;
+}
+
+.manual-actions form {
+    margin: 0;
+}
+
+.manual-actions button {
+    width: 100%;
+}
