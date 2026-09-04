@@ -147,32 +147,38 @@
                         action="{{ url_for('web.service_stop') }}"
                         method="post"
                 >
-                    <button type="submit">Stop</button>
+                    <button class="btn btn-danger" type="submit">Stop</button>
                 </form>
 
                 <form
                         action="{{ url_for('web.service_restart') }}"
                         method="post"
                 >
-                    <button type="submit">Restart</button>
+                    <button class="btn btn-warning" type="submit">Restart
+                    </button>
                 </form>
                 <button
                         type="button"
                         class="manual-toggle"
-                        onclick="toggleManualControl()">Manual Control
+                        onclick="toggleManualControl()">Man.
                 </button>
 
                 <div
                         id="manual-control-panel"
                         class="manual-control-panel"
                 >
+                    <div class="manual-control-header">
+                        Manual camera and IR controls
+                    </div>
                     <div class="manual-actions">
 
                         <form
                                 action="{{ url_for('web.capture') }}"
                                 method="post"
                         >
-                            <button type="submit">Capture</button>
+                            <button class="btn btn-primary" type="submit">
+                                Capture
+                            </button>
                         </form>
 
                         {% if manual_video_active %}
@@ -180,35 +186,47 @@
                                     action="{{ url_for('web.video_stop') }}"
                                     method="post"
                             >
-                                <button type="submit">Video Stop</button>
+                                <button class="btn btn-primary" type="submit">
+                                    Video Stop
+                                </button>
                             </form>
                         {% else %}
                             <form
                                     action="{{ url_for('web.video_start') }}"
                                     method="post"
                             >
-                                <button type="submit"> Video Start</button>
+                                <button class="btn btn-primary" type="submit">
+                                    Video Start
+                                </button>
                             </form>
                         {% endif %}
 
                         <form action="{{ url_for('web.ir_off') }}"
                               method="post">
-                            <button type="submit">IR Off</button>
+                            <button class="btn btn-primary" type="submit">
+                                IR Off
+                            </button>
                         </form>
 
                         <form action="{{ url_for('web.ir_left') }}"
                               method="post">
-                            <button type="submit">IR Left</button>
+                            <button class="btn btn-primary" type="submit">
+                                IR Left
+                            </button>
                         </form>
 
                         <form action="{{ url_for('web.ir_right') }}"
                               method="post">
-                            <button type="submit">IR Right</button>
+                            <button class="btn btn-primary" type="submit">
+                                IR Right
+                            </button>
                         </form>
 
                         <form action="{{ url_for('web.ir_both') }}"
                               method="post">
-                            <button type="submit">IR Both</button>
+                            <button class="btn btn-primary" type="submit">
+                                IR Both
+                            </button>
                         </form>
 
                     </div>
@@ -219,7 +237,8 @@
                         action="{{ url_for('web.service_start') }}"
                         method="post"
                 >
-                    <button type="submit">Start</button>
+                    <button class="btn btn-primary" type="submit">Start
+                    </button>
                 </form>
 
             {% endif %}

@@ -54,14 +54,34 @@ h1 {
 .card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 14px;
+    border-radius: 16px;
+
     padding: 1.5rem;
     margin-bottom: 1.5rem;
+
     box-shadow: var(--shadow);
 }
 
-.card p {
-    margin: 0.2rem 0;
+.card h2 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+
+    padding-bottom: 0.5rem;
+
+    border-bottom: 1px solid var(--border);
+
+    font-size: 1.25rem;
+}
+
+.card h3 {
+    margin-top: 0;
+    margin-bottom: 0.6rem;
+
+    color: var(--accent-dark);
+}
+
+.card p + p {
+    margin-top: 0.35rem;
 }
 
 .camera-image {
@@ -75,6 +95,53 @@ h1 {
     margin-top: 1rem;
 }
 
+.btn {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 9px;
+    font-size: 1rem;
+    cursor: pointer;
+
+    transition: background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--accent-dark);
+}
+
+.btn-neutral {
+    background: #e7e1d3;
+    color: var(--text);
+}
+
+.btn-neutral:hover {
+    background: #dcd4c3;
+}
+
+.btn-warning {
+    background: #c79a48;
+    color: white;
+}
+
+.btn-warning:hover {
+    background: #aa8039;
+}
+
+.btn-danger {
+    background: #b85c4a;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #9e4c3d;
+}
+
 button {
     padding: 0.75rem 1.25rem;
     border: none;
@@ -84,9 +151,8 @@ button {
     background: var(--accent);
     color: white;
 
-    transition:
-        background 0.15s ease,
-        transform 0.15s ease;
+    transition: background 0.15s ease,
+    transform 0.15s ease;
 }
 
 button:hover {
@@ -101,38 +167,51 @@ button:hover {
 
 nav {
     display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
     flex-wrap: wrap;
+    gap: 0.4rem;
+
+    margin-bottom: 1.5rem;
+    padding: 0.4rem;
+
+    background: rgba(255, 253, 247, 0.65);
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
 }
 
 nav a {
-    padding: 0.6rem 1rem;
-    text-decoration: none;
-    color: var(--text);
-    background: #ece7da;
-    border: 1px solid transparent;
-    border-radius: 9px;
-    box-shadow: 0 2px 7px rgba(74, 66, 48, 0.06);
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    transition:
-        background 0.15s ease,
-        transform 0.15s ease;
+    min-height: 36px;
+
+    padding: 0.45rem 0.85rem;
+
+    text-decoration: none;
+    color: var(--text);
+
+    background: transparent;
+
+    border: 1px solid transparent;
+    border-radius: 8px;
+
+    box-shadow: none;
+
+    transition: background 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 nav a:hover {
-    background: #e0dacb;
+    background: #e7e1d3;
     transform: translateY(-1px);
 }
 
 nav a.active {
-    font-weight: bold;
     background: var(--accent);
     color: white;
+    font-weight: 600;
 }
 
 .gallery-grid {
@@ -219,9 +298,8 @@ nav a.active {
     color: inherit;
     box-shadow: var(--shadow);
 
-    transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
+    transition: transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .media-card:hover {
@@ -314,6 +392,26 @@ nav a {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.5rem;
+}
+
+.status-grid > div {
+    padding-right: 1rem;
+}
+
+.status-grid > div:not(:last-child) {
+    border-right: 1px solid var(--border);
+}
+
+@media (max-width: 700px) {
+    .status-grid > div {
+        padding-right: 0;
+        padding-bottom: 1rem;
+    }
+
+    .status-grid > div:not(:last-child) {
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
 }
 
 .status-grid h3 {
@@ -416,11 +514,20 @@ nav a {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 1rem 0;
+
+    margin-bottom: 1.25rem;
+    padding: 1.25rem 1rem;
+
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    box-shadow: var(--shadow);
 }
 
 .site-banner {
     display: block;
+
     width: 100%;
     max-width: 500px;
     height: auto;
@@ -428,6 +535,15 @@ nav a {
 
 .manual-toggle {
     min-height: 44px;
+}
+
+.manual-control-header {
+    margin-bottom: 0.75rem;
+
+    color: var(--accent-dark);
+
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .manual-control-panel {
