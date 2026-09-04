@@ -32,6 +32,7 @@ from birdpi.telegram.messages import (
     build_service_text,
     build_status_text,
     build_storage_text,
+    build_manual_control_text,
 
 )
 
@@ -547,14 +548,10 @@ async def menu_callback(
 
         # manual controls
         case "manual_control":
-            runtime_status = context.application.bot_data[
-                "runtime_status"
-            ]
-
+            runtime_status = context.application.bot_data["runtime_status"]
             status = runtime_status.read()
-
             await query.edit_message_text(
-                "🛠 BirdPi Manual Control",
+                build_manual_control_text(context),
                 reply_markup=manual_control_menu(
                     status.manual_video_active
                 ),
@@ -562,9 +559,7 @@ async def menu_callback(
 
         case "manual_capture":
             runtime = context.application.bot_data["runtime"]
-
             response = await asyncio.to_thread(runtime.capture_image)
-
             await query.answer(
                 response,
                 show_alert=True,
@@ -572,11 +567,13 @@ async def menu_callback(
 
         case "manual_video_start":
             runtime = context.application.bot_data["runtime"]
-
             response = await asyncio.to_thread(runtime.video_start)
-
             await query.edit_message_text(
-                f"🛠 BirdPi Manual Control\n\n{response}",
+                (
+                    "🛠 BirdPi Manual Control\n\n"
+                    f"{response}\n"
+                    "Video: RECORDING"
+                ),
                 reply_markup=manual_control_menu(
                     manual_video_active=True
                 ),
@@ -584,11 +581,13 @@ async def menu_callback(
 
         case "manual_video_stop":
             runtime = context.application.bot_data["runtime"]
-
             response = await asyncio.to_thread(runtime.video_stop)
-
             await query.edit_message_text(
-                f"🛠 BirdPi Manual Control\n\n{response}",
+                (
+                    "🛠 BirdPi Manual Control\n\n"
+                    f"{response}\n"
+                    "Video: IDLE"
+                ),
                 reply_markup=manual_control_menu(
                     manual_video_active=False
                 ),
@@ -596,36 +595,44 @@ async def menu_callback(
 
         case "manual_ir_off":
             runtime = context.application.bot_data["runtime"]
-            response = await asyncio.to_thread(runtime.ir_off)
-
-            await query.answer(
-                response,
-                show_alert=True,
+            await asyncio.to_thread(runtime.ir_off)
+            status = context.application.bot_data["runtime_status"].read()
+            await query.edit_message_text(
+                build_manual_control_text(context),
+                reply_markup=manual_control_menu(
+                    status.manual_video_active
+                ),
             )
 
         case "manual_ir_left":
             runtime = context.application.bot_data["runtime"]
-            response = await asyncio.to_thread(runtime.ir_left)
-
-            await query.answer(
-                response,
-                show_alert=True,
+            await asyncio.to_thread(runtime.ir_left)
+            status = context.application.bot_data["runtime_status"].read()
+            await query.edit_message_text(
+                build_manual_control_text(context),
+                reply_markup=manual_control_menu(
+                    status.manual_video_active
+                ),
             )
 
         case "manual_ir_right":
             runtime = context.application.bot_data["runtime"]
-            response = await asyncio.to_thread(runtime.ir_right)
-
-            await query.answer(
-                response,
-                show_alert=True,
+            await asyncio.to_thread(runtime.ir_right)
+            status = context.application.bot_data["runtime_status"].read()
+            await query.edit_message_text(
+                build_manual_control_text(context),
+                reply_markup=manual_control_menu(
+                    status.manual_video_active
+                ),
             )
 
         case "manual_ir_both":
             runtime = context.application.bot_data["runtime"]
-            response = await asyncio.to_thread(runtime.ir_both)
-
-            await query.answer(
-                response,
-                show_alert=True,
+            await asyncio.to_thread(runtime.ir_both)
+            status = context.application.bot_data["runtime_status"].read()
+            await query.edit_message_text(
+                build_manual_control_text(context),
+                reply_markup=manual_control_menu(
+                    status.manual_video_active
+                ),
             )
