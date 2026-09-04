@@ -1,5 +1,5 @@
 """
-Runtime command client for the BirdPi WebUI.
+Client for sending commands to the BirdPi runtime.
 """
 
 from birdpi.config import Config

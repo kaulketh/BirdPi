@@ -22,7 +22,7 @@ from birdpi.system import (
     get_cpu_temperature,
     get_uptime,
 )
-from birdpi.web.runtime import RuntimeCommandClient
+from birdpi.runtime.client import RuntimeCommandClient
 from birdpi.web.service import BirdPiService
 
 web = Blueprint("web", __name__)
