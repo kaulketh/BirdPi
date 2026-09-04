@@ -38,6 +38,12 @@ def main_menu() -> InlineKeyboardMarkup:
                     callback_data="service",
                 ),
             ],
+            [
+                InlineKeyboardButton(
+                    "🛠 Manual Control",
+                    callback_data="manual_control",
+                ),
+            ],
         ]
     )
 
@@ -103,9 +109,7 @@ def confirm_clear_videos() -> InlineKeyboardMarkup:
     )
 
 
-def service_menu(
-        running: bool,
-) -> InlineKeyboardMarkup:
+def service_menu(running: bool, ) -> InlineKeyboardMarkup:
     buttons = []
 
     if running:
@@ -181,10 +185,7 @@ def confirm_service_restart() -> InlineKeyboardMarkup:
     )
 
 
-def event_menu(
-        has_image: bool,
-        has_video: bool,
-) -> InlineKeyboardMarkup:
+def event_menu(has_image: bool, has_video: bool, ) -> InlineKeyboardMarkup:
     buttons = []
 
     media_row = []
@@ -241,12 +242,8 @@ def event_menu(
     return InlineKeyboardMarkup(buttons)
 
 
-def events_menu(
-        events,
-        page: int,
-        has_previous: bool,
-        has_next: bool,
-) -> InlineKeyboardMarkup:
+def events_menu(events, page: int, has_previous: bool,
+                has_next: bool, ) -> InlineKeyboardMarkup:
     buttons = []
 
     for event in events:
@@ -368,3 +365,66 @@ def confirm_delete_latest_image() -> InlineKeyboardMarkup:
             ],
         ]
     )
+
+
+def manual_control_menu(manual_video_active: bool, ) -> InlineKeyboardMarkup:
+    buttons = [
+        [
+            InlineKeyboardButton(
+                "📸 Capture",
+                callback_data="manual_capture",
+            ),
+        ],
+    ]
+
+    if manual_video_active:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    "⏹ Video Stop",
+                    callback_data="manual_video_stop",
+                ),
+            ]
+        )
+    else:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    "🎥 Video Start",
+                    callback_data="manual_video_start",
+                ),
+            ]
+        )
+
+    buttons.extend(
+        [
+            [
+                InlineKeyboardButton(
+                    "IR Off",
+                    callback_data="manual_ir_off",
+                ),
+                InlineKeyboardButton(
+                    "IR Left",
+                    callback_data="manual_ir_left",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "IR Right",
+                    callback_data="manual_ir_right",
+                ),
+                InlineKeyboardButton(
+                    "IR Both",
+                    callback_data="manual_ir_both",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "⬅ Back",
+                    callback_data="main_menu",
+                ),
+            ],
+        ]
+    )
+
+    return InlineKeyboardMarkup(buttons)

@@ -2,6 +2,7 @@
 Telegram handlers for BirdPi.
 """
 
+import asyncio
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,7 @@ from birdpi.telegram.keyboard import (
     confirm_delete_event_video,
     confirm_delete_latest_image,
     latest_image_menu,
+    manual_control_menu,
 )
 from birdpi.telegram.messages import (
     build_event_text,
@@ -541,4 +543,89 @@ async def menu_callback(
             await query.edit_message_text(
                 f"🗑 Deleted {deleted} video(s).",
                 reply_markup=storage_menu(),
+            )
+
+        # manual controls
+        case "manual_control":
+            runtime_status = context.application.bot_data[
+                "runtime_status"
+            ]
+
+            status = runtime_status.read()
+
+            await query.edit_message_text(
+                "🛠 BirdPi Manual Control",
+                reply_markup=manual_control_menu(
+                    status.manual_video_active
+                ),
+            )
+
+        case "manual_capture":
+            runtime = context.application.bot_data["runtime"]
+
+            response = await asyncio.to_thread(runtime.capture_image)
+
+            await query.answer(
+                response,
+                show_alert=True,
+            )
+
+        case "manual_video_start":
+            runtime = context.application.bot_data["runtime"]
+
+            response = await asyncio.to_thread(runtime.video_start)
+
+            await query.edit_message_text(
+                f"🛠 BirdPi Manual Control\n\n{response}",
+                reply_markup=manual_control_menu(
+                    manual_video_active=True
+                ),
+            )
+
+        case "manual_video_stop":
+            runtime = context.application.bot_data["runtime"]
+
+            response = await asyncio.to_thread(runtime.video_stop)
+
+            await query.edit_message_text(
+                f"🛠 BirdPi Manual Control\n\n{response}",
+                reply_markup=manual_control_menu(
+                    manual_video_active=False
+                ),
+            )
+
+        case "manual_ir_off":
+            runtime = context.application.bot_data["runtime"]
+            response = await asyncio.to_thread(runtime.ir_off)
+
+            await query.answer(
+                response,
+                show_alert=True,
+            )
+
+        case "manual_ir_left":
+            runtime = context.application.bot_data["runtime"]
+            response = await asyncio.to_thread(runtime.ir_left)
+
+            await query.answer(
+                response,
+                show_alert=True,
+            )
+
+        case "manual_ir_right":
+            runtime = context.application.bot_data["runtime"]
+            response = await asyncio.to_thread(runtime.ir_right)
+
+            await query.answer(
+                response,
+                show_alert=True,
+            )
+
+        case "manual_ir_both":
+            runtime = context.application.bot_data["runtime"]
+            response = await asyncio.to_thread(runtime.ir_both)
+
+            await query.answer(
+                response,
+                show_alert=True,
             )
