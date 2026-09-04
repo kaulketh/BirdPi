@@ -1,35 +1,8 @@
-:root {
-    --bg: #f3efe4;
-    --surface: #fffdf7;
-    --surface-soft: #f7f3e8;
-
-    --text: #2f332b;
-    --muted: #6f7468;
-
-    --accent: #6f7f52;
-    --accent-dark: #55613f;
-
-    --border: #d8d1c2;
-
-    --ok-bg: #dfe8d8;
-    --ok-text: #405236;
-
-    --warning-bg: #f3e3b8;
-    --warning-text: #735c24;
-
-    --off-bg: #e9e5dd;
-    --off-text: #666;
-
-    --critical: #b85c4a;
-
-    --shadow: 0 4px 14px rgba(74, 66, 48, 0.08);
-}
-
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
+    background: #f4f4f4;
+    color: #222;
 }
 
 .container {
@@ -48,16 +21,15 @@ h1 {
 
 .subtitle {
     margin-top: 0;
-    color: var(--muted);
+    color: #666;
 }
 
 .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
+    background: white;
+    border-radius: 12px;
     padding: 1.5rem;
     margin-bottom: 1.5rem;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .card p {
@@ -78,24 +50,17 @@ h1 {
 button {
     padding: 0.75rem 1.25rem;
     border: none;
-    border-radius: 9px;
+    border-radius: 8px;
     font-size: 1rem;
     cursor: pointer;
-    background: var(--accent);
-    color: white;
-
-    transition:
-        background 0.15s ease,
-        transform 0.15s ease;
 }
 
 button:hover {
-    background: var(--accent-dark);
-    transform: translateY(-1px);
+    opacity: 0.9;
 }
 
 .image-name {
-    color: var(--muted);
+    color: #666;
     font-size: 0.9rem;
 }
 
@@ -109,30 +74,24 @@ nav {
 nav a {
     padding: 0.6rem 1rem;
     text-decoration: none;
-    color: var(--text);
-    background: #ece7da;
-    border: 1px solid transparent;
-    border-radius: 9px;
-    box-shadow: 0 2px 7px rgba(74, 66, 48, 0.06);
+    color: #222;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    transition:
-        background 0.15s ease,
-        transform 0.15s ease;
 }
 
+
 nav a:hover {
-    background: #e0dacb;
-    transform: translateY(-1px);
+    background: #e8e8e8;
 }
 
 nav a.active {
     font-weight: bold;
-    background: var(--accent);
-    color: white;
+    background: #ddd;
 }
 
 .gallery-grid {
@@ -145,11 +104,10 @@ nav a.active {
 }
 
 .gallery-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: white;
     border-radius: 10px;
     padding: 0.75rem;
-    box-shadow: var(--shadow);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .gallery-item img {
@@ -162,7 +120,7 @@ nav a.active {
 .gallery-item p {
     margin-bottom: 0;
     font-size: 0.85rem;
-    color: var(--muted);
+    color: #666;
     word-break: break-all;
 }
 
@@ -172,9 +130,8 @@ nav a.active {
     align-items: flex-start;
     margin-bottom: 1.5rem;
     padding: 1rem;
-    border: 1px solid var(--border);
+    border: 1px solid #ddd;
     border-radius: 8px;
-    background: var(--surface);
 }
 
 .observation-card .observation-image {
@@ -212,21 +169,20 @@ nav a.active {
 .media-card {
     display: block;
     overflow: hidden;
-    background: var(--surface);
-    border: 1px solid var(--border);
+
+    border: 1px solid #ddd;
     border-radius: 10px;
+
     text-decoration: none;
     color: inherit;
-    box-shadow: var(--shadow);
 
-    transition:
-        transform 0.15s ease,
-        box-shadow 0.15s ease;
+    transition: transform 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .media-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(74, 66, 48, 0.12);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
 }
 
 .media-thumb {
@@ -240,6 +196,7 @@ nav a.active {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+
     padding: 0.75rem;
 }
 
@@ -248,6 +205,7 @@ nav a.active {
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
+
     font-size: 0.9rem;
 }
 
@@ -260,11 +218,13 @@ nav a.active {
 .badge {
     display: inline-block;
     padding: 0.15rem 0.45rem;
+
     border-radius: 999px;
+
     font-size: 0.75rem;
     font-weight: 600;
-    background: var(--off-bg);
-    color: var(--off-text);
+
+    background: #e8e8e8;
 }
 
 img {
@@ -272,10 +232,12 @@ img {
     height: auto;
 }
 
+
 button,
 nav a {
-    min-height: 40px;
+    min-height: 22px;
 }
+
 
 @media (max-width: 600px) {
     .container {
@@ -330,33 +292,35 @@ nav a {
 .status-badge {
     display: inline-flex;
     align-items: center;
+
     padding: 0.25rem 0.65rem;
+
     border-radius: 999px;
-    background: var(--off-bg);
-    color: var(--off-text);
+    background: #e8e8e8;
+
     font-size: 0.8rem;
     font-weight: 600;
 }
 
 .status-ok {
-    background: var(--ok-bg);
-    color: var(--ok-text);
+    background: #dff3e4;
 }
 
 .status-off {
-    background: var(--off-bg);
-    color: var(--off-text);
+    background: #ececec;
 }
 
 .status-active {
-    background: var(--warning-bg);
-    color: var(--warning-text);
+    background: #fff0c9;
+}
+
+.status-time {
+    font-size: 0.85rem;
+    opacity: 0.65;
 }
 
 .status-time {
     margin-top: 0.5rem;
-    font-size: 0.85rem;
-    opacity: 0.65;
 }
 
 .home-media-grid {
@@ -375,10 +339,13 @@ nav a {
 .storage-bar {
     width: 100%;
     height: 12px;
-    background: #e7e1d5;
+
+    background: #e8e8e8;
     border-radius: 999px;
+
     overflow: hidden;
 }
+
 
 .storage-bar-fill {
     height: 100%;
@@ -386,41 +353,40 @@ nav a {
 }
 
 .storage-bar-fill.normal {
-    background: var(--accent);
+    background: #3d6e55;
 }
 
 .storage-bar-fill.warning {
-    background: #c79a48;
+    background: #d9a400;
 }
 
 .storage-bar-fill.critical {
-    background: var(--critical);
+    background: #c0392b;
 }
 
 .icon-button {
     border: none;
     background: transparent;
-    color: var(--text);
     cursor: pointer;
     font-size: 1.25rem;
     padding: 0.25rem 0.5rem;
 }
 
 .icon-button:hover {
-    background: transparent;
     opacity: 0.75;
-    transform: none;
 }
 
 .site-header {
     display: flex;
     justify-content: center;
     align-items: center;
+
     padding: 1rem 0;
 }
 
 .site-banner {
     display: block;
+
     width: 100%;
     max-width: 500px;
     height: auto;
@@ -434,12 +400,13 @@ nav a {
     display: none;
     flex-basis: 100%;
     width: 100%;
+
     margin-top: 0.75rem;
     padding: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--surface-soft);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #f8f8f6;
 }
 
 .manual-control-panel.open {
