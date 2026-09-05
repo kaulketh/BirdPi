@@ -3,8 +3,13 @@ Local command channel for the BirdPi runtime.
 """
 
 import socket
-from pathlib import Path
 from collections.abc import Callable
+from pathlib import Path
+
+from birdpi.exceptions import RuntimeCommandError
+from birdpi.utils.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def run_command_server(
@@ -31,18 +36,26 @@ def run_command_server(
             connection, _ = server.accept()
 
             with connection:
-                command = (
-                    connection.recv(1024)
-                    .decode("utf-8")
-                    .strip()
-                )
+                try:
+                    command = (
+                        connection.recv(1024)
+                        .decode("utf-8")
+                        .strip()
+                    )
 
-                response = command_handler(command)
+                    response = command_handler(
+                        command
+                    )
 
-                connection.sendall(
-                    response.encode("utf-8")
-                )
+                    connection.sendall(
+                        response.encode("utf-8")
+                    )
 
+                except OSError as error:
+                    logger.warning(
+                        "Runtime command connection failed: %s",
+                        error,
+                    )
     finally:
         server.close()
 
@@ -77,6 +90,11 @@ def send_command(
             .decode("utf-8")
             .strip()
         )
+
+    except OSError as error:
+        raise RuntimeCommandError(
+            f"Runtime command failed: {command}"
+        ) from error
 
     finally:
         client.close()

@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 from birdpi.config import Config
+from birdpi.exceptions import VideoError
 
 
 class VideoRecorder:
@@ -73,17 +74,35 @@ class VideoRecorder:
                 check=True,
             )
 
-        except (
-                subprocess.CalledProcessError,
-                KeyboardInterrupt,
-        ):
-            if raw_file.exists():
-                raw_file.unlink()
-
+        except KeyboardInterrupt:
             if mp4_file.exists():
                 mp4_file.unlink()
 
             raise
+
+        except subprocess.CalledProcessError as error:
+            if mp4_file.exists():
+                mp4_file.unlink()
+
+            command_name = (
+                error.cmd[0]
+                if isinstance(error.cmd, (list, tuple))
+                   and error.cmd
+                else "video command"
+            )
+
+            raise VideoError(
+                f"{command_name} failed "
+                f"with exit code {error.returncode}"
+            ) from error
+
+        except FileNotFoundError as error:
+            if mp4_file.exists():
+                mp4_file.unlink()
+
+            raise VideoError(
+                f"Required executable not found: {error.filename}"
+            ) from error
 
         finally:
             if raw_file.exists():

@@ -11,6 +11,7 @@ import cv2
 from birdpi.config import Config
 from birdpi.models import CapturedImage
 from birdpi.models import MotionEvent
+from birdpi.exceptions import ThumbnailError
 
 
 class Storage:
@@ -665,7 +666,7 @@ class Storage:
         )
 
         if image is None:
-            raise RuntimeError(
+            raise ThumbnailError(
                 f"Could not read image: {image_path}"
             )
 
@@ -685,7 +686,7 @@ class Storage:
         )
 
         if not success:
-            raise RuntimeError(
+            raise ThumbnailError(
                 f"Could not write thumbnail: {thumbnail_path}"
             )
 
