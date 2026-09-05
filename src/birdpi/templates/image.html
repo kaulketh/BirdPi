@@ -5,42 +5,90 @@
 {% block content %}
 
 <section class="card">
-    <p>
-        <a href="{{ url_for('web.gallery') }}">
-            ← Back to Gallery
+
+    <div class="card-header">
+        <div>
+            <h2>
+                {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
+            </h2>
+
+            <span class="card-subtitle">
+                {{ image.filename }}
+            </span>
+        </div>
+
+        <a
+            class="btn btn-neutral"
+            href="{{ url_for('web.gallery') }}"
+        >
+            ← Gallery
         </a>
-    </p>
-    <h2>
-        {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
-    </h2>
+    </div>
 
-    <p class="image-name">
-        {{ image.filename }}
-    </p>
 
-    <p>
-        File size: {{ "%.2f"|format(image.size_mb) }} MB
-    </p>
+    <div class="image-meta-grid">
+
+        <div class="event-meta-item">
+            <span class="event-meta-label">
+                Captured
+            </span>
+
+            <strong>
+                {{ image.captured_at.strftime(
+                    "%d.%m.%Y %H:%M:%S"
+                ) }}
+            </strong>
+        </div>
+
+        <div class="event-meta-item">
+            <span class="event-meta-label">
+                File size
+            </span>
+
+            <strong>
+                {{ "%.2f"|format(image.size_mb) }} MB
+            </strong>
+        </div>
+
+    </div>
+
+
     <div class="image-navigation">
 
         {% if older %}
-        <a href="{{ url_for('web.gallery_image', filename=older.filename) }}">
+        <a
+            class="btn btn-neutral"
+            href="{{ url_for(
+                'web.gallery_image',
+                filename=older.filename
+            ) }}"
+        >
             ← Older
         </a>
         {% endif %}
 
         {% if newer %}
-        <a href="{{ url_for('web.gallery_image', filename=newer.filename) }}">
+        <a
+            class="btn btn-neutral"
+            href="{{ url_for(
+                'web.gallery_image',
+                filename=newer.filename
+            ) }}"
+        >
             Newer →
         </a>
         {% endif %}
 
     </div>
 
+
     <img
-            class="camera-image"
-            src="{{ url_for('web.image', filename=image.filename) }}"
-            alt="{{ image.filename }}"
+        class="camera-image image-detail"
+        src="{{ url_for(
+            'web.image',
+            filename=image.filename
+        ) }}"
+        alt="{{ image.filename }}"
     >
 
 </section>

@@ -5,71 +5,190 @@
 {% block content %}
 
     <section class="card">
-        <h2>Motion Event</h2>
 
-        <p>
-            <strong>ID:</strong>
-            {{ event.id }}
-        </p>
+        <div class="card-header">
+            <div>
+                <h2>Motion Event</h2>
 
-        <p>
-            <strong>Started:</strong>
-            {{ event.started_at.strftime("%Y-%m-%d %H:%M:%S") }}
-        </p>
+                <span class="card-subtitle">
+                {{ event.id }}
+            </span>
+            </div>
+        </div>
 
-        <p>
-            <strong>Ended:</strong>
-            {% if event.ended_at %}
-                {{ event.ended_at.strftime("%Y-%m-%d %H:%M:%S") }}
-            {% else %}
-                active
-            {% endif %}
-        </p>
+        <div class="event-meta-grid">
 
-        <p>
-            <strong>Duration:</strong>
-            {% if event.ended_at %}
-                {{ "%.1f"|format(
-        (event.ended_at - event.started_at).total_seconds()
-        ) }} s
-            {% else %}
-                active
-            {% endif %}
-        </p>
+            <div class="event-meta-item">
+            <span class="event-meta-label">
+                Started
+            </span>
+
+                <strong>
+                    {{ event.started_at.strftime(
+                    "%d.%m.%Y %H:%M:%S"
+                ) }}
+                </strong>
+            </div>
+
+            <div class="event-meta-item">
+            <span class="event-meta-label">
+                Ended
+            </span>
+
+                <strong>
+                    {% if event.ended_at %}
+                        {{ event.ended_at.strftime(
+                        "%d.%m.%Y %H:%M:%S"
+                    ) }}
+                    {% else %}
+                        ACTIVE
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="event-meta-item">
+            <span class="event-meta-label">
+                Duration
+            </span>
+
+                <strong>
+                    {% if event.ended_at %}
+                        {{ "%.1f"|format(
+                        (
+                            event.ended_at
+                            - event.started_at
+                        ).total_seconds()
+                    ) }} s
+                    {% else %}
+                        ACTIVE
+                    {% endif %}
+                </strong>
+            </div>
+
+            <div class="event-meta-item">
+            <span class="event-meta-label">
+                Media
+            </span>
+
+                <strong>
+                    📷 {{ event.images|length }}
+
+                    {% if event.video_filename %}
+                        &nbsp; 🎥 Video
+                    {% endif %}
+                </strong>
+            </div>
+
+        </div>
+
     </section>
 
     {% if event.images %}
 
         <section class="card">
-            <h2>Image</h2>
+
+            <div class="card-header">
+                <div>
+                    <h2>Image</h2>
+                    <span class="card-subtitle">
+                Motion event capture
+            </span>
+                </div>
+            </div>
 
             {% for image in event.images %}
-                <p class="image-name">
-                    {{ image.filename }}
-                </p>
 
-                <img
-                        class="camera-image"
-                        src="{{ url_for(
+                <div class="event-media-header">
+
+        <span class="media-filename">
+            {{ image.filename }}
+        </span>
+
+                    <form
+                            action="{{ url_for(
+                'web.delete_image',
+                filename=image.filename
+            ) }}"
+                            method="post"
+                            onsubmit="return confirm('Delete this image?');"
+                    >
+                        <button
+                                type="submit"
+                                class="icon-button delete-button"
+                                title="Delete image"
+                                aria-label="Delete image"
+                        >
+                            🗑
+                        </button>
+                    </form>
+
+                </div>
+
+                <a
+                        href="{{ url_for(
+            'web.gallery_image',
+            filename=image.filename
+        ) }}"
+                >
+                    <img
+                            class="camera-image event-media"
+                            src="{{ url_for(
                 'web.image',
                 filename=image.filename
             ) }}"
-                        alt="Motion event image"
-                >
+                            alt="Motion event image"
+                    >
+                </a>
+
             {% endfor %}
+
         </section>
 
     {% endif %}
 
     <section class="card">
-        <h2>Video</h2>
+
+        <div class="card-header">
+            <div>
+                <h2>Video</h2>
+
+                {% if event.video_filename %}
+                    <span class="card-subtitle">
+                {{ event.video_filename }}
+            </span>
+                {% endif %}
+            </div>
+
+            {% if event.video_filename %}
+
+                <form
+                        action="{{ url_for(
+                'web.delete_video',
+                filename=event.video_filename
+            ) }}"
+                        method="post"
+                        onsubmit="return confirm('Delete this video?');"
+                >
+                    <button
+                            type="submit"
+                            class="icon-button delete-button"
+                            title="Delete video"
+                            aria-label="Delete video"
+                    >
+                        🗑
+                    </button>
+                </form>
+
+            {% endif %}
+        </div>
+
 
         {% if event.video_filename %}
 
             <video
+                    class="event-video"
                     controls
                     preload="metadata"
-                    style="width: 100%;"
             >
                 <source
                         src="{{ url_for(
@@ -82,35 +201,29 @@
                 Your browser does not support HTML5 video.
             </video>
 
-            <form
-                    action="{{ url_for(
-            'web.delete_video',
-            filename=event.video_filename
-        ) }}"
-                    method="post"
-                    onsubmit="return confirm('Delete this video?');"
-            >
-                <button
-                        type="submit"
-                        class="btn btn-danger"
-                        title="Delete video"
-                        aria-label="Delete video"
-                >
-                    <span aria-hidden="true">🗑</span>
-                </button>
-            </form>
-
         {% else %}
 
-            <p>No video available.</p>
+            <div class="empty-state">
+                <div class="empty-state-icon">🎥</div>
+                <div class="empty-state-title">
+                    No video available
+                </div>
+                <div class="empty-state-text">
+                    This event currently has no video file.
+                </div>
+            </div>
 
         {% endif %}
+
     </section>
 
-    <p>
-        <a href="{{ url_for('web.events') }}">
+    <div class="page-actions">
+        <a
+                class="btn btn-neutral"
+                href="{{ url_for('web.events') }}"
+        >
             ← Back to events
         </a>
-    </p>
+    </div>
 
 {% endblock %}

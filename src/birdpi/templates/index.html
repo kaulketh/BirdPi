@@ -160,7 +160,7 @@
                 <button
                         type="button"
                         class="manual-toggle"
-                        onclick="toggleManualControl()">Man.
+                        onclick="toggleManualControl()">Controls
                 </button>
 
                 <div
@@ -251,88 +251,200 @@
 
     <section class="home-media-grid">
 
-        <section class="card">
-            <h2>Latest event</h2>
+    <!-- Latest Event -->
+    <section class="card home-media-card">
 
-            {% if latest_event %}
+        <div class="card-header">
+            <div>
+                <h2>Latest Event</h2>
 
-                <p>
-                    <strong>
-                        {{ latest_event.started_at.strftime(
-                "%d.%m.%Y %H:%M:%S"
-                ) }}
-                    </strong>
-                </p>
-
-                {% if latest_event.ended_at %}
-                    <p>
-                        Duration:
-                        {{ "%.1f"|format(
-            (
-            latest_event.ended_at
-            - latest_event.started_at
-            ).total_seconds()
-            ) }} s
-                    </p>
+                {% if latest_event %}
+                <span class="card-subtitle">
+                    {{ latest_event.started_at.strftime(
+                        "%d.%m.%Y %H:%M:%S"
+                    ) }}
+                </span>
                 {% endif %}
+            </div>
+        </div>
 
-                <p>
-                    📷 {{ latest_event.images|length }}
 
-                    {% if latest_event.video_filename %}
-                        &nbsp; 🎥 Video
-                    {% endif %}
-                </p>
+        {% if latest_event %}
 
-                {% if latest_event.images %}
-                    <a href="{{ url_for(
+        <div class="home-media-content">
+
+            {% if latest_event.images %}
+
+            <a
+                class="home-media-image"
+                href="{{ url_for(
                     'web.event_detail',
                     event_id=latest_event.id
-                ) }}">
-                        <img
-                                class="home-thumb"
-                                src="{{ url_for(
-                            'web.image',
-                            filename=latest_event.images[0].filename
-                        ) }}"
-                                alt="Latest motion event"
-                        >
-                    </a>
-                {% endif %}
-
-            {% else %}
-
-                <p>No motion events available.</p>
-
-            {% endif %}
-        </section>
-
-
-        <section class="card">
-            <h2>Latest image</h2>
-
-            {% if latest_image %}
-
-                <p class="image-name">
-                    {{ latest_image.name }}
-                </p>
-
-                <img
-                        class="home-thumb"
-                        src="{{ url_for(
-                    'web.image',
-                    filename=latest_image.name
                 ) }}"
-                        alt="Latest BirdPi image"
+            >
+                <img
+                    class="home-thumb"
+                    src="{{ url_for(
+                        'web.image',
+                        filename=latest_event.images[0].filename
+                    ) }}"
+                    alt="Latest motion event"
                 >
+            </a>
 
             {% else %}
 
-                <p>No images available.</p>
+            <div class="event-placeholder">
+                🎥
+            </div>
 
             {% endif %}
-        </section>
+
+
+            <div class="home-media-footer">
+
+                <div class="media-meta">
+
+                    {% if latest_event.ended_at %}
+                    <span>
+                        ⏱
+                        {{ "%.1f"|format(
+                            (
+                                latest_event.ended_at
+                                - latest_event.started_at
+                            ).total_seconds()
+                        ) }} s
+                    </span>
+                    {% else %}
+                    <span class="badge status-active">
+                        ACTIVE
+                    </span>
+                    {% endif %}
+
+                    {% if latest_event.images %}
+                    <span class="badge">
+                        📷 {{ latest_event.images|length }}
+                    </span>
+                    {% endif %}
+
+                    {% if latest_event.video_filename %}
+                    <span class="badge">
+                        🎥 VIDEO
+                    </span>
+                    {% endif %}
+
+                </div>
+
+
+                <a
+                    class="btn btn-neutral"
+                    href="{{ url_for(
+                        'web.event_detail',
+                        event_id=latest_event.id
+                    ) }}"
+                >
+                    View event →
+                </a>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <div class="empty-state-icon">🐦</div>
+
+            <div class="empty-state-title">
+                No motion events available
+            </div>
+
+            <div class="empty-state-text">
+                New motion events will appear here automatically.
+            </div>
+        </div>
+
+        {% endif %}
 
     </section>
+
+
+    <!-- Latest Image -->
+    <section class="card home-media-card">
+
+        <div class="card-header">
+            <div>
+                <h2>Latest Image</h2>
+
+                {% if latest_image %}
+                <span class="card-subtitle">
+                    {{ latest_image.name }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+
+        {% if latest_image %}
+
+        <div class="home-media-content">
+
+            <a
+                class="home-media-image"
+                href="{{ url_for(
+                    'web.gallery_image',
+                    filename=latest_image.name
+                ) }}"
+            >
+                <img
+                    class="home-thumb"
+                    src="{{ url_for(
+                        'web.image',
+                        filename=latest_image.name
+                    ) }}"
+                    alt="Latest BirdPi image"
+                >
+            </a>
+
+
+            <div class="home-media-footer">
+
+                <span class="media-filename">
+                    {{ latest_image.name }}
+                </span>
+
+                <a
+                    class="btn btn-neutral"
+                    href="{{ url_for(
+                        'web.gallery_image',
+                        filename=latest_image.name
+                    ) }}"
+                >
+                    View image →
+                </a>
+
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            <div class="empty-state-icon">🖼</div>
+
+            <div class="empty-state-title">
+                No images available
+            </div>
+
+            <div class="empty-state-text">
+                Captured images will appear here.
+            </div>
+        </div>
+
+        {% endif %}
+
+    </section>
+
+</section>
 
 {% endblock %}
