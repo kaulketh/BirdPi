@@ -81,6 +81,7 @@ class Config:
     video_path: Path
     log_path: Path
     runtime_status_path: Path
+    thumbnail_path: Path
 
     detector_type: str
     classifier_type: str
@@ -121,6 +122,7 @@ def load_config() -> Config:
             / "status"
             / "birdpi.sock"
     )
+    thumbnail_path = (data_path / "thumbnails")
 
     return Config(
         location_name=location_name,
@@ -176,4 +178,6 @@ def load_config() -> Config:
             chat_id_env="BIRDPI_TELEGRAM_CHAT_ID",
         ),
         manual_video_max_duration_seconds=60,
+
+        thumbnail_path=thumbnail_path,
     )

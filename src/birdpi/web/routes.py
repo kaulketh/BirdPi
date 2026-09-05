@@ -15,6 +15,7 @@ from flask import (
 )
 
 from birdpi.config import Config
+from birdpi.runtime.client import RuntimeCommandClient
 from birdpi.runtime.status import RuntimeStatusStore
 from birdpi.storage import Storage
 from birdpi.system import (
@@ -22,7 +23,6 @@ from birdpi.system import (
     get_cpu_temperature,
     get_uptime,
 )
-from birdpi.runtime.client import RuntimeCommandClient
 from birdpi.web.service import BirdPiService
 
 web = Blueprint("web", __name__)
@@ -240,5 +240,31 @@ def register_routes(
         runtime.video_stop()
 
         return redirect(url_for("web.index"))
+
+    @web.get("/thumbnails/<path:filename>")
+    def thumbnail(
+            filename: str,
+    ):
+        thumbnail_path = (
+                config.thumbnail_path
+                / filename
+        )
+
+        if not thumbnail_path.is_file():
+            image = storage.get_image(
+                filename
+            )
+
+            if image is None:
+                abort(404)
+
+            storage.create_thumbnail(
+                image.path
+            )
+
+        return send_from_directory(
+            config.thumbnail_path,
+            filename,
+        )
 
     return web
