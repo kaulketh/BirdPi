@@ -78,3 +78,20 @@ def build_event_text(
         f"Images: {len(event.images)}\n"
         f"Video: {'yes' if event.video_filename else 'no'}"
     )
+
+
+def build_manual_control_text(
+        context: ContextTypes.DEFAULT_TYPE,
+) -> str:
+    runtime_status = context.application.bot_data[
+        "runtime_status"
+    ]
+
+    status = runtime_status.read()
+
+    return (
+        "🛠 BirdPi Manual Control\n\n"
+        f"Video: "
+        f"{'RECORDING' if status.manual_video_active else 'IDLE'}\n"
+        f"IR: {status.ir_mode.upper()}"
+    )

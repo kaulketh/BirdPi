@@ -11,6 +11,7 @@ from telegram.ext import (
 )
 
 from birdpi.bootstrap import initialize
+from birdpi.runtime.client import RuntimeCommandClient
 from birdpi.runtime.status import RuntimeStatusStore
 from birdpi.storage import Storage
 from birdpi.telegram.handlers import (
@@ -24,7 +25,9 @@ from birdpi.web.service import BirdPiService
 
 def main() -> None:
     config = initialize()
-
+    runtime = RuntimeCommandClient(
+        config
+    )
     token = os.environ[
         config.telegram.token_env
     ]
@@ -55,6 +58,7 @@ def main() -> None:
     application.bot_data["runtime_status"] = runtime_status
     application.bot_data["service"] = service
     application.bot_data["chat_id"] = chat_id
+    application.bot_data["runtime"] = runtime
 
     application.add_handler(
         CommandHandler("start", start)

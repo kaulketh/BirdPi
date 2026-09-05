@@ -17,7 +17,7 @@ _LOG_FORMAT = (
 def configure_logging(
         log_file: Path,
         level: int = logging.INFO,
-        max_bytes: int = 5_000_000,
+        max_bytes: int = 3_000_000,
         backup_count: int = 3,
 ) -> None:
     """

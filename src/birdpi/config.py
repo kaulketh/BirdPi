@@ -99,6 +99,10 @@ class Config:
 
     telegram: TelegramConfig
 
+    runtime_command_socket_path: Path
+
+    manual_video_max_duration_seconds: int
+
 
 def load_config() -> Config:
     location_name = "HOME"
@@ -112,6 +116,11 @@ def load_config() -> Config:
             / "status"
             / "runtime.json"
     )
+    runtime_command_socket_path = (
+            data_path
+            / "status"
+            / "birdpi.sock"
+    )
 
     return Config(
         location_name=location_name,
@@ -121,6 +130,7 @@ def load_config() -> Config:
         video_path=video_path,
         log_path=log_path,
         runtime_status_path=runtime_status_path,
+        runtime_command_socket_path=runtime_command_socket_path,
 
         camera=CameraConfig(
             width=4608, height=2592),
@@ -136,8 +146,8 @@ def load_config() -> Config:
         classifier_type="dummy",
 
         motion=MotionConfig(
-            pixel_threshold=20,  # 60,
-            min_area=2000,  # 1000,
+            pixel_threshold=30,  # 60,
+            min_area=3000,
             reference_interval=5,
             event_timeout_seconds=8,
         ),
@@ -165,4 +175,5 @@ def load_config() -> Config:
             token_env="BIRDPI_TELEGRAM_TOKEN",
             chat_id_env="BIRDPI_TELEGRAM_CHAT_ID",
         ),
+        manual_video_max_duration_seconds=60,
     )

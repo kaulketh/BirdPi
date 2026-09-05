@@ -5,80 +5,120 @@
 {% block content %}
 
     <section class="card">
-        <h2>Gallery</h2>
-        <form
-                action="{{ url_for('web.clear_images') }}"
-                method="post"
-                onsubmit="return confirm('Delete ALL images?');"
-        >
-            <button
-                    type="submit"
-                    class="icon-button"
-                    title="Clear all images"
-                    aria-label="Clear all images"
-            >
-                <span aria-hidden="true">♻️</span>
-            </button>
 
-        </form>
+        <div class="card-header">
+            <div>
+                <h2>Gallery</h2>
+
+                {% if images %}
+                    <span class="card-subtitle">
+                {{ images|length }} stored image{% if images|length != 1 %}
+                        s{% endif %}
+            </span>
+                {% endif %}
+            </div>
+
+            {% if images %}
+                <form
+                        action="{{ url_for('web.clear_images') }}"
+                        method="post"
+                        onsubmit="return confirm('Delete ALL images?');"
+                >
+                    <button
+                            type="submit"
+                            class="btn btn-danger"
+                            title="Clear all images"
+                            aria-label="Clear all images"
+                    >
+                        ♻️ Clear
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+
 
         {% if images %}
+
             <div class="media-grid">
 
                 {% for image in images %}
+
                     <div class="media-card">
 
                         <a
                                 href="{{ url_for(
-                        'web.gallery_image',
-                        filename=image.filename
-                       ) }}"
+                    'web.gallery_image',
+                    filename=image.filename
+                ) }}"
                         >
                             <img
                                     class="media-thumb"
                                     src="{{ url_for(
-                            'web.image',
-                            filename=image.filename
-                        ) }}"
+                        'web.image',
+                        filename=image.filename
+                    ) }}"
                                     alt="{{ image.filename }}"
                             >
                         </a>
 
-                        <div class="media-info">
-                            <strong>
-                                {{ image.captured_at.strftime("%d.%m.%Y %H:%M:%S") }}
-                            </strong>
 
-                            <span class="media-filename">
-            {{ image.filename }}
-        </span>
+                        <div class="media-info">
+
+                            <div class="media-details">
+
+                                <strong class="media-date">
+                                    {{ image.captured_at.strftime(
+                            "%d.%m.%Y %H:%M:%S"
+                        ) }}
+                                </strong>
+
+                                <span class="media-filename">
+                        {{ image.filename }}
+                    </span>
+
+                            </div>
+
 
                             <form
                                     action="{{ url_for(
-                            'web.delete_image',
-                            filename=image.filename
-                        ) }}"
+                        'web.delete_image',
+                        filename=image.filename
+                    ) }}"
                                     method="post"
                                     onsubmit="return confirm('Delete this image?');"
                             >
                                 <button
                                         type="submit"
-                                        class="icon-button"
+                                        class="icon-button delete-button"
                                         title="Delete image"
                                         aria-label="Delete image"
                                 >
-                                    <span aria-hidden="true">🗑</span>
+                                    🗑
                                 </button>
                             </form>
+
                         </div>
 
                     </div>
+
                 {% endfor %}
 
             </div>
+
         {% else %}
-            <p>No images available.</p>
+
+            <div class="empty-state">
+                <div class="empty-state-icon">🖼</div>
+                <div class="empty-state-title">
+                    No images available
+                </div>
+                <div class="empty-state-text">
+                    Captured images will appear here.
+                </div>
+            </div>
+
         {% endif %}
+
     </section>
 
 {% endblock %}

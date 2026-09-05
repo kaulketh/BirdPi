@@ -34,6 +34,7 @@ class MotionMonitor:
             video_recorder: VideoRecorder,
             event_timeout_seconds: int,
             status_callback: Callable[[bool, str | None], None] | None = None,
+            command_callback: Callable[[], None] | None = None,
 
     ) -> None:
         self.preview = preview
@@ -48,6 +49,7 @@ class MotionMonitor:
         self._last_motion_at: float | None = None
 
         self.status_callback = status_callback
+        self.command_callback = command_callback
 
     def run(self) -> None:
         """
@@ -62,7 +64,8 @@ class MotionMonitor:
                     start=1,
             ):
                 self.day_night.update()
-
+                if self.command_callback is not None:
+                    self.command_callback()
                 now = time.monotonic()
 
                 if self._event is not None:

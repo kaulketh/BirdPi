@@ -1,0 +1,431 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    color: #222;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    margin-bottom: 2rem;
+}
+
+h1 {
+    margin-bottom: 0.25rem;
+}
+
+.subtitle {
+    margin-top: 0;
+    color: #666;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.card p {
+    margin: 0.2rem 0;
+}
+
+.camera-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+.capture-form {
+    margin-top: 1rem;
+}
+
+button {
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.image-name {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+nav a {
+    padding: 0.6rem 1rem;
+    text-decoration: none;
+    color: #222;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+nav a:hover {
+    background: #e8e8e8;
+}
+
+nav a.active {
+    font-weight: bold;
+    background: #ddd;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(220px, 1fr)
+    );
+    gap: 1rem;
+}
+
+.gallery-item {
+    background: white;
+    border-radius: 10px;
+    padding: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+}
+
+.gallery-item p {
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    color: #666;
+    word-break: break-all;
+}
+
+.observation-card {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+.observation-card .observation-image {
+    width: 240px;
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+    object-fit: cover;
+}
+
+.observation-info {
+    flex: 1;
+}
+
+@media (max-width: 700px) {
+    .observation-card {
+        flex-direction: column;
+    }
+
+    .observation-card .observation-image {
+        width: 100%;
+    }
+}
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fill,
+        minmax(220px, 1fr)
+    );
+    gap: 1rem;
+}
+
+.media-card {
+    display: block;
+    overflow: hidden;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+    text-decoration: none;
+    color: inherit;
+
+    transition: transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.media-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.media-thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    display: block;
+}
+
+.media-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    padding: 0.75rem;
+}
+
+.media-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+
+    font-size: 0.9rem;
+}
+
+.media-filename {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    overflow-wrap: anywhere;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.15rem 0.45rem;
+
+    border-radius: 999px;
+
+    font-size: 0.75rem;
+    font-weight: 600;
+
+    background: #e8e8e8;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+
+button,
+nav a {
+    min-height: 22px;
+}
+
+
+@media (max-width: 600px) {
+    .container {
+        padding: 0.75rem;
+    }
+
+    .media-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+}
+
+.home-thumb {
+    width: 100%;
+    max-width: 320px;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+}
+
+.service-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.service-actions form {
+    margin: 0;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.status-grid h3 {
+    margin-top: 0;
+}
+
+.status-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.25rem 0.65rem;
+
+    border-radius: 999px;
+    background: #e8e8e8;
+
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-ok {
+    background: #dff3e4;
+}
+
+.status-off {
+    background: #ececec;
+}
+
+.status-active {
+    background: #fff0c9;
+}
+
+.status-time {
+    font-size: 0.85rem;
+    opacity: 0.65;
+}
+
+.status-time {
+    margin-top: 0.5rem;
+}
+
+.home-media-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+@media (max-width: 700px) {
+    .status-grid,
+    .home-media-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.storage-bar {
+    width: 100%;
+    height: 12px;
+
+    background: #e8e8e8;
+    border-radius: 999px;
+
+    overflow: hidden;
+}
+
+
+.storage-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+}
+
+.storage-bar-fill.normal {
+    background: #3d6e55;
+}
+
+.storage-bar-fill.warning {
+    background: #d9a400;
+}
+
+.storage-bar-fill.critical {
+    background: #c0392b;
+}
+
+.icon-button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0.25rem 0.5rem;
+}
+
+.icon-button:hover {
+    opacity: 0.75;
+}
+
+.site-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    padding: 1rem 0;
+}
+
+.site-banner {
+    display: block;
+
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+}
+
+.manual-toggle {
+    min-height: 44px;
+}
+
+.manual-control-panel {
+    display: none;
+    flex-basis: 100%;
+    width: 100%;
+
+    margin-top: 0.75rem;
+    padding: 1rem;
+
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background: #f8f8f6;
+}
+
+.manual-control-panel.open {
+    display: block;
+}
+
+.manual-actions {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(130px, 1fr)
+    );
+    gap: 0.6rem;
+}
+
+.manual-actions form {
+    margin: 0;
+}
+
+.manual-actions button {
+    width: 100%;
+}
