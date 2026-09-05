@@ -1,5 +1,5 @@
 """
-Telegram texts and messages for BirdPi..
+Telegram texts and messages for BirdPi.
 """
 from telegram.ext import ContextTypes
 
