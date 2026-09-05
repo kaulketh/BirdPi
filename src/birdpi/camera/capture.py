@@ -85,6 +85,16 @@ class Camera:
         )
 
         self.storage.save_image_metadata(image)
+        
+        try:
+            self.storage.create_thumbnail(
+                image.path
+            )
+        except Exception:
+            logger.exception(
+                "Thumbnail creation failed: %s",
+                image.path,
+            )
 
         return image
 

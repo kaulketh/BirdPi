@@ -6,6 +6,8 @@ import shutil
 from datetime import datetime
 from pathlib import Path
 
+import cv2
+
 from birdpi.config import Config
 from birdpi.models import CapturedImage
 from birdpi.models import MotionEvent
@@ -132,6 +134,10 @@ class Storage:
             exist_ok=True,
         )
         self.config.runtime_status_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        self.config.thumbnail_path.mkdir(
             parents=True,
             exist_ok=True,
         )
@@ -443,6 +449,14 @@ class Storage:
                 / filename
         )
 
+        thumbnail_path = (
+                self.config.thumbnail_path
+                / filename
+        )
+
+        if thumbnail_path.is_file():
+            thumbnail_path.unlink()
+
         if not image_path.is_file():
             return False
 
@@ -534,6 +548,9 @@ class Storage:
                     file,
                     indent=4,
                 )
+                
+        for thumbnail_path in self.config.thumbnail_path.glob("*.jpg"):
+            thumbnail_path.unlink()
 
         return deleted
 
@@ -629,3 +646,47 @@ class Storage:
                 )
 
         return deleted
+
+    def create_thumbnail(
+            self,
+            image_path: Path,
+    ) -> Path:
+        """
+        Create a web thumbnail for a captured image.
+        """
+
+        thumbnail_path = (
+                self.config.thumbnail_path
+                / image_path.name
+        )
+
+        image = cv2.imread(
+            str(image_path)
+        )
+
+        if image is None:
+            raise RuntimeError(
+                f"Could not read image: {image_path}"
+            )
+
+        thumbnail = cv2.resize(
+            image,
+            (640, 360),
+            interpolation=cv2.INTER_AREA,
+        )
+
+        success = cv2.imwrite(
+            str(thumbnail_path),
+            thumbnail,
+            [
+                cv2.IMWRITE_JPEG_QUALITY,
+                80,
+            ],
+        )
+
+        if not success:
+            raise RuntimeError(
+                f"Could not write thumbnail: {thumbnail_path}"
+            )
+
+        return thumbnail_path

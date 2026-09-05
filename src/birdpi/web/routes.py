@@ -15,6 +15,7 @@ from flask import (
 )
 
 from birdpi.config import Config
+from birdpi.runtime.client import RuntimeCommandClient
 from birdpi.runtime.status import RuntimeStatusStore
 from birdpi.storage import Storage
 from birdpi.system import (
@@ -22,9 +23,10 @@ from birdpi.system import (
     get_cpu_temperature,
     get_uptime,
 )
-from birdpi.runtime.client import RuntimeCommandClient
+from birdpi.utils.logger import get_logger
 from birdpi.web.service import BirdPiService
 
+logger = get_logger(__name__)
 web = Blueprint("web", __name__)
 
 
@@ -157,88 +159,127 @@ def register_routes(
 
     @web.post("/service/start")
     def service_start():
+        logger.info("WebUI requested BirdPi service start")
         service.start()
 
-        return redirect(
-            url_for("web.index")
-        )
+        return redirect(url_for("web.index"))
 
     @web.post("/service/stop")
     def service_stop():
+        logger.info("WebUI requested BirdPi service stop")
         service.stop()
 
         return redirect(url_for("web.index"))
 
     @web.post("/service/restart")
     def service_restart():
+        logger.info("WebUI requested BirdPi service restart")
         service.restart()
 
         return redirect(url_for("web.index"))
 
     @web.post("/images/<path:filename>/delete")
     def delete_image(filename: str, ):
+        logger.info("WebUI deleted image: %s", filename, )
         storage.delete_image(filename)
 
         return redirect(url_for("web.gallery"))
 
     @web.post("/images/clear")
     def clear_images():
-        storage.clear_images()
+        deleted = storage.clear_images()
+        logger.info("WebUI cleared images: %d deleted", deleted, )
 
         return redirect(url_for("web.gallery"))
 
     @web.post("/videos/<path:filename>/delete")
     def delete_video(filename: str, ):
+        logger.info("WebUI deleted video: %s", filename, )
         storage.delete_video(filename)
 
         return redirect(url_for("web.events"))
 
     @web.post("/videos/clear")
     def clear_videos():
-        storage.clear_videos()
+        deleted = storage.clear_videos()
+        logger.info("WebUI cleared videos: %d deleted", deleted, )
 
         return redirect(url_for("web.events"))
 
     @web.post("/capture")
     def capture():
+        logger.info("WebUI requested manual image capture")
         runtime.capture_image()
-
         return redirect(url_for("web.index"))
 
     @web.post("/ir/off")
     def ir_off():
+        logger.info("WebUI set IR mode: OFF")
         runtime.ir_off()
 
         return redirect(url_for("web.index"))
 
     @web.post("/ir/left")
     def ir_left():
+        logger.info("WebUI set IR mode: LEFT")
         runtime.ir_left()
 
         return redirect(url_for("web.index"))
 
     @web.post("/ir/right")
     def ir_right():
+        logger.info("WebUI set IR mode: RIGHT")
         runtime.ir_right()
 
         return redirect(url_for("web.index"))
 
     @web.post("/ir/both")
     def ir_both():
+        logger.info("WebUI set IR mode: BOTH")
         runtime.ir_both()
 
         return redirect(url_for("web.index"))
 
     @web.post("/video/start")
     def video_start():
-        runtime.video_start()
+        logger.info("WebUI requested manual video start")
+        response = runtime.video_start()
+        logger.info("Manual video start result: %s", response, )
 
         return redirect(url_for("web.index"))
 
     @web.post("/video/stop")
     def video_stop():
-        runtime.video_stop()
+        logger.info("WebUI requested manual video stop")
+        response = runtime.video_stop()
+        logger.info("Manual video stop result: %s", response, )
 
         return redirect(url_for("web.index"))
+
+    @web.get("/thumbnails/<path:filename>")
+    def thumbnail(
+            filename: str,
+    ):
+        thumbnail_path = (
+                config.thumbnail_path
+                / filename
+        )
+
+        if not thumbnail_path.is_file():
+            image = storage.get_image(
+                filename
+            )
+
+            if image is None:
+                abort(404)
+
+            storage.create_thumbnail(
+                image.path
+            )
+
+        return send_from_directory(
+            config.thumbnail_path,
+            filename,
+        )
 
     return web

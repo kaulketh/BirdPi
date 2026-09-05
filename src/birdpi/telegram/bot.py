@@ -2,6 +2,7 @@
 Telegram bot entry point for BirdPi.
 """
 
+import logging
 import os
 
 from telegram.ext import (
@@ -20,11 +21,20 @@ from birdpi.telegram.handlers import (
     start,
     status,
 )
+from birdpi.utils.logger import get_logger
 from birdpi.web.service import BirdPiService
+
+logger = get_logger(__name__)
 
 
 def main() -> None:
-    config = initialize()
+    config = initialize("bot")
+    logger.info("BirdPi Telegram bot online")
+
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("telegram").setLevel(logging.WARNING)
+
     runtime = RuntimeCommandClient(
         config
     )

@@ -3,38 +3,91 @@ Telegram handlers for BirdPi.
 """
 
 import asyncio
-import logging
-
-logger = logging.getLogger(__name__)
 
 from telegram import Update
-from telegram.ext import ContextTypes
 from telegram.error import BadRequest
+from telegram.ext import ContextTypes
 
 from birdpi.telegram.keyboard import (
     confirm_clear_images,
     confirm_clear_videos,
+    confirm_delete_event_image,
+    confirm_delete_event_video,
+    confirm_delete_latest_image,
     confirm_service_restart,
     confirm_service_stop,
     event_menu,
     events_menu,
+    latest_image_menu,
     main_menu,
+    manual_control_menu,
     service_menu,
     storage_menu,
-    confirm_delete_event_image,
-    confirm_delete_event_video,
-    confirm_delete_latest_image,
-    latest_image_menu,
-    manual_control_menu,
 )
 from birdpi.telegram.messages import (
     build_event_text,
+    build_manual_control_text,
     build_service_text,
     build_status_text,
     build_storage_text,
-    build_manual_control_text,
-
 )
+from birdpi.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+EVENTS_PAGE_SIZE = 5
+
+_MAIN_ACTIONS = {
+    "main_menu",
+    "status",
+}
+
+_IMAGE_ACTIONS = {
+    "latest_image",
+    "latest_image_delete",
+    "confirm_latest_image_delete",
+    "latest_image_cancel",
+    "latest_image_back",
+}
+
+_EVENT_ACTIONS = {
+    "latest_event",
+    "events",
+    "event_send_image",
+    "event_send_video",
+    "event_delete_image",
+    "event_delete_video",
+    "confirm_event_delete_image",
+    "confirm_event_delete_video",
+}
+
+_SERVICE_ACTIONS = {
+    "service",
+    "service_start",
+    "service_stop",
+    "service_restart",
+    "confirm_service_stop",
+    "confirm_service_restart",
+}
+
+_STORAGE_ACTIONS = {
+    "storage",
+    "storage_clear_images",
+    "storage_clear_videos",
+    "confirm_clear_images",
+    "confirm_clear_videos",
+}
+
+_MANUAL_ACTIONS = {
+    "manual_control",
+    "manual_capture",
+    "manual_video_start",
+    "manual_video_stop",
+    "manual_ir_off",
+    "manual_ir_left",
+    "manual_ir_right",
+    "manual_ir_both",
+}
 
 
 def authorized(
@@ -95,60 +148,38 @@ async def show_events_page(
 ) -> None:
     storage = context.application.bot_data["storage"]
 
-    page_size = 5
-
     all_events = storage.events()
 
-    start = page * page_size
-    end = start + page_size
+    offset = page * EVENTS_PAGE_SIZE
+    end = offset + EVENTS_PAGE_SIZE
 
-    events = all_events[start:end]
+    events = all_events[offset:end]
 
     if not events and page > 0:
         page -= 1
 
-        start = page * page_size
-        end = start + page_size
+        offset = page * EVENTS_PAGE_SIZE
+        end = offset + EVENTS_PAGE_SIZE
 
-        events = all_events[start:end]
-
-    has_previous = page > 0
-    has_next = end < len(all_events)
+        events = all_events[offset:end]
 
     await query.edit_message_text(
         f"📚 Events — Page {page + 1}",
         reply_markup=events_menu(
             events=events,
             page=page,
-            has_previous=has_previous,
-            has_next=has_next,
+            has_previous=page > 0,
+            has_next=end < len(all_events),
         ),
     )
 
 
-async def menu_callback(
-        update: Update,
+async def _handle_main_action(
+        data: str,
+        query,
         context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    if not authorized(update, context):
-        return
-
-    query = update.callback_query
-
-    if query is None:
-        return
-
-    try:
-        await query.answer()
-    except BadRequest as exc:
-        logger.warning(
-            "Ignoring stale callback query: %s",
-            exc,
-        )
-
-    match query.data:
-
-        # main section
+    match data:
         case "main_menu":
             await query.edit_message_text(
                 "🐦 BirdPi",
@@ -160,10 +191,16 @@ async def menu_callback(
                 build_status_text(context)
             )
 
-        # image actions
-        case "latest_image":
-            storage = context.application.bot_data["storage"]
 
+async def _handle_image_action(
+        data: str,
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    storage = context.application.bot_data["storage"]
+
+    match data:
+        case "latest_image":
             latest_image = storage.latest_image()
 
             if latest_image is None:
@@ -185,6 +222,11 @@ async def menu_callback(
                     reply_markup=latest_image_menu(),
                 )
 
+            logger.info(
+                "Telegram sent latest image: %s",
+                latest_image.name,
+            )
+
         case "latest_image_delete":
             await query.edit_message_caption(
                 "⚠ Delete latest image?",
@@ -192,8 +234,6 @@ async def menu_callback(
             )
 
         case "confirm_latest_image_delete":
-            storage = context.application.bot_data["storage"]
-
             filename = context.application.bot_data.get(
                 "selected_image_filename"
             )
@@ -201,9 +241,18 @@ async def menu_callback(
             if filename is None:
                 return
 
-            deleted = storage.delete_image(
-                filename
-            )
+            deleted = storage.delete_image(filename)
+
+            if deleted:
+                logger.info(
+                    "Telegram deleted image: %s",
+                    filename,
+                )
+            else:
+                logger.warning(
+                    "Telegram could not delete missing image: %s",
+                    filename,
+                )
 
             await query.edit_message_caption(
                 "🗑 Image deleted."
@@ -231,10 +280,52 @@ async def menu_callback(
                 reply_markup=main_menu(),
             )
 
-        # event actions
-        case "latest_event":
-            storage = context.application.bot_data["storage"]
 
+async def _handle_event_action(
+        data: str,
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    storage = context.application.bot_data["storage"]
+
+    if data.startswith("events_page:"):
+        page = int(
+            data.removeprefix("events_page:")
+        )
+
+        await show_events_page(
+            query,
+            context,
+            page=page,
+        )
+        return
+
+    if data.startswith("event:"):
+        event_id = data.removeprefix("event:")
+        event = storage.event(event_id)
+
+        if event is None:
+            await query.answer(
+                "Event not found.",
+                show_alert=True,
+            )
+            return
+
+        context.application.bot_data[
+            "selected_event_id"
+        ] = event.id
+
+        await query.edit_message_text(
+            build_event_text(event),
+            reply_markup=event_menu(
+                has_image=bool(event.images),
+                has_video=bool(event.video_filename),
+            ),
+        )
+        return
+
+    match data:
+        case "latest_event":
             events = storage.events()
 
             if not events:
@@ -246,7 +337,9 @@ async def menu_callback(
 
             event = events[0]
 
-            context.application.bot_data["selected_event_id"] = event.id
+            context.application.bot_data[
+                "selected_event_id"
+            ] = event.id
 
             await query.edit_message_text(
                 build_event_text(event),
@@ -263,45 +356,10 @@ async def menu_callback(
                 page=0,
             )
 
-        case data if data.startswith("events_page:"):
-            page = int(
-                data.removeprefix("events_page:")
-            )
-
-            await show_events_page(
-                query,
-                context,
-                page=page,
-            )
-
-        case data if data.startswith("event:"):
-            storage = context.application.bot_data["storage"]
-
-            event_id = data.removeprefix("event:")
-            event = storage.event(event_id)
-
-            if event is None:
-                await query.answer(
-                    "Event not found.",
-                    show_alert=True,
-                )
-                return
-
-            context.application.bot_data[
-                "selected_event_id"
-            ] = event.id
-
-            await query.edit_message_text(
-                build_event_text(event),
-                reply_markup=event_menu(
-                    has_image=bool(event.images),
-                    has_video=bool(event.video_filename),
-                ),
-            )
-
         case "event_send_image":
-            storage = context.application.bot_data["storage"]
-            event_id = context.application.bot_data.get("selected_event_id")
+            event_id = context.application.bot_data.get(
+                "selected_event_id"
+            )
 
             if event_id is None:
                 return
@@ -324,9 +382,16 @@ async def menu_callback(
                     caption=f"🖼 {event.id}",
                 )
 
+            logger.info(
+                "Telegram sent event image: event=%s file=%s",
+                event.id,
+                image.filename,
+            )
+
         case "event_send_video":
-            storage = context.application.bot_data["storage"]
-            event_id = context.application.bot_data.get("selected_event_id")
+            event_id = context.application.bot_data.get(
+                "selected_event_id"
+            )
 
             if event_id is None:
                 return
@@ -362,6 +427,12 @@ async def menu_callback(
                     read_timeout=120,
                 )
 
+            logger.info(
+                "Telegram sent event video: event=%s file=%s",
+                event.id,
+                event.video_filename,
+            )
+
         case "event_delete_image":
             await query.edit_message_text(
                 "⚠ Delete image from this event?",
@@ -375,8 +446,9 @@ async def menu_callback(
             )
 
         case "confirm_event_delete_image":
-            storage = context.application.bot_data["storage"]
-            event_id = context.application.bot_data.get("selected_event_id")
+            event_id = context.application.bot_data.get(
+                "selected_event_id"
+            )
 
             if event_id is None:
                 return
@@ -390,8 +462,14 @@ async def menu_callback(
                 )
                 return
 
-            storage.delete_image(
-                event.images[0].filename
+            filename = event.images[0].filename
+
+            storage.delete_image(filename)
+
+            logger.info(
+                "Telegram deleted event image: event=%s file=%s",
+                event_id,
+                filename,
             )
 
             event = storage.event(event_id)
@@ -412,8 +490,9 @@ async def menu_callback(
             )
 
         case "confirm_event_delete_video":
-            storage = context.application.bot_data["storage"]
-            event_id = context.application.bot_data.get("selected_event_id")
+            event_id = context.application.bot_data.get(
+                "selected_event_id"
+            )
 
             if event_id is None:
                 return
@@ -427,8 +506,14 @@ async def menu_callback(
                 )
                 return
 
-            storage.delete_video(
-                event.video_filename
+            filename = event.video_filename
+
+            storage.delete_video(filename)
+
+            logger.info(
+                "Telegram deleted event video: event=%s file=%s",
+                event_id,
+                filename,
             )
 
             event = storage.event(event_id)
@@ -448,10 +533,16 @@ async def menu_callback(
                 ),
             )
 
-        # service control
-        case "service":
-            service = context.application.bot_data["service"]
 
+async def _handle_service_action(
+        data: str,
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    service = context.application.bot_data["service"]
+
+    match data:
+        case "service":
             await query.edit_message_text(
                 build_service_text(context),
                 reply_markup=service_menu(
@@ -460,8 +551,11 @@ async def menu_callback(
             )
 
         case "service_start":
-            service = context.application.bot_data["service"]
             service.start()
+
+            logger.info(
+                "Telegram started BirdPi service"
+            )
 
             await query.edit_message_text(
                 build_service_text(context),
@@ -483,8 +577,11 @@ async def menu_callback(
             )
 
         case "confirm_service_stop":
-            service = context.application.bot_data["service"]
             service.stop()
+
+            logger.info(
+                "Telegram stopped BirdPi service"
+            )
 
             await query.edit_message_text(
                 build_service_text(context),
@@ -494,8 +591,11 @@ async def menu_callback(
             )
 
         case "confirm_service_restart":
-            service = context.application.bot_data["service"]
             service.restart()
+
+            logger.info(
+                "Telegram restarted BirdPi service"
+            )
 
             await query.edit_message_text(
                 "⚙ BirdPi Service\n\n"
@@ -505,7 +605,15 @@ async def menu_callback(
                 ),
             )
 
-        # storage actions
+
+async def _handle_storage_action(
+        data: str,
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    storage = context.application.bot_data["storage"]
+
+    match data:
         case "storage":
             await query.message.reply_text(
                 build_storage_text(context),
@@ -527,9 +635,12 @@ async def menu_callback(
             )
 
         case "confirm_clear_images":
-            storage = context.application.bot_data["storage"]
-
             deleted = storage.clear_images()
+
+            logger.info(
+                "Telegram cleared images: %d deleted",
+                deleted,
+            )
 
             await query.edit_message_text(
                 f"🗑 Deleted {deleted} image(s).",
@@ -537,37 +648,85 @@ async def menu_callback(
             )
 
         case "confirm_clear_videos":
-            storage = context.application.bot_data["storage"]
-
             deleted = storage.clear_videos()
+
+            logger.info(
+                "Telegram cleared videos: %d deleted",
+                deleted,
+            )
 
             await query.edit_message_text(
                 f"🗑 Deleted {deleted} video(s).",
                 reply_markup=storage_menu(),
             )
 
-        # manual controls
+
+async def _show_manual_control(
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    status = context.application.bot_data[
+        "runtime_status"
+    ].read()
+
+    await query.edit_message_text(
+        build_manual_control_text(context),
+        reply_markup=manual_control_menu(
+            status.manual_video_active
+        ),
+    )
+
+
+async def _handle_manual_action(
+        data: str,
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    service = context.application.bot_data["service"]
+
+    if not service.running():
+        await query.edit_message_text(
+            "🛠 BirdPi Manual Control\n\n"
+            "⚠ BirdPi service is stopped.\n"
+            "Manual controls are currently unavailable.",
+            reply_markup=main_menu(),
+        )
+        return
+
+    runtime = context.application.bot_data["runtime"]
+
+    match data:
         case "manual_control":
-            runtime_status = context.application.bot_data["runtime_status"]
-            status = runtime_status.read()
-            await query.edit_message_text(
-                build_manual_control_text(context),
-                reply_markup=manual_control_menu(
-                    status.manual_video_active
-                ),
+            await _show_manual_control(
+                query,
+                context,
             )
 
         case "manual_capture":
-            runtime = context.application.bot_data["runtime"]
-            response = await asyncio.to_thread(runtime.capture_image)
+            response = await asyncio.to_thread(
+                runtime.capture_image
+            )
+
+            logger.info(
+                "Telegram requested manual image capture: %s",
+                response,
+            )
+
             await query.answer(
                 response,
                 show_alert=True,
             )
 
         case "manual_video_start":
-            runtime = context.application.bot_data["runtime"]
-            response = await asyncio.to_thread(runtime.video_start)
+            response = await asyncio.to_thread(
+                runtime.video_start
+            )
+
+            logger.info(
+                "Telegram requested manual video start: %s",
+                response,
+            )
+
             await query.edit_message_text(
                 (
                     "🛠 BirdPi Manual Control\n\n"
@@ -580,8 +739,15 @@ async def menu_callback(
             )
 
         case "manual_video_stop":
-            runtime = context.application.bot_data["runtime"]
-            response = await asyncio.to_thread(runtime.video_stop)
+            response = await asyncio.to_thread(
+                runtime.video_stop
+            )
+
+            logger.info(
+                "Telegram requested manual video stop: %s",
+                response,
+            )
+
             await query.edit_message_text(
                 (
                     "🛠 BirdPi Manual Control\n\n"
@@ -594,45 +760,135 @@ async def menu_callback(
             )
 
         case "manual_ir_off":
-            runtime = context.application.bot_data["runtime"]
-            await asyncio.to_thread(runtime.ir_off)
-            status = context.application.bot_data["runtime_status"].read()
-            await query.edit_message_text(
-                build_manual_control_text(context),
-                reply_markup=manual_control_menu(
-                    status.manual_video_active
-                ),
+            await asyncio.to_thread(
+                runtime.ir_off
+            )
+
+            logger.info(
+                "Telegram set IR mode: OFF"
+            )
+
+            await _show_manual_control(
+                query,
+                context,
             )
 
         case "manual_ir_left":
-            runtime = context.application.bot_data["runtime"]
-            await asyncio.to_thread(runtime.ir_left)
-            status = context.application.bot_data["runtime_status"].read()
-            await query.edit_message_text(
-                build_manual_control_text(context),
-                reply_markup=manual_control_menu(
-                    status.manual_video_active
-                ),
+            await asyncio.to_thread(
+                runtime.ir_left
+            )
+
+            logger.info(
+                "Telegram set IR mode: LEFT"
+            )
+
+            await _show_manual_control(
+                query,
+                context,
             )
 
         case "manual_ir_right":
-            runtime = context.application.bot_data["runtime"]
-            await asyncio.to_thread(runtime.ir_right)
-            status = context.application.bot_data["runtime_status"].read()
-            await query.edit_message_text(
-                build_manual_control_text(context),
-                reply_markup=manual_control_menu(
-                    status.manual_video_active
-                ),
+            await asyncio.to_thread(
+                runtime.ir_right
+            )
+
+            logger.info(
+                "Telegram set IR mode: RIGHT"
+            )
+
+            await _show_manual_control(
+                query,
+                context,
             )
 
         case "manual_ir_both":
-            runtime = context.application.bot_data["runtime"]
-            await asyncio.to_thread(runtime.ir_both)
-            status = context.application.bot_data["runtime_status"].read()
-            await query.edit_message_text(
-                build_manual_control_text(context),
-                reply_markup=manual_control_menu(
-                    status.manual_video_active
-                ),
+            await asyncio.to_thread(
+                runtime.ir_both
             )
+
+            logger.info(
+                "Telegram set IR mode: BOTH"
+            )
+
+            await _show_manual_control(
+                query,
+                context,
+            )
+
+
+async def menu_callback(
+        update: Update,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    if not authorized(update, context):
+        return
+
+    query = update.callback_query
+
+    if query is None:
+        return
+
+    try:
+        await query.answer()
+    except BadRequest as exc:
+        logger.warning(
+            "Ignoring stale callback query: %s",
+            exc,
+        )
+
+    data = query.data
+
+    if data is None:
+        return
+
+    if data in _MAIN_ACTIONS:
+        await _handle_main_action(
+            data,
+            query,
+            context,
+        )
+
+    elif data in _IMAGE_ACTIONS:
+        await _handle_image_action(
+            data,
+            query,
+            context,
+        )
+
+    elif (
+            data in _EVENT_ACTIONS
+            or data.startswith("events_page:")
+            or data.startswith("event:")
+    ):
+        await _handle_event_action(
+            data,
+            query,
+            context,
+        )
+
+    elif data in _SERVICE_ACTIONS:
+        await _handle_service_action(
+            data,
+            query,
+            context,
+        )
+
+    elif data in _STORAGE_ACTIONS:
+        await _handle_storage_action(
+            data,
+            query,
+            context,
+        )
+
+    elif data in _MANUAL_ACTIONS:
+        await _handle_manual_action(
+            data,
+            query,
+            context,
+        )
+
+    else:
+        logger.warning(
+            "Unhandled Telegram callback: %s",
+            data,
+        )

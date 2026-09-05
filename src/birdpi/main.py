@@ -21,7 +21,7 @@ def main() -> None:
         _handle_sigterm,
     )
 
-    config = initialize()
+    config = initialize("runtime")
 
     birdpi = BirdPi(config)
     birdpi.run()

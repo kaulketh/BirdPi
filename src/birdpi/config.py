@@ -79,8 +79,13 @@ class Config:
     image_path: Path
     event_path: Path
     video_path: Path
+
     log_path: Path
+    web_log_path: Path
+    bot_log_path: Path
+
     runtime_status_path: Path
+    thumbnail_path: Path
 
     detector_type: str
     classifier_type: str
@@ -110,17 +115,15 @@ def load_config() -> Config:
     image_path = data_path / "images"
     event_path = data_path / "events"
     video_path = data_path / "videos"
-    log_path = data_path / "logs" / "birdpi.log"
-    runtime_status_path = (
-            data_path
-            / "status"
-            / "runtime.json"
-    )
-    runtime_command_socket_path = (
-            data_path
-            / "status"
-            / "birdpi.sock"
-    )
+    thumbnail_path = (data_path / "thumbnails")
+
+    log_path = (data_path / "logs" / "birdpi.log")
+    web_log_path = (data_path / "logs" / "birdpi-web.log")
+    bot_log_path = (data_path / "logs" / "birdpi-bot.log")
+
+    runtime_status_path = (data_path / "status" / "runtime.json"
+                           )
+    runtime_command_socket_path = (data_path / "status" / "birdpi.sock")
 
     return Config(
         location_name=location_name,
@@ -128,7 +131,10 @@ def load_config() -> Config:
         image_path=image_path,
         event_path=event_path,
         video_path=video_path,
+        thumbnail_path=thumbnail_path,
         log_path=log_path,
+        web_log_path=web_log_path,
+        bot_log_path=bot_log_path,
         runtime_status_path=runtime_status_path,
         runtime_command_socket_path=runtime_command_socket_path,
 
