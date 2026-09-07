@@ -13,6 +13,7 @@ from datetime import datetime
 from birdpi.camera.capture import Camera
 from birdpi.camera.preview import CameraPreview
 from birdpi.daylight.controller import DayNightController
+from birdpi.exceptions import VideoError
 from birdpi.models import MotionEvent
 from birdpi.motion.detector import MotionDetector
 from birdpi.recording.video import VideoRecorder
@@ -171,18 +172,30 @@ class MotionMonitor:
                 video_path,
             )
 
-            self.video_recorder.record(
-                output_file=video_path,
-            )
+            try:
+                saved_video = self.video_recorder.record(
+                    output_file=video_path,
+                )
 
-            self._event.video_filename = (
-                video_path.name
-            )
+            except VideoError as error:
+                logger.error(
+                    "Event video recording failed: "
+                    "event=%s error=%s",
+                    self._event.id,
+                    error,
+                )
 
-            logger.info(
-                "Event video saved: %s",
-                video_path,
-            )
+                self._event.video_filename = None
+
+            else:
+                self._event.video_filename = (
+                    saved_video.name
+                )
+
+                logger.info(
+                    "Event video saved: %s",
+                    saved_video,
+                )
 
         finally:
             self.detector.reset()
