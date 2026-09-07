@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 
 from birdpi.config import Config
+from birdpi.exceptions import CaptureError, ThumbnailError
 from birdpi.models import CapturedImage
 from birdpi.storage import Storage
 
@@ -74,8 +75,8 @@ class Camera:
             )
 
         except subprocess.CalledProcessError as error:
-            raise RuntimeError(
-                "Camera capture failed"
+            raise CaptureError(
+                f"Image capture failed with exit code {error.returncode}"
             ) from error
 
         image = CapturedImage(
@@ -85,12 +86,12 @@ class Camera:
         )
 
         self.storage.save_image_metadata(image)
-        
+
         try:
             self.storage.create_thumbnail(
                 image.path
             )
-        except Exception:
+        except ThumbnailError:
             logger.exception(
                 "Thumbnail creation failed: %s",
                 image.path,

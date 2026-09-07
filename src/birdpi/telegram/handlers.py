@@ -8,6 +8,10 @@ from telegram import Update
 from telegram.error import BadRequest
 from telegram.ext import ContextTypes
 
+from birdpi.exceptions import (
+    RuntimeCommandError,
+    ServiceControlError,
+)
 from birdpi.telegram.keyboard import (
     confirm_clear_images,
     confirm_clear_videos,
@@ -122,8 +126,24 @@ async def status(
     if not authorized(update, context):
         return
 
+    try:
+        text = build_status_text(
+            context
+        )
+
+    except ServiceControlError as error:
+        logger.warning(
+            "Telegram status query failed: %s",
+            error,
+        )
+
+        await update.message.reply_text(
+            "⚠ BirdPi service status is currently unavailable."
+        )
+        return
+
     await update.message.reply_text(
-        build_status_text(context)
+        text
     )
 
 
@@ -841,54 +861,79 @@ async def menu_callback(
     if data is None:
         return
 
-    if data in _MAIN_ACTIONS:
-        await _handle_main_action(
-            data,
-            query,
-            context,
-        )
+    try:
+        if data in _MAIN_ACTIONS:
+            await _handle_main_action(
+                data,
+                query,
+                context,
+            )
 
-    elif data in _IMAGE_ACTIONS:
-        await _handle_image_action(
-            data,
-            query,
-            context,
-        )
+        elif data in _IMAGE_ACTIONS:
+            await _handle_image_action(
+                data,
+                query,
+                context,
+            )
 
-    elif (
-            data in _EVENT_ACTIONS
-            or data.startswith("events_page:")
-            or data.startswith("event:")
-    ):
-        await _handle_event_action(
-            data,
-            query,
-            context,
-        )
+        elif (
+                data in _EVENT_ACTIONS
+                or data.startswith("events_page:")
+                or data.startswith("event:")
+        ):
+            await _handle_event_action(
+                data,
+                query,
+                context,
+            )
 
-    elif data in _SERVICE_ACTIONS:
-        await _handle_service_action(
-            data,
-            query,
-            context,
-        )
+        elif data in _SERVICE_ACTIONS:
+            await _handle_service_action(
+                data,
+                query,
+                context,
+            )
 
-    elif data in _STORAGE_ACTIONS:
-        await _handle_storage_action(
-            data,
-            query,
-            context,
-        )
+        elif data in _STORAGE_ACTIONS:
+            await _handle_storage_action(
+                data,
+                query,
+                context,
+            )
 
-    elif data in _MANUAL_ACTIONS:
-        await _handle_manual_action(
-            data,
-            query,
-            context,
-        )
+        elif data in _MANUAL_ACTIONS:
+            await _handle_manual_action(
+                data,
+                query,
+                context,
+            )
 
-    else:
+        else:
+            logger.warning(
+                "Unhandled Telegram callback: %s",
+                data,
+            )
+
+    except RuntimeCommandError as error:
         logger.warning(
-            "Unhandled Telegram callback: %s",
-            data,
+            "Telegram runtime command failed: %s",
+            error,
+        )
+
+        await query.edit_message_text(
+            "⚠ BirdPi Runtime unavailable\n\n"
+            "The BirdPi service is currently not reachable.",
+            reply_markup=main_menu(),
+        )
+
+    except ServiceControlError as error:
+        logger.warning(
+            "Telegram service control failed: %s",
+            error,
+        )
+
+        await query.edit_message_text(
+            "⚠ Service control failed\n\n"
+            "BirdPi could not perform the requested service action.",
+            reply_markup=main_menu(),
         )

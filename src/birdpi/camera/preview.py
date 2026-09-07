@@ -11,6 +11,7 @@ from collections.abc import Iterator
 import numpy as np
 
 from birdpi.config import Config
+from birdpi.exceptions import PreviewError
 
 
 class CameraPreview:
@@ -81,12 +82,12 @@ class CameraPreview:
         """
 
         if self._process is None:
-            raise RuntimeError(
+            raise PreviewError(
                 "Camera preview is not running"
             )
 
         if self._process.stdout is None:
-            raise RuntimeError(
+            raise PreviewError(
                 "Camera preview output is unavailable"
             )
 

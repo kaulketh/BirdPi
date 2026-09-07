@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {{ title }} – BirdPi
+{% endblock %}
+
+{% block content %}
+
+    <section class="card">
+
+        <div class="empty-state">
+
+            <div class="empty-state-icon">
+                ⚠️
+            </div>
+
+            <div class="empty-state-title">
+                {{ title }}
+            </div>
+
+            <div class="empty-state-text">
+                {{ message }}
+            </div>
+
+        </div>
+
+        <div class="page-actions">
+            <a
+                    class="btn btn-neutral"
+                    href="{{ url_for('web.index') }}"
+            >
+                ← Back to Home
+            </a>
+        </div>
+
+    </section>
+
+{% endblock %}
