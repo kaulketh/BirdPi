@@ -18,7 +18,7 @@ from birdpi.config import Config
 from birdpi.runtime.client import RuntimeCommandClient
 from birdpi.runtime.status import RuntimeStatusStore
 from birdpi.storage import Storage
-from birdpi.system import (
+from birdpi.utils.system import (
     format_uptime,
     get_cpu_temperature,
     get_uptime,
