@@ -139,24 +139,36 @@ def load_config() -> Config:
         runtime_command_socket_path=runtime_command_socket_path,
 
         camera=CameraConfig(
-            width=4608, height=2592),
-        video=VideoConfig(
-            width=1920, height=1080,
-            framerate=30, duration_seconds=15,
+            width=4608,
+            height=2592
         ),
-        ir=IRLightConfig(enabled=True, left_pin=20, right_pin=21, ),
 
-        web=WebConfig(refresh_interval_seconds=30, ),
+        video=VideoConfig(
+            width=1920,
+            height=1080,
+            framerate=30,
+            duration_seconds=15,
+        ),
+
+        ir=IRLightConfig(
+            enabled=True,
+            left_pin=20,
+            right_pin=21, ),
+
+        web=WebConfig(
+            refresh_interval_seconds=30,
+        ),
 
         detector_type="motion",
         classifier_type="dummy",
 
         motion=MotionConfig(
-            pixel_threshold=30,  # 60,
-            min_area=3000,
-            reference_interval=5,
+            pixel_threshold=40,
+            min_area=4000,
+            reference_interval=3,
             event_timeout_seconds=8,
         ),
+
         object_detection=ObjectDetectionConfig(
             model_path=Path(
                 "/home/kaulketh/birdpi/models/yolo11n.onnx"
@@ -165,10 +177,12 @@ def load_config() -> Config:
             iou_threshold=0.45,
             input_size=640,
         ),
+
         location=LocationConfig(
             latitude=LOCATIONS[location_name].latitude,
             longitude=LOCATIONS[location_name].longitude
         ),
+
         daylight=DaylightConfig(
             check_interval_seconds=60,
         ),
@@ -181,5 +195,6 @@ def load_config() -> Config:
             token_env="BIRDPI_TELEGRAM_TOKEN",
             chat_id_env="BIRDPI_TELEGRAM_CHAT_ID",
         ),
+
         manual_video_max_duration_seconds=60,
     )
