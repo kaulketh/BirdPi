@@ -140,7 +140,7 @@ def load_config() -> Config:
 
         camera=CameraConfig(
             width=4608,
-            height=2592
+            height=2592,
         ),
 
         video=VideoConfig(

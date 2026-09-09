@@ -2,7 +2,138 @@
 Telegram inline keyboards for BirdPi.
 """
 
+from enum import StrEnum
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
+
+class Callback(StrEnum):
+    CONFIRM_CLEAR_IMAGES = "confirm_clear_images"
+    CONFIRM_CLEAR_VIDEOS = "confirm_clear_videos"
+    CONFIRM_EVENT_DELETE_IMAGE = "confirm_event_delete_image"
+    CONFIRM_EVENT_DELETE_VIDEO = "confirm_event_delete_video"
+    CONFIRM_LATEST_IMAGE_DELETE = "confirm_latest_image_delete"
+    CONFIRM_SERVICE_STOP = "confirm_service_stop"
+    CONFIRM_SERVICE_RESTART = "confirm_service_restart"
+
+    EVENTS = "events"
+    LATEST_EVENT = "latest_event"
+
+    LATEST_IMAGE = "latest_image"
+    LATEST_IMAGE_CANCEL = "latest_image_cancel"
+
+    MAIN = "main_menu"
+    SERVICE = "service"
+    STORAGE = "storage"
+
+
+class ButtonLabel(StrEnum):
+    BACK = "⬅ Back"
+    CANCEL = "Cancel"
+
+
+def _auto_emoji(text: str) -> str:
+    t = text.lower()
+
+    if "restart" in t:
+        return f"🔄 {text}"
+    if "delete" in t:
+        return f"🗑️ {text}"
+    if "stop" in t:
+        return f"⛔ {text}"
+    if "yes" in t:
+        return f"✅ {text}"
+    if "cancel" in t:
+        return f"❌ {text}"
+
+    return text
+
+
+def _make_confirm_dialog(
+        yes_label: str,
+        yes_callback: Callback,
+        cancel_label: str,
+        cancel_callback: Callback,
+) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    _auto_emoji(yes_label),
+                    callback_data=yes_callback,
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    _auto_emoji(cancel_label),
+                    callback_data=cancel_callback,
+                )
+            ],
+        ]
+    )
+
+
+def confirm_clear_images() -> InlineKeyboardMarkup:
+    return _make_confirm_dialog(
+        "Yes, delete all images",
+        Callback.CONFIRM_CLEAR_IMAGES,
+        ButtonLabel.CANCEL,
+        Callback.STORAGE,
+    )
+
+
+def confirm_clear_videos() -> InlineKeyboardMarkup:
+    return _make_confirm_dialog(
+        "Yes, delete all videos",
+        Callback.CONFIRM_CLEAR_VIDEOS,
+        ButtonLabel.CANCEL,
+        Callback.STORAGE,
+    )
+
+
+def confirm_delete_event_image() -> InlineKeyboardMarkup:
+    return _make_confirm_dialog(
+        "Yes, delete image",
+        Callback.CONFIRM_EVENT_DELETE_IMAGE,
+        ButtonLabel.CANCEL,
+        Callback.LATEST_EVENT,
+    )
+
+
+def confirm_delete_event_video() -> InlineKeyboardMarkup:
+    return _make_confirm_dialog(
+        "Yes, delete video",
+        Callback.CONFIRM_EVENT_DELETE_VIDEO,
+        ButtonLabel.CANCEL,
+        Callback.LATEST_EVENT,
+    )
+
+
+def confirm_delete_latest_image() -> InlineKeyboardMarkup:
+    return _make_confirm_dialog(
+        "Yes, delete image",
+        Callback.CONFIRM_LATEST_IMAGE_DELETE,
+        ButtonLabel.CANCEL,
+        Callback.CANCEL_LATEST_IMAGE_CANCEL,
+    )
+
+
+def confirm_service_restart() -> InlineKeyboardMarkup:
+    return _make_confirm_dialog(
+        "Yes, restart BirdPi",
+        Callback.CONFIRM_SERVICE_RESTART,
+        ButtonLabel.CANCEL,
+        Callback.SERVICE,
+    )
+
+
+def confirm_service_stop() -> InlineKeyboardMarkup:
+    return _make_confirm_dialog(
+        "Yes, stop BirdPi",
+        Callback.CONFIRM_SERVICE_STOP,
+        ButtonLabel.CANCEL,
+        Callback.SERVICE,
+    )
 
 
 def main_menu() -> InlineKeyboardMarkup:
@@ -10,35 +141,29 @@ def main_menu() -> InlineKeyboardMarkup:
         [
             [
                 InlineKeyboardButton(
-                    "📊 Status",
-                    callback_data="status",
-                ),
-                InlineKeyboardButton(
                     "🕊 Latest Event",
-                    callback_data="latest_event",
+                    callback_data=Callback.LATEST_EVENT,
                 ),
-            ],
-            [
                 InlineKeyboardButton(
                     "🖼 Latest Image",
-                    callback_data="latest_image",
+                    callback_data=Callback.LATEST_IMAGE,
                 ),
+            ],
+            [
                 InlineKeyboardButton(
                     "📚 Events",
-                    callback_data="events",
+                    callback_data=Callback.EVENTS,
                 ),
-            ],
-            [
                 InlineKeyboardButton(
                     "💾 Storage",
-                    callback_data="storage",
-                ),
-                InlineKeyboardButton(
-                    "⚙ Service",
-                    callback_data="service",
+                    callback_data=Callback.STORAGE,
                 ),
             ],
             [
+                InlineKeyboardButton(
+                    "⚙ Service",
+                    callback_data=Callback.SERVICE,
+                ),
                 InlineKeyboardButton(
                     "🛠 Manual Control",
                     callback_data="manual_control",
@@ -63,46 +188,8 @@ def storage_menu() -> InlineKeyboardMarkup:
             ],
             [
                 InlineKeyboardButton(
-                    "⬅ Back",
-                    callback_data="main_menu",
-                ),
-            ],
-        ]
-    )
-
-
-def confirm_clear_images() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "✅ Yes, delete all images",
-                    callback_data="confirm_clear_images",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    "❌ Cancel",
-                    callback_data="storage",
-                ),
-            ],
-        ]
-    )
-
-
-def confirm_clear_videos() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "✅ Yes, delete all videos",
-                    callback_data="confirm_clear_videos",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    "❌ Cancel",
-                    callback_data="storage",
+                    ButtonLabel.BACK,
+                    callback_data=Callback.MAIN,
                 ),
             ],
         ]
@@ -138,51 +225,13 @@ def service_menu(running: bool, ) -> InlineKeyboardMarkup:
     buttons.append(
         [
             InlineKeyboardButton(
-                "⬅ Back",
-                callback_data="main_menu",
+                ButtonLabel.BACK,
+                callback_data=Callback.MAIN,
             )
         ]
     )
 
     return InlineKeyboardMarkup(buttons)
-
-
-def confirm_service_stop() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "✅ Yes, stop BirdPi",
-                    callback_data="confirm_service_stop",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    "❌ Cancel",
-                    callback_data="service",
-                ),
-            ],
-        ]
-    )
-
-
-def confirm_service_restart() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "✅ Yes, restart BirdPi",
-                    callback_data="confirm_service_restart",
-                ),
-            ],
-            [
-                InlineKeyboardButton(
-                    "❌ Cancel",
-                    callback_data="service",
-                ),
-            ],
-        ]
-    )
 
 
 def event_menu(has_image: bool, has_video: bool, ) -> InlineKeyboardMarkup:
@@ -233,8 +282,8 @@ def event_menu(has_image: bool, has_video: bool, ) -> InlineKeyboardMarkup:
     buttons.append(
         [
             InlineKeyboardButton(
-                "⬅ Back",
-                callback_data="events",
+                ButtonLabel.BACK,
+                callback_data=Callback.EVENTS,
             )
         ]
     )
@@ -282,51 +331,13 @@ def events_menu(events, page: int, has_previous: bool,
     buttons.append(
         [
             InlineKeyboardButton(
-                "⬅ Back",
-                callback_data="main_menu",
+                ButtonLabel.BACK,
+                callback_data=Callback.MAIN,
             )
         ]
     )
 
     return InlineKeyboardMarkup(buttons)
-
-
-def confirm_delete_event_image() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "✅ Yes, delete image",
-                    callback_data="confirm_event_delete_image",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "❌ Cancel",
-                    callback_data="latest_event",
-                )
-            ],
-        ]
-    )
-
-
-def confirm_delete_event_video() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "✅ Yes, delete video",
-                    callback_data="confirm_event_delete_video",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "❌ Cancel",
-                    callback_data="latest_event",
-                )
-            ],
-        ]
-    )
 
 
 def latest_image_menu() -> InlineKeyboardMarkup:
@@ -340,27 +351,8 @@ def latest_image_menu() -> InlineKeyboardMarkup:
             ],
             [
                 InlineKeyboardButton(
-                    "⬅ Back",
+                    ButtonLabel.BACK,
                     callback_data="latest_image_back",
-                )
-            ],
-        ]
-    )
-
-
-def confirm_delete_latest_image() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton(
-                    "✅ Yes, delete image",
-                    callback_data="confirm_latest_image_delete",
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    "❌ Cancel",
-                    callback_data="latest_image_cancel",
                 )
             ],
         ]
@@ -420,8 +412,8 @@ def manual_control_menu(manual_video_active: bool, ) -> InlineKeyboardMarkup:
             ],
             [
                 InlineKeyboardButton(
-                    "⬅ Back",
-                    callback_data="main_menu",
+                    ButtonLabel.BACK,
+                    callback_data=Callback.MAIN,
                 ),
             ],
         ]
