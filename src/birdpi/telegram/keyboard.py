@@ -114,7 +114,7 @@ def confirm_delete_latest_image() -> InlineKeyboardMarkup:
         "Yes, delete image",
         Callback.CONFIRM_LATEST_IMAGE_DELETE,
         ButtonLabel.CANCEL,
-        Callback.CANCEL_LATEST_IMAGE_CANCEL,
+        Callback.LATEST_IMAGE_CANCEL,
     )
 
 
