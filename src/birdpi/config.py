@@ -139,8 +139,8 @@ def load_config() -> Config:
         runtime_command_socket_path=runtime_command_socket_path,
 
         camera=CameraConfig(
-            width=4608,
-            height=2592,
+            width=2304,
+            height=1296,
         ),
 
         video=VideoConfig(
