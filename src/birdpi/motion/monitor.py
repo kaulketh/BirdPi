@@ -25,6 +25,7 @@ logger = get_logger(__name__)
 
 
 class MotionMonitor:
+    OBSERVATION_SETTLE_SECONDS = 2.0
 
     def __init__(
             self,
@@ -55,6 +56,7 @@ class MotionMonitor:
         self.command_callback = command_callback
 
         self._observation_active: bool | None = None
+        self._observation_settle_until: float | None = None
 
     def run(self) -> None:
         """
@@ -76,6 +78,22 @@ class MotionMonitor:
                 self._update_observation_state()
 
                 if not self.observation_state.active:
+                    continue
+
+                if self._observation_settle_until is not None:
+                    if time.monotonic() < self._observation_settle_until:
+                        continue
+
+                    self._observation_settle_until = None
+
+                    # Build a fresh reference after illumination/exposure has settled.
+                    self.detector.reset()
+
+                    logger.info(
+                        "Motion detection ready"
+                    )
+
+                    # Skip this frame as well.
                     continue
 
                 now = time.monotonic()
@@ -266,20 +284,35 @@ class MotionMonitor:
 
         self._observation_active = active
 
-        if not active and self._event is not None:
-            self._close_event()
+        if not active:
+            self._observation_settle_until = None
 
-        self.detector.reset()
+            if self._event is not None:
+                self._close_event()
 
-        if active:
-            logger.info(
-                "Observation active: mode=%s, day_night=%s",
-                self.observation_state.mode.value,
-                self.observation_state.day_night.value,
-            )
-        else:
+            self.detector.reset()
+
             logger.info(
                 "Observation standby: mode=%s, day_night=%s",
                 self.observation_state.mode.value,
                 self.observation_state.day_night.value,
             )
+
+            return
+
+        # Observation becomes active.
+        # Allow camera exposure / IR illumination to settle first.
+        self._observation_settle_until = (
+                time.monotonic() + self.OBSERVATION_SETTLE_SECONDS
+        )
+
+        logger.info(
+            "Observation active: mode=%s, day_night=%s",
+            self.observation_state.mode.value,
+            self.observation_state.day_night.value,
+        )
+
+        logger.info(
+            "Motion detection settling for %.1f s",
+            self.OBSERVATION_SETTLE_SECONDS,
+        )

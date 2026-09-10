@@ -393,8 +393,8 @@ class BirdPi:
 
         self.observation_state.mode = mode
 
-        self._sync_observation_status()
-        self.runtime_status.write(self.status)
+        # Re-evaluate day/night-dependent components immediately.
+        self.day_night.update(force=True)
 
         logger.info(
             "Observation mode changed: mode=%s, state=%s, day_night=%s",

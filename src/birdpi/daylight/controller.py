@@ -11,6 +11,7 @@ from birdpi.daylight.sun import Daylight
 from birdpi.lighting.ir_lights import IRLights
 from birdpi.lighting.ir_lights import IRMode
 from birdpi.motion.detector import MotionDetector
+from birdpi.observation.state import ObservationMode
 from birdpi.observation.state import ObservationState
 from birdpi.utils.logger import get_logger
 
@@ -76,18 +77,23 @@ class DayNightController:
         self._day_night_state = day_night
         self.observation_state.day_night = day_night
 
-        if day_night == DayNightState.NIGHT:
+        if (
+                day_night == DayNightState.NIGHT
+                and self.observation_state.mode == ObservationMode.WILDLIFE
+        ):
             self.ir_lights.set_mode(IRMode.LEFT)
 
             logger.info(
-                "Switched to NIGHT mode, IR lighting enabled"
+                "IR lighting enabled: mode=wildlife, day_night=night"
             )
 
         else:
             self.ir_lights.set_mode(IRMode.OFF)
 
             logger.info(
-                "Switched to DAY mode, IR lighting disabled"
+                "IR lighting disabled: mode=%s, day_night=%s",
+                self.observation_state.mode.value,
+                day_night.value,
             )
 
         if self.status_callback is not None:
