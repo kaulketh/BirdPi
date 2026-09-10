@@ -138,7 +138,14 @@ def confirm_service_stop() -> InlineKeyboardMarkup:
 
 def main_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
+
         [
+            [
+                InlineKeyboardButton(
+                    "🐾 Observation",
+                    callback_data="observation",
+                ),
+            ],
             [
                 InlineKeyboardButton(
                     "🕊 Latest Event",
@@ -167,6 +174,43 @@ def main_menu() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(
                     "🛠 Manual Control",
                     callback_data="manual_control",
+                ),
+            ],
+        ]
+    )
+
+
+def observation_keyboard(
+        current_mode: str,
+) -> InlineKeyboardMarkup:
+    bird_label = (
+        "✅ 🐦 Bird"
+        if current_mode == "bird"
+        else "🐦 Bird"
+    )
+
+    wildlife_label = (
+        "✅ 🦊 Wildlife"
+        if current_mode == "wildlife"
+        else "🦊 Wildlife"
+    )
+
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    bird_label,
+                    callback_data="observation_bird",
+                ),
+                InlineKeyboardButton(
+                    wildlife_label,
+                    callback_data="observation_wildlife",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    ButtonLabel.BACK,
+                    callback_data=Callback.MAIN,
                 ),
             ],
         ]

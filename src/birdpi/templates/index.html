@@ -85,18 +85,31 @@
             {% endif %}
 
             <span class="status-badge">
-            {% if runtime_mode == "night" %}
-                NIGHT
-            {% elif runtime_mode == "day" %}
-                DAY
-            {% else %}
-                ? UNKNOWN
-            {% endif %}
+                {% if runtime_day_night == "night" %}
+                    NIGHT
+                {% elif runtime_day_night == "day" %}
+                    DAY
+                {% else %}
+                    ? UNKNOWN
+                {% endif %}
         </span>
 
             <span class="status-badge">
-            IR {{ runtime_ir_mode|upper }}
+            {{ observation_mode|upper }}
         </span>
+
+            <span class="status-badge
+        {% if observation_active %}status-active{% endif %}">
+            {% if observation_active %}
+                OBSERVATION
+            {% else %}
+                STANDBY
+            {% endif %}
+</span>
+
+            <span class="status-badge">
+                IR {{ runtime_ir_mode|upper }}
+</span>
 
             <span class="status-badge
             {% if motion_active %}status-active{% endif %}">
@@ -155,6 +168,29 @@
                         method="post"
                 >
                     <button class="btn btn-warning" type="submit">Restart
+                    </button>
+                </form>
+                <form
+                        action="{{ url_for('web.observation_bird') }}"
+                        method="post"
+                >
+                    <button
+                            class="btn {% if observation_mode == 'bird' %}btn-primary{% else %}btn-neutral{% endif %}"
+                            type="submit"
+                    >
+                        Bird
+                    </button>
+                </form>
+
+                <form
+                        action="{{ url_for('web.observation_wildlife') }}"
+                        method="post"
+                >
+                    <button
+                            class="btn {% if observation_mode == 'wildlife' %}btn-primary{% else %}btn-neutral{% endif %}"
+                            type="submit"
+                    >
+                        Wildlife
                     </button>
                 </form>
                 <button

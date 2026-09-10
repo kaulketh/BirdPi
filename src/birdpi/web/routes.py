@@ -18,12 +18,12 @@ from birdpi.config import Config
 from birdpi.runtime.client import RuntimeCommandClient
 from birdpi.runtime.status import RuntimeStatusStore
 from birdpi.storage import Storage
+from birdpi.utils.logger import get_logger
 from birdpi.utils.system import (
     format_uptime,
     get_cpu_temperature,
     get_uptime,
 )
-from birdpi.utils.logger import get_logger
 from birdpi.web.service import BirdPiService
 
 logger = get_logger(__name__)
@@ -94,9 +94,13 @@ def register_routes(
 
             "birdpi_running": service.running(),
 
-            "runtime_mode": status.mode,
+            "runtime_day_night": status.day_night,
+            "observation_mode": status.observation_mode,
+            "observation_active": status.observation_active,
+
             "runtime_ir_mode": status.ir_mode,
             "motion_active": status.motion_active,
+
             "current_event_id": status.current_event_id,
             "last_event_id": status.last_event_id,
             "runtime_last_update": runtime_last_update,
@@ -104,6 +108,8 @@ def register_routes(
             "status_refresh_seconds": config.web.refresh_interval_seconds,
 
             "manual_video_active": status.manual_video_active,
+
+
         }
 
     @web.get("/")
@@ -281,5 +287,15 @@ def register_routes(
             config.thumbnail_path,
             filename,
         )
+
+    @web.post("/observation/bird")
+    def observation_bird():
+        runtime.observation_bird()
+        return redirect(url_for("web.index"))
+
+    @web.post("/observation/wildlife")
+    def observation_wildlife():
+        runtime.observation_wildlife()
+        return redirect(url_for("web.index"))
 
     return web
