@@ -22,6 +22,7 @@ from birdpi.lighting.ir_lights import IRMode
 from birdpi.models import CapturedImage
 from birdpi.motion.detector import MotionDetector
 from birdpi.motion.monitor import MotionMonitor
+from birdpi.observation.state import ObservationState
 from birdpi.recording.video import VideoRecorder
 from birdpi.runtime.command import run_command_server
 from birdpi.runtime.status import RuntimeStatus, RuntimeStatusStore
@@ -66,6 +67,8 @@ class BirdPi:
 
         self.daylight = Daylight(config)
 
+        self.observation_state = ObservationState()
+
         self.ir_lights = IRLights(
             left_pin=config.ir.left_pin,
             right_pin=config.ir.right_pin,
@@ -75,6 +78,7 @@ class BirdPi:
             daylight=self.daylight,
             ir_lights=self.ir_lights,
             motion_detector=self.motion_detector,
+            observation_state=self.observation_state,
             check_interval_seconds=(
                 config.daylight.check_interval_seconds
             ),
@@ -86,6 +90,7 @@ class BirdPi:
             detector=self.motion_detector,
             camera=self.camera,
             day_night=self.day_night,
+            observation_state=self.observation_state,
             storage=self.storage,
             video_recorder=self.video_recorder,
             event_timeout_seconds=(
@@ -94,6 +99,7 @@ class BirdPi:
             status_callback=self._update_motion_status,
             command_callback=self._process_commands,
         )
+        
         self.command_thread = threading.Thread(
             target=run_command_server,
             args=(
@@ -151,8 +157,22 @@ class BirdPi:
             night_mode: bool,
             ir_mode: IRMode,
     ) -> None:
-        self.status.mode = ("night" if night_mode else "day")
+
+        day_night = self.observation_state.day_night.value
+
+        # Legacy
+        self.status.mode = day_night
+
+        self.status.day_night = day_night
+        self.status.observation_mode = (
+            self.observation_state.mode.value
+        )
+        self.status.observation_active = (
+            self.observation_state.active
+        )
+
         self.status.ir_mode = ir_mode.value
+
         self.runtime_status.write(self.status)
 
     def _update_motion_status(

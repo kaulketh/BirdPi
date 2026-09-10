@@ -1,16 +1,17 @@
 """
 Day/night mode control for BirdPi.
 
-This module controls the infrared lighting depending on daylight conditions.
 """
 
 import time
 from collections.abc import Callable
 
+from birdpi.daylight.state import DayNightState
 from birdpi.daylight.sun import Daylight
 from birdpi.lighting.ir_lights import IRLights
 from birdpi.lighting.ir_lights import IRMode
 from birdpi.motion.detector import MotionDetector
+from birdpi.observation.state import ObservationState
 from birdpi.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -23,6 +24,7 @@ class DayNightController:
             daylight: Daylight,
             ir_lights: IRLights,
             motion_detector: MotionDetector,
+            observation_state: ObservationState,
             check_interval_seconds: int,
             status_callback: Callable[
                                  [bool, IRMode], None] | None = None,
@@ -30,22 +32,26 @@ class DayNightController:
         self.daylight = daylight
         self.ir_lights = ir_lights
         self.motion_detector = motion_detector
+        self.observation_state = observation_state
         self.check_interval_seconds = check_interval_seconds
 
-        self._night_mode: bool | None = None
+        self._day_night_state: DayNightState | None = None
         self._next_check = 0.0
 
         self.status_callback = status_callback
 
     @property
-    def night_mode(self) -> bool | None:
+    def day_night_state(self) -> DayNightState | None:
         """
-        Return the currently active night-mode state.
+        Return the currently active day/night state.
         """
 
-        return self._night_mode
+        return self._day_night_state
 
-    def update(self, force: bool = False, ) -> None:
+    def update(
+            self,
+            force: bool = False,
+    ) -> None:
         """
         Check daylight state and switch mode when necessary.
         """
@@ -57,19 +63,20 @@ class DayNightController:
 
         self._next_check = now + self.check_interval_seconds
 
-        is_night = self.daylight.is_night()
+        day_night = self.daylight.state()
 
         logger.debug(
             "Daylight check: %s",
-            "NIGHT" if is_night else "DAY",
+            day_night.name,
         )
 
-        if is_night == self._night_mode and not force:
+        if day_night == self._day_night_state and not force:
             return
 
-        self._night_mode = is_night
+        self._day_night_state = day_night
+        self.observation_state.day_night = day_night
 
-        if self._night_mode:
+        if day_night == DayNightState.NIGHT:
             self.ir_lights.set_mode(IRMode.LEFT)
 
             logger.info(
@@ -85,7 +92,7 @@ class DayNightController:
 
         if self.status_callback is not None:
             self.status_callback(
-                is_night,
+                day_night == DayNightState.NIGHT,
                 self.ir_lights.mode,
             )
 

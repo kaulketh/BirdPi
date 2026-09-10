@@ -17,7 +17,13 @@ class RuntimeStatus:
     Represent the current BirdPi runtime state.
     """
 
+    # Legacy field, kept temporarily for compatibility.
     mode: str = "unknown"
+
+    day_night: str = "unknown"
+    observation_mode: str = "bird"
+    observation_active: bool = False
+
     ir_mode: str = "off"
     motion_active: bool = False
     current_event_id: str | None = None
@@ -58,17 +64,34 @@ class RuntimeStatusStore:
         if not self.path.is_file():
             return RuntimeStatus()
 
-        with self.path.open("r", encoding="utf-8", ) as file:
+        with self.path.open("r", encoding="utf-8") as file:
             data = json.load(file)
 
         return RuntimeStatus(
             mode=data.get("mode", "unknown"),
+
+            day_night=data.get(
+                "day_night",
+                data.get("mode", "unknown"),
+            ),
+            observation_mode=data.get(
+                "observation_mode",
+                "bird",
+            ),
+            observation_active=data.get(
+                "observation_active",
+                False,
+            ),
+
             ir_mode=data.get("ir_mode", "off"),
-            motion_active=data.get("motion_active", False, ),
+            motion_active=data.get("motion_active", False),
             current_event_id=data.get("current_event_id"),
             last_event_id=data.get("last_event_id"),
             last_update=data.get("last_update"),
             camera_model=data.get("camera_model"),
             camera_resolution=data.get("camera_resolution"),
-            manual_video_active=data.get("manual_video_active", False, ),
+            manual_video_active=data.get(
+                "manual_video_active",
+                False,
+            ),
         )

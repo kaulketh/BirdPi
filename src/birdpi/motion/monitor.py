@@ -16,6 +16,7 @@ from birdpi.daylight.controller import DayNightController
 from birdpi.exceptions import VideoError
 from birdpi.models import MotionEvent
 from birdpi.motion.detector import MotionDetector
+from birdpi.observation.state import ObservationState
 from birdpi.recording.video import VideoRecorder
 from birdpi.storage import Storage
 from birdpi.utils.logger import get_logger
@@ -31,26 +32,29 @@ class MotionMonitor:
             detector: MotionDetector,
             camera: Camera,
             day_night: DayNightController,
+            observation_state: ObservationState,
             storage: Storage,
             video_recorder: VideoRecorder,
             event_timeout_seconds: int,
             status_callback: Callable[[bool, str | None], None] | None = None,
             command_callback: Callable[[], None] | None = None,
-
     ) -> None:
         self.preview = preview
         self.detector = detector
         self.camera = camera
         self.day_night = day_night
+        self.observation_state = observation_state
         self.storage = storage
         self.video_recorder = video_recorder
-        self.event_timeout_seconds = event_timeout_seconds
 
+        self.event_timeout_seconds = event_timeout_seconds
         self._event: MotionEvent | None = None
         self._last_motion_at: float | None = None
 
         self.status_callback = status_callback
         self.command_callback = command_callback
+
+        self._observation_active: bool | None = None
 
     def run(self) -> None:
         """
@@ -65,8 +69,15 @@ class MotionMonitor:
                     start=1,
             ):
                 self.day_night.update()
+
                 if self.command_callback is not None:
                     self.command_callback()
+
+                self._update_observation_state()
+
+                if not self.observation_state.active:
+                    continue
+
                 now = time.monotonic()
 
                 if self._event is not None:
@@ -242,3 +253,33 @@ class MotionMonitor:
 
         self._event = None
         self._last_motion_at = None
+
+    def _update_observation_state(self) -> None:
+        """
+        Handle changes between active observation and standby.
+        """
+
+        active = self.observation_state.active
+
+        if active == self._observation_active:
+            return
+
+        self._observation_active = active
+
+        if not active and self._event is not None:
+            self._close_event()
+
+        self.detector.reset()
+
+        if active:
+            logger.info(
+                "Observation active: mode=%s, day_night=%s",
+                self.observation_state.mode.value,
+                self.observation_state.day_night.value,
+            )
+        else:
+            logger.info(
+                "Observation standby: mode=%s, day_night=%s",
+                self.observation_state.mode.value,
+                self.observation_state.day_night.value,
+            )
