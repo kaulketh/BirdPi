@@ -22,6 +22,7 @@ from birdpi.lighting.ir_lights import IRMode
 from birdpi.models import CapturedImage
 from birdpi.motion.detector import MotionDetector
 from birdpi.motion.monitor import MotionMonitor
+from birdpi.observation.state import ObservationMode
 from birdpi.observation.state import ObservationState
 from birdpi.recording.video import VideoRecorder
 from birdpi.runtime.command import run_command_server
@@ -99,7 +100,7 @@ class BirdPi:
             status_callback=self._update_motion_status,
             command_callback=self._process_commands,
         )
-        
+
         self.command_thread = threading.Thread(
             target=run_command_server,
             args=(
@@ -154,22 +155,15 @@ class BirdPi:
 
     def _update_day_night_status(
             self,
-            night_mode: bool,
+            _night_mode: bool,
             ir_mode: IRMode,
     ) -> None:
-
         day_night = self.observation_state.day_night.value
 
         # Legacy
         self.status.mode = day_night
 
-        self.status.day_night = day_night
-        self.status.observation_mode = (
-            self.observation_state.mode.value
-        )
-        self.status.observation_active = (
-            self.observation_state.active
-        )
+        self._sync_observation_status()
 
         self.status.ir_mode = ir_mode.value
 
@@ -218,6 +212,18 @@ class BirdPi:
             case "capture_image":
                 self.command_queue.put("capture_image")
                 return "CAPTURE QUEUED"
+
+            case "observation_bird":
+                self._set_observation_mode(
+                    ObservationMode.BIRD
+                )
+                return "OBSERVATION BIRD"
+
+            case "observation_wildlife":
+                self._set_observation_mode(
+                    ObservationMode.WILDLIFE
+                )
+                return "OBSERVATION WILDLIFE"
 
             case "ir_off":
                 self.ir_lights.off()
@@ -364,3 +370,35 @@ class BirdPi:
         self.status.manual_video_active = False
         self.runtime_status.write(self.status)
         self.manual_video_finished_event.set()
+
+    def _sync_observation_status(self) -> None:
+        """
+        Synchronize the runtime status with the observation state.
+        """
+
+        self.status.day_night = self.observation_state.day_night.value
+        self.status.observation_mode = self.observation_state.mode.value
+        self.status.observation_active = self.observation_state.active
+
+    def _set_observation_mode(
+            self,
+            mode: ObservationMode,
+    ) -> None:
+        """
+        Set the observation mode.
+        """
+
+        if self.observation_state.mode == mode:
+            return
+
+        self.observation_state.mode = mode
+
+        self._sync_observation_status()
+        self.runtime_status.write(self.status)
+
+        logger.info(
+            "Observation mode changed: mode=%s, state=%s, day_night=%s",
+            mode.value,
+            "active" if self.observation_state.active else "standby",
+            self.observation_state.day_night.value,
+        )
