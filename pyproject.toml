@@ -14,7 +14,6 @@ dependencies = [
     "astral>=3.2",
     "gpiozero>=2.0",
     "gunicorn>=26.0",
-    "lgpio>=0.2.2",
     "numpy>=2.5",
     "opencv-python-headless>=5.0",
     "python-telegram-bot>=22.8",
