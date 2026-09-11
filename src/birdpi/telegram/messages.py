@@ -38,7 +38,10 @@ def build_status_text(
     return (
         "🐦 BirdPi Status\n\n"
         f"Service: {'RUNNING' if service.running() else 'STOPPED'}\n"
-        f"Mode: {state.mode.upper()}\n"
+        f"Day/Night: {state.day_night.upper()}\n"
+        f"Observation Mode: {state.observation_mode.upper()}\n"
+        f"Observation: "
+        f"{'ACTIVE' if state.observation_active else 'STANDBY'}\n"
         f"IR: {state.ir_mode.upper()}\n"
         f"Motion: {'ACTIVE' if state.motion_active else 'IDLE'}\n"
         f"Camera: {state.camera_model}\n"
