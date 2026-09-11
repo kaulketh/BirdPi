@@ -25,6 +25,7 @@ from birdpi.telegram.keyboard import (
     latest_image_menu,
     main_menu,
     manual_control_menu,
+    observation_keyboard,
     service_menu,
     storage_menu,
 )
@@ -44,6 +45,12 @@ EVENTS_PAGE_SIZE = 5
 _MAIN_ACTIONS = {
     "main_menu",
     "status",
+}
+
+_OBSERVATION_ACTIONS = {
+    "observation",
+    "observation_bird",
+    "observation_wildlife",
 }
 
 _IMAGE_ACTIONS = {
@@ -836,6 +843,59 @@ async def _handle_manual_action(
             )
 
 
+async def _handle_observation_action(
+        data: str,
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    service = context.application.bot_data["service"]
+
+    if not service.running():
+        await query.edit_message_text(
+            "🐾 Observation Mode\n\n"
+            "⚠ BirdPi service is stopped.",
+            reply_markup=main_menu(),
+        )
+        return
+
+    runtime = context.application.bot_data["runtime"]
+    runtime_status = context.application.bot_data["runtime_status"]
+
+    match data:
+        case "observation_bird":
+            await asyncio.to_thread(
+                runtime.observation_bird
+            )
+
+            logger.info(
+                "Telegram set observation mode: BIRD"
+            )
+
+        case "observation_wildlife":
+            await asyncio.to_thread(
+                runtime.observation_wildlife
+            )
+
+            logger.info(
+                "Telegram set observation mode: WILDLIFE"
+            )
+
+    status = runtime_status.read()
+
+    await query.edit_message_text(
+        (
+            "🐾 Observation Mode\n\n"
+            f"Mode: {status.observation_mode.upper()}\n"
+            f"Day/Night: {status.day_night.upper()}\n"
+            f"Observation: "
+            f"{'ACTIVE' if status.observation_active else 'STANDBY'}"
+        ),
+        reply_markup=observation_keyboard(
+            status.observation_mode
+        ),
+    )
+
+
 async def menu_callback(
         update: Update,
         context: ContextTypes.DEFAULT_TYPE,
@@ -896,6 +956,13 @@ async def menu_callback(
 
         elif data in _STORAGE_ACTIONS:
             await _handle_storage_action(
+                data,
+                query,
+                context,
+            )
+
+        elif data in _OBSERVATION_ACTIONS:
+            await _handle_observation_action(
                 data,
                 query,
                 context,

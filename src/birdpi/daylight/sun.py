@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 from astral import LocationInfo
 from astral.sun import sun
 
-from birdpi.lighting.ir_lights import IRMode
 from birdpi.config import Config
+from birdpi.daylight.state import DayNightState
 
 
 class Daylight:
@@ -23,9 +23,11 @@ class Daylight:
             sunrise_offset_minutes: int = -20,
     ) -> None:
         self.config = config
+
         self.sunset_offset = timedelta(
             minutes=sunset_offset_minutes
         )
+
         self.sunrise_offset = timedelta(
             minutes=sunrise_offset_minutes
         )
@@ -58,18 +60,21 @@ class Daylight:
         Return True if the current time is outside the daylight interval.
         """
 
+        return self.state(now) == DayNightState.NIGHT
+
+    def state(
+            self,
+            now: datetime | None = None,
+    ) -> DayNightState:
+        """
+        Return the current day/night state.
+        """
+
         now = now or datetime.now().astimezone()
 
         sunrise, sunset = self._sun_times(now)
 
-        return now < sunrise or now >= sunset
+        if now < sunrise or now >= sunset:
+            return DayNightState.NIGHT
 
-    def ir_mode(
-            self,
-            now: datetime | None = None,
-    ) -> IRMode:
-        return (
-            IRMode.LEFT
-            if self.is_night(now)
-            else IRMode.OFF
-        )
+        return DayNightState.DAY

@@ -62,3 +62,13 @@ class RuntimeCommandClient:
         return self.send(
             "ir_both"
         )
+
+    def observation_bird(self) -> str:
+        return self.send(
+            "observation_bird"
+        )
+
+    def observation_wildlife(self) -> str:
+        return self.send(
+            "observation_wildlife"
+        )
