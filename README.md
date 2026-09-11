@@ -3,14 +3,20 @@
 ... is a Raspberry Pi based nature observation node for monitoring birds and
 other small wildlife.
 
-The system continuously watches the camera image for motion. When motion is
-detected, BirdPi creates an event containing a full-resolution still image and
-an MP4 video. Day/night switching is calculated from the configured geographic
-location, and infrared illumination can be enabled automatically at night.
+BirdPi uses the camera image itself for motion detection; no PIR sensor is
+required. When observation is active and motion is detected, BirdPi creates an
+event containing a full-resolution still image and an MP4 video.
 
-BirdPi also provides a responsive web interface and a Telegram bot interface
-for status monitoring, event browsing, image/video playback, storage management
-and control of the BirdPi runtime service.
+Day/night state is calculated from the configured geographic location. BirdPi
+provides two observation modes:
+
+- **Bird** - observation during the day, standby at night
+- **Wildlife** - observation during both day and night
+
+Infrared illumination is controlled automatically from the combination of
+day/night state and observation mode. WebUI and Telegram interfaces provide
+status monitoring, event browsing, media management, manual controls and
+runtime service control.
 
 > Current project status
 >
@@ -26,21 +32,29 @@ and control of the BirdPi runtime service.
 - MP4 video recording per event
 - Event grouping with configurable timeout
 - Automatic day/night detection using sunrise and sunset
+- Configurable sunrise/sunset offsets
+- **Bird** and **Wildlife** observation modes
+- Automatic observation standby in Bird mode at night
+- Persistent observation mode across runtime restarts
 - GPIO-controlled infrared illumination
-- Separate runtime and WebUI processes
+- Automatic IR control based on observation mode and day/night state
+- Settling period after observation activation to avoid IR-induced false motion
+- Manual image capture, video recording and IR control
+- Separate runtime, WebUI and Telegram bot services
 - Runtime status exchange through a JSON status file
-- Responsive Flask WebUI
+- Runtime command channel through a local Unix socket
+- Responsive Flask/Gunicorn WebUI
 - Event overview and event detail pages
-- Image gallery
+- Image gallery and generated thumbnails
 - HTML5 MP4 video playback
 - Delete individual images and videos
 - Clear all images or videos
 - Automatic cleanup of event references when media is deleted
 - Automatic storage monitoring
 - Automatic deletion of the oldest complete events when disk space becomes low
-- Rotating logfile
+- Rotating logfiles
 - systemd integration
-- Telegram bot for remote status, event browsing and service control
+- Telegram bot for remote status, observation mode, manual control, event browsing and service control
 - Telegram access restricted to a configured chat ID
 - Graceful shutdown on `SIGTERM`
 
@@ -48,25 +62,29 @@ and control of the BirdPi runtime service.
 
 ## Architecture
 
-BirdPi consists of two separate services:
+BirdPi consists of three separate services:
 
 ```text
 birdpi.service
     |
-    +-- Camera
+    +-- Camera preview
     +-- Motion detection
+    +-- Observation state (Bird / Wildlife)
     +-- Day/night controller
     +-- IR lighting
     +-- Still capture
     +-- Video recording
     +-- Motion events
     +-- Runtime status
+    +-- Runtime command server
     +-- Storage cleanup
 
 birdpi-web.service
     |
-    +-- Flask WebUI
+    +-- Flask WebUI served by Gunicorn
     +-- Runtime status display
+    +-- Bird / Wildlife selection
+    +-- Manual camera and IR controls
     +-- Event browser
     +-- Gallery
     +-- Video playback
@@ -77,6 +95,8 @@ birdpi-bot.service
     |
     +-- Telegram bot
     +-- Runtime and storage status
+    +-- Bird / Wildlife selection
+    +-- Manual camera and IR controls
     +-- Latest image / latest event
     +-- Paginated event browser
     +-- Send images and videos
@@ -84,17 +104,29 @@ birdpi-bot.service
     +-- Start / Stop / Restart birdpi.service
 ```
 
-The WebUI does **not** initialize camera or GPIO hardware. This avoids
-conflicts with the running BirdPi service.
+The WebUI and Telegram bot do **not** initialize camera or GPIO hardware. This
+avoids conflicts with the running BirdPi runtime service.
 
-Runtime information such as camera model, day/night state, IR mode and motion
-state is written by `birdpi.service` to:
+Runtime information such as camera model, day/night state, observation mode,
+observation state, IR mode and motion state is written by `birdpi.service` to:
 
 ```text
 birdpi-data/status/runtime.json
 ```
 
-The WebUI only reads this status file.
+The selected observation mode is also restored from this runtime status after a
+service restart. If no valid persisted mode exists, BirdPi defaults to
+`bird`.
+
+Commands from the WebUI and Telegram bot are sent to the runtime through the
+local Unix socket:
+
+```text
+birdpi-data/status/birdpi.sock
+```
+
+This keeps hardware ownership inside `birdpi.service` while still allowing the
+other services to control the running runtime safely.
 
 ---
 
@@ -121,7 +153,7 @@ The current BirdPi hardware uses:
 Default still-image resolution:
 
 ```text
-4608 × 2592
+2304 × 1296
 ```
 
 The NoIR version has no infrared-cut filter and can therefore be used together
@@ -144,7 +176,9 @@ The GPIO pins are control signals only.
 Use a suitable transistor/MOSFET driver stage and an appropriate external power
 supply for the IR LEDs.
 
-BirdPi currently enables the left IR channel automatically during night mode.
+Automatic IR behavior depends on the active observation mode. The left IR
+channel is enabled automatically only during **Wildlife + Night**. Bird mode
+keeps IR illumination off at night because observation is in standby.
 
 ---
 
@@ -152,19 +186,31 @@ BirdPi currently enables the left IR channel automatically during night mode.
 
 BirdPi uses several system and Python components.
 
-Typical requirements include:
+System requirements include:
 
 - Python 3.13
 - Raspberry Pi OS
 - `rpicam-still`
 - `rpicam-vid`
 - `ffmpeg`
+
+Python runtime dependencies declared by the project include:
+
 - Flask
-- NumPy
-- OpenCV
-- gpiozero
 - Astral
+- gpiozero
+- Gunicorn
+- lgpio
+- NumPy
+- opencv-python-headless
 - python-telegram-bot
+
+The optional ONNX object-detection code additionally uses:
+
+- onnxruntime
+- Pillow
+
+Object detection is currently not part of the main v0.4 motion-event workflow.
 
 Install FFmpeg system-wide:
 
@@ -201,12 +247,15 @@ source .venv/bin/activate
 
 ## Install BirdPi from a wheel
 
-BirdPi uses `setuptools-scm` for version generation.
+BirdPi uses `setuptools-scm` for version generation. The package version is
+derived from Git metadata on the development computer.
 
-The release/deployment workflow is therefore:
+The recommended release/deployment workflow is therefore:
 
 ```text
-Development PC with Git repository
+Development PC with full Git repository
+    |
+    +-- setuptools-scm determines the version
     |
     +-- build wheel
     |
@@ -214,6 +263,9 @@ Development PC with Git repository
     |
     +-- install wheel into BirdPi venv
 ```
+
+The Raspberry Pi itself does **not** need a Git checkout when BirdPi is deployed
+as a wheel.
 
 Build on the development computer:
 
@@ -230,7 +282,7 @@ dist/
 Example:
 
 ```text
-birdpi-0.4.0rc2-py3-none-any.whl
+birdpi-<version>-py3-none-any.whl
 ```
 
 Copy the wheel to the Raspberry Pi and install it:
@@ -239,7 +291,7 @@ Copy the wheel to the Raspberry Pi and install it:
 source ~/birdpi/.venv/bin/activate
 
 pip install --force-reinstall \
-    ~/birdpi/dist/birdpi-0.4.0rc2-py3-none-any.whl
+    ~/birdpi/dist/birdpi-<version>-py3-none-any.whl
 ```
 
 Check the installation:
@@ -247,6 +299,13 @@ Check the installation:
 ```bash
 pip show birdpi
 ```
+
+> **Note**
+>
+> A source-only deployment without the repository's `.git` directory does not
+> contain enough metadata for `setuptools-scm` to derive a version during an
+> editable build. Building the wheel on the Git-backed development computer
+> avoids this issue and is the normal BirdPi deployment path.
 
 ---
 
@@ -316,11 +375,13 @@ BirdPi creates and uses:
 ```text
 birdpi-data/
 ├── images/
+├── thumbnails/
 ├── videos/
 ├── events/
 ├── logs/
 └── status/
-    └── runtime.json
+    ├── runtime.json
+    └── birdpi.sock
 ```
 
 ---
@@ -335,10 +396,9 @@ location_name = "HOME"
 
 BirdPi uses geographic coordinates to calculate sunrise and sunset.
 
-The configured location controls:
-
-- DAY / NIGHT mode
-- automatic IR illumination
+The configured location controls the calculated DAY / NIGHT state. That state is
+then combined with the active observation mode to decide whether observation and
+IR illumination should be active.
 
 The coordinates are loaded from `LOCATIONS`:
 
@@ -366,8 +426,8 @@ This setting should be reviewed before using BirdPi at another location.
 
 ```python
 CameraConfig(
-    width=4608,
-    height=2592,
+    width=2304,
+    height=1296,
 )
 ```
 
@@ -416,23 +476,29 @@ IRLightConfig(
 
 Options:
 
-| Setting     | Description                   |
-|-------------|-------------------------------|
-| `enabled`   | IR-light configuration switch |
-| `left_pin`  | GPIO for left IR channel      |
-| `right_pin` | GPIO for right IR channel     |
+| Setting     | Description                                  |
+|-------------|----------------------------------------------|
+| `enabled`   | Reserved/configured IR capability flag       |
+| `left_pin`  | GPIO for left IR channel                     |
+| `right_pin` | GPIO for right IR channel                    |
 
 The GPIO values must match the actual hardware wiring.
+
+The current runtime logic controls IR from observation mode and day/night state.
+The `enabled` field is present in the configuration but is not currently used as
+a runtime gate.
 
 ---
 
 ## Motion detection
 
+Current configuration:
+
 ```python
 MotionConfig(
-    pixel_threshold=20,
-    min_area=2000,
-    reference_interval=5,
+    pixel_threshold=40,
+    min_area=4000,
+    reference_interval=3,
     event_timeout_seconds=8,
 )
 ```
@@ -474,14 +540,51 @@ DaylightConfig(
 )
 ```
 
-BirdPi periodically recalculates the current daylight state.
+BirdPi periodically recalculates the current daylight state from the configured
+geographic location.
 
-The sunrise/sunset calculation is based on the configured geographic location.
+Current sunrise/sunset offsets are:
 
-The current implementation uses offsets around sunrise and sunset before
-changing the operating mode.
+```text
+Sunrise: -20 minutes
+Sunset:  +20 minutes
+```
 
-At night, BirdPi enables the configured IR illumination.
+This means DAY begins 20 minutes before the calculated sunrise and NIGHT begins
+20 minutes after the calculated sunset.
+
+Day/night state alone no longer decides whether BirdPi observes or enables IR;
+it is combined with the selected observation mode.
+
+---
+
+## Observation modes
+
+BirdPi provides two runtime observation modes:
+
+- `bird` - optimized for bird-house observation during daylight
+- `wildlife` - continuous day/night observation
+
+The resulting behavior is:
+
+| Observation mode | Day/Night | Observation | Automatic IR |
+|------------------|-----------|-------------|--------------|
+| Bird             | DAY       | ACTIVE      | OFF          |
+| Bird             | NIGHT     | STANDBY     | OFF          |
+| Wildlife         | DAY       | ACTIVE      | OFF          |
+| Wildlife         | NIGHT     | ACTIVE      | LEFT         |
+
+The selected mode can be changed from the WebUI or Telegram bot. It is written
+to `runtime.json` and restored when `birdpi.service` starts again.
+
+When observation changes from standby to active, motion detection waits for a
+short settling interval before accepting motion. The current interval is
+**2 seconds**. This allows IR illumination and camera exposure to stabilize and
+prevents the lighting change itself from immediately creating a false motion
+event.
+
+Manual runtime commands remain available while automatic observation is in
+standby.
 
 ---
 
@@ -571,11 +674,11 @@ ObjectDetectionConfig(
 )
 ```
 
-Object detection is currently **not part of the main v0.4 motion-event workflow
-**.
+Object detection is currently **not part of the main v0.4 motion-event workflow**.
 
 The model path must be adapted if this feature is enabled on another
-installation.
+installation. The optional implementation requires `onnxruntime` and `Pillow`
+in addition to the normal BirdPi runtime dependencies.
 
 The following configuration values are also currently present:
 
@@ -622,7 +725,9 @@ well.
 
 # Web interface
 
-The responsive WebUI provides:
+The responsive WebUI provides status, observation control, manual runtime
+control and media management without directly initializing camera or GPIO
+hardware.
 
 ## Home
 
@@ -634,6 +739,8 @@ The responsive WebUI provides:
 - stored image count
 - BirdPi service state
 - DAY / NIGHT state
+- observation mode (`BIRD` / `WILDLIFE`)
+- observation state (`OBSERVATION` / `STANDBY`)
 - IR state
 - motion state
 - current event
@@ -642,6 +749,10 @@ The responsive WebUI provides:
 - runtime status timestamp
 - disk usage
 - storage warning level
+- Bird / Wildlife mode buttons
+- manual image capture
+- manual video start / stop
+- manual IR control (`OFF`, `LEFT`, `RIGHT`, `BOTH`)
 
 ## Events
 
@@ -655,6 +766,7 @@ The responsive WebUI provides:
 ## Gallery
 
 - responsive image grid
+- generated thumbnails
 - image detail view
 - navigation between images
 
@@ -675,18 +787,19 @@ Image metadata and event references are updated automatically.
 
 BirdPi includes an optional Telegram bot for remote monitoring and control.
 
-The bot runs independently from the BirdPi runtime and does **not**
-initialize camera or GPIO hardware.
+The bot runs independently from the BirdPi runtime and does **not** initialize
+camera or GPIO hardware. Runtime actions are sent to `birdpi.service` through
+the same Unix command socket used by the WebUI.
 
-It uses the same shared components as the WebUI:
-
-- `Storage`
-- `RuntimeStatusStore`
-- `BirdPiService`
+It uses the same shared components as the WebUI, including `Storage`,
+`RuntimeStatusStore`, `BirdPiService` and `RuntimeCommandClient`.
 
 The bot can currently:
 
 - show BirdPi runtime status
+- show DAY / NIGHT state
+- show observation mode and ACTIVE / STANDBY state
+- switch between Bird and Wildlife observation modes
 - show free/used storage
 - show the latest image
 - show the latest motion event
@@ -696,6 +809,9 @@ The bot can currently:
 - delete individual event images or videos
 - clear all stored images
 - clear all stored videos
+- manually capture an image
+- manually start / stop video recording
+- manually set IR to OFF / LEFT / RIGHT / BOTH
 - start `birdpi.service`
 - stop `birdpi.service`
 - restart `birdpi.service`
@@ -737,8 +853,8 @@ sudo chmod 600 /etc/birdpi/birdpi.env
 sudo chown root:root /etc/birdpi/birdpi.env
 ```
 
-The configured chat ID is used as an access-control check.
-Messages and button actions from other chats are ignored.
+The configured chat ID is used as an access-control check. Messages and button
+actions from other chats are ignored.
 
 Do not commit the Telegram token to Git.
 
@@ -753,15 +869,33 @@ The current bot supports:
 
 `/start` opens the inline main menu.
 
-The menu provides:
+The main menu provides access to:
 
 ```text
-Status
+Observation
 Latest Event
 Latest Image
 Events
 Storage
 Service
+Manual Control
+```
+
+The Observation menu shows the current Bird/Wildlife mode, DAY/NIGHT state and
+ACTIVE/STANDBY state. The selected mode is marked in the inline keyboard.
+
+The status output includes:
+
+```text
+Service
+Day/Night
+Observation Mode
+Observation
+IR
+Motion
+Camera
+Resolution
+Free storage
 ```
 
 Event videos can be relatively large. BirdPi therefore uses an extended
@@ -771,7 +905,7 @@ Telegram upload timeout when sending MP4 files.
 
 # systemd services
 
-BirdPi is designed to run as two separate systemd services.
+BirdPi is designed to run as three separate systemd services.
 
 ## BirdPi runtime
 
@@ -779,19 +913,19 @@ Example:
 
 ```ini
 [Unit]
-Description = BirdPi Nature Observation Runtime
-After = network.target
+Description=BirdPi Nature Observation Runtime
+After=network.target
 
 [Service]
-Type = simple
-User = <user>
-WorkingDirectory = /home/<user>/birdpi
-ExecStart = /home/<user>/birdpi/.venv/bin/python -m birdpi.main
-Restart = on-failure
-RestartSec = 3
+Type=simple
+User=<user>
+WorkingDirectory=/home/<user>/birdpi
+ExecStart=/home/<user>/birdpi/.venv/bin/python -m birdpi.main
+Restart=on-failure
+RestartSec=3
 
 [Install]
-WantedBy = multi-user.target
+WantedBy=multi-user.target
 ```
 
 Save as:
@@ -804,23 +938,31 @@ Save as:
 
 ## BirdPi WebUI
 
+The production WebUI is served by Gunicorn.
+
 Example:
 
 ```ini
 [Unit]
-Description = BirdPi Web Interface
-After = network.target birdpi.service
+Description=BirdPi Web Interface
+After=network.target
 
 [Service]
-Type = simple
-User = <user>
-WorkingDirectory = /home/<user>/birdpi
-ExecStart = /home/<user>/birdpi/.venv/bin/python -m birdpi.server
-Restart = on-failure
-RestartSec = 3
+Type=simple
+User=<user>
+WorkingDirectory=/home/<user>/birdpi/src
+ExecStart=/home/<user>/birdpi/.venv/bin/gunicorn \
+    --workers 1 \
+    --threads 4 \
+    --bind 0.0.0.0:5000 \
+    --access-logfile - \
+    --error-logfile - \
+    birdpi.web.wsgi:app
+Restart=on-failure
+RestartSec=3
 
 [Install]
-WantedBy = multi-user.target
+WantedBy=multi-user.target
 ```
 
 Save as:
@@ -829,9 +971,8 @@ Save as:
 /etc/systemd/system/birdpi-web.service
 ```
 
-The WebUI should remain available even when `birdpi.service` is stopped.
-
-Do not configure `birdpi-web.service` with `Requires=birdpi.service`.
+The WebUI should remain available even when `birdpi.service` is stopped. Do not
+configure `birdpi-web.service` with `Requires=birdpi.service`.
 
 ---
 
@@ -841,23 +982,23 @@ Example:
 
 ```ini
 [Unit]
-Description = BirdPi Telegram Bot
-After = network.target
+Description=BirdPi Telegram Bot
+After=network.target
 
 [Service]
-Type = simple
-User = <user>
-WorkingDirectory = /home/<user>/birdpi
+Type=simple
+User=<user>
+WorkingDirectory=/home/<user>/birdpi/src
 
-EnvironmentFile = /etc/birdpi/birdpi.env
+EnvironmentFile=/etc/birdpi/birdpi.env
 
-ExecStart = /home/<user>/birdpi/.venv/bin/python -m birdpi.telegram.bot
+ExecStart=/home/<user>/birdpi/.venv/bin/python -m birdpi.telegram.bot
 
-Restart = on-failure
-RestartSec = 3
+Restart=on-failure
+RestartSec=3
 
 [Install]
-WantedBy = multi-user.target
+WantedBy=multi-user.target
 ```
 
 Save as:
@@ -866,8 +1007,8 @@ Save as:
 /etc/systemd/system/birdpi-bot.service
 ```
 
-The Telegram bot is independent from the BirdPi runtime and remains
-available when `birdpi.service` is stopped.
+The Telegram bot is independent from the BirdPi runtime and remains available
+when `birdpi.service` is stopped.
 
 ---
 
@@ -914,10 +1055,11 @@ Example:
 <user> ALL=(root) NOPASSWD: /usr/bin/systemctl start birdpi.service, /usr/bin/systemctl stop birdpi.service, /usr/bin/systemctl restart birdpi.service
 ```
 
-Replace `<user>` with the Linux account running the BirdPi WebUI.
+Replace `<user>` with the Linux account running the BirdPi WebUI and Telegram
+bot.
 
-The WebUI can then execute only the explicitly allowed service-control
-commands.
+The WebUI and Telegram bot can then execute only the explicitly allowed
+service-control commands.
 
 ---
 
@@ -953,21 +1095,29 @@ cleanup:
 
 # Logging
 
-BirdPi writes logs both to the console and to a rotating logfile.
+BirdPi writes logs both to the console and to rotating logfiles.
 
-Default logfile:
+Default logfiles:
 
 ```text
 /home/kaulketh/birdpi-data/logs/birdpi.log
+/home/kaulketh/birdpi-data/logs/birdpi-web.log
+/home/kaulketh/birdpi-data/logs/birdpi-bot.log
 ```
 
-The current logging configuration uses a `RotatingFileHandler`.
+The current logging configuration uses rotating file handlers.
 
-Typical log messages include:
+Typical runtime log messages include:
 
 ```text
 BirdPi online
-Switched to NIGHT mode, IR lighting enabled
+Restored observation mode: wildlife
+IR lighting disabled: mode=bird, day_night=night
+IR lighting enabled: mode=wildlife, day_night=night
+Observation standby: mode=bird, day_night=night
+Observation active: mode=wildlife, day_night=night
+Motion detection settling for 2.0 s
+Motion detection ready
 Motion detected
 Motion event started
 Image captured
@@ -979,7 +1129,8 @@ Storage cleanup removed ...
 BirdPi offline
 ```
 
-The logfile location can be changed through `log_path` in the configuration.
+The logfile locations can be changed through the corresponding paths in the
+configuration.
 
 ---
 
@@ -993,6 +1144,9 @@ birdpi-data/
 │   ├── image_YYYYMMDD_HHMMSS.jpg
 │   └── image_YYYYMMDD_HHMMSS.json
 │
+├── thumbnails/
+│   └── image_YYYYMMDD_HHMMSS.jpg
+│
 ├── videos/
 │   └── event_<event-id>.mp4
 │
@@ -1000,11 +1154,18 @@ birdpi-data/
 │   └── <event-id>.json
 │
 ├── logs/
-│   └── birdpi.log
+│   ├── birdpi.log
+│   ├── birdpi-web.log
+│   └── birdpi-bot.log
 │
 └── status/
-    └── runtime.json
+    ├── runtime.json
+    └── birdpi.sock
 ```
+
+`runtime.json` is the shared runtime status source for WebUI and Telegram. The
+Unix socket `birdpi.sock` is the local command channel to the running BirdPi
+runtime.
 
 ---
 
@@ -1022,7 +1183,7 @@ The package version is derived from:
 Example release tag:
 
 ```text
-v0.4.0-rc2
+v<version>
 ```
 
 The generated file:
@@ -1031,14 +1192,17 @@ The generated file:
 src/birdpi/_version.py
 ```
 
-is generated automatically and should not be manually edited.
+is generated automatically and should not be manually edited. It normally
+should not be tracked in version control.
 
-It normally should not be tracked in version control.
+Release wheels should be built on a machine with the complete Git repository so
+that `setuptools-scm` can determine the correct package version. The Raspberry
+Pi can then install the built wheel without Git metadata.
 
 Git tags must be pushed explicitly:
 
 ```bash
-git push origin v0.4.0-rc2
+git push origin v<version>
 ```
 
 or:
@@ -1057,6 +1221,7 @@ development.
 Current focus areas include:
 
 - long-term outdoor testing
+- Bird / Wildlife observation-mode testing
 - motion-detection tuning
 - WebUI and Telegram bot refinement
 - runtime monitoring
