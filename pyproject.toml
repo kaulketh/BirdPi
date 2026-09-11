@@ -11,14 +11,20 @@ requires-python = ">=3.13"
 
 dependencies = [
     "Flask>=3.1",
+    "astral>=3.2",
+    "gpiozero>=2.0",
+    "gunicorn>=26.0",
+    "numpy>=2.5",
+    "opencv-python-headless>=5.0",
+    "python-telegram-bot>=22.8",
 ]
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools_scm]
 # automated version detection
-version_file="src/birdpi/_version.py"
+version_file = "src/birdpi/_version.py"
