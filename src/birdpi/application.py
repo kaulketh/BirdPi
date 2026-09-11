@@ -45,17 +45,13 @@ class BirdPi:
         self.storage.ensure_directories()
 
         self.runtime_status = RuntimeStatusStore(config.runtime_status_path)
+        previous_status = self.runtime_status.read()
         self.status = RuntimeStatus()
 
         self.camera = Camera(config)
         self.status.camera_model = self.camera.model
-        self.status.camera_resolution = str(
-            self.camera.resolution
-        )
+        self.status.camera_resolution = str(self.camera.resolution)
 
-        self.runtime_status.write(
-            self.status
-        )
         self.preview = CameraPreview(config)
 
         self.video_recorder = VideoRecorder(config)
@@ -69,6 +65,26 @@ class BirdPi:
         self.daylight = Daylight(config)
 
         self.observation_state = ObservationState()
+
+        try:
+            self.observation_state.mode = ObservationMode(
+                previous_status.observation_mode
+            )
+        except ValueError:
+            self.observation_state.mode = ObservationMode.BIRD
+
+            logger.warning(
+                "Invalid persisted observation mode: %s, using bird",
+                previous_status.observation_mode,
+            )
+        else:
+            logger.info(
+                "Restored observation mode: %s",
+                self.observation_state.mode.value,
+            )
+
+        self._sync_observation_status()
+        self.runtime_status.write(self.status)
 
         self.ir_lights = IRLights(
             left_pin=config.ir.left_pin,
