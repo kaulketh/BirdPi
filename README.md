@@ -7,16 +7,16 @@ BirdPi uses the camera image itself for motion detection; no PIR sensor is
 required. When observation is active and motion is detected, BirdPi creates an
 event containing a full-resolution still image and an MP4 video.
 
-Day/night state is calculated from the configured geographic location. BirdPi
-provides two observation modes:
+The current installation is primarily used for **daytime bird observation**
+with a Raspberry Pi Camera Module V2.1 (IMX219, standard version with IR-cut
+filter). Day/night state is calculated from the configured geographic location;
+in the normal `bird` mode, observation is active during the day and switches to
+standby at night.
 
-- **Bird** - observation during the day, standby at night
-- **Wildlife** - observation during both day and night
-
-Infrared illumination is controlled automatically from the combination of
-day/night state and observation mode. WebUI and Telegram interfaces provide
-status monitoring, event browsing, media management, manual controls and
-runtime service control.
+The software still contains the `wildlife` mode and IR-control paths as an
+optional, prepared extension. They are not the primary operating mode of the
+current camera setup. WebUI and Telegram interfaces provide status monitoring,
+event browsing, media management, manual controls and runtime service control.
 
 > Current project status
 >
@@ -33,13 +33,14 @@ runtime service control.
 - Event grouping with configurable timeout
 - Automatic day/night detection using sunrise and sunset
 - Configurable sunrise/sunset offsets
-- **Bird** and **Wildlife** observation modes
-- Automatic observation standby in Bird mode at night
+- Daytime-focused **Bird** observation mode
+- Automatic observation standby at night
+- Optional **Wildlife** mode retained for a future day/night-capable setup
 - Persistent observation mode across runtime restarts
-- GPIO-controlled infrared illumination
-- Automatic IR control based on observation mode and day/night state
-- Settling period after observation activation to avoid IR-induced false motion
-- Manual image capture, video recording and IR control
+- Prepared, optional GPIO-controlled infrared illumination
+- Optional automatic IR control based on observation mode and day/night state
+- Settling period after observation activation or lighting changes
+- Manual image capture and video recording; optional manual IR control
 - Separate runtime, WebUI and Telegram bot services
 - Runtime status exchange through a JSON status file
 - Runtime command channel through a local Unix socket
@@ -69,9 +70,9 @@ birdpi.service
     |
     +-- Camera preview
     +-- Motion detection
-    +-- Observation state (Bird / Wildlife)
+    +-- Observation state (Bird; optional Wildlife mode)
     +-- Day/night controller
-    +-- IR lighting
+    +-- Optional IR lighting
     +-- Still capture
     +-- Video recording
     +-- Motion events
@@ -83,8 +84,8 @@ birdpi-web.service
     |
     +-- Flask WebUI served by Gunicorn
     +-- Runtime status display
-    +-- Bird / Wildlife selection
-    +-- Manual camera and IR controls
+    +-- Bird / optional Wildlife selection
+    +-- Manual camera and optional IR controls
     +-- Event browser
     +-- Gallery
     +-- Video playback
@@ -95,8 +96,8 @@ birdpi-bot.service
     |
     +-- Telegram bot
     +-- Runtime and storage status
-    +-- Bird / Wildlife selection
-    +-- Manual camera and IR controls
+    +-- Bird / optional Wildlife selection
+    +-- Manual camera and optional IR controls
     +-- Latest image / latest event
     +-- Paginated event browser
     +-- Send images and videos
@@ -137,7 +138,7 @@ other services to control the running runtime safely.
 BirdPi requires a Raspberry Pi with:
 
 - CSI camera interface
-- GPIO pins for IR-light control
+- GPIO pins if the optional IR-light hardware is connected
 - enough CPU performance for camera preview, OpenCV motion detection and video
   recording
 - Raspberry Pi OS with the current `rpicam-*` camera tools
@@ -148,21 +149,29 @@ The project currently runs with Python 3.13.
 
 The current BirdPi hardware uses:
 
-**Raspberry Pi Camera Module 3 NoIR**
+**Raspberry Pi Camera Module V2.1** with the **Sony IMX219** sensor.
+
+This is the standard camera version with an IR-cut filter. It provides natural
+colors in daylight and is the camera used for the current daytime-focused
+BirdPi setup.
 
 Default still-image resolution:
 
 ```text
-2304 × 1296
+1640 × 1232
 ```
 
-The NoIR version has no infrared-cut filter and can therefore be used together
-with external IR illumination at night.
+The 4:3 resolution keeps the useful vertical field of view for the bird house.
+The fixed-focus lens has been adjusted for the installation distance.
 
-## Infrared illumination
+## Optional infrared illumination
 
-The current configuration uses two independently controllable IR-light
-channels:
+IR hardware and the related software paths are prepared for a possible future
+day/night-capable camera setup. They are not used as the primary night mode with
+the current Camera Module V2.1 because its IR-cut filter is intended for normal
+daylight imaging.
+
+The prepared setup provides two independently controllable IR-light channels:
 
 ```text
 Left IR:  GPIO 20
@@ -176,9 +185,10 @@ The GPIO pins are control signals only.
 Use a suitable transistor/MOSFET driver stage and an appropriate external power
 supply for the IR LEDs.
 
-Automatic IR behavior depends on the active observation mode. The left IR
-channel is enabled automatically only during **Wildlife + Night**. Bird mode
-keeps IR illumination off at night because observation is in standby.
+If a suitable day/night or NoIR camera is installed later, automatic IR behavior
+can depend on the active observation mode. The existing logic enables the left
+IR channel only during **Wildlife + Night**. The current Bird mode keeps IR
+illumination off and places observation in standby at night.
 
 ---
 
@@ -396,9 +406,10 @@ location_name = "HOME"
 
 BirdPi uses geographic coordinates to calculate sunrise and sunset.
 
-The configured location controls the calculated DAY / NIGHT state. That state is
-then combined with the active observation mode to decide whether observation and
-IR illumination should be active.
+The configured location controls the calculated DAY / NIGHT state. In the
+current Bird mode, that state decides whether observation is active or in
+standby. It can also drive the optional Wildlife/IR logic if that hardware is
+used in the future.
 
 The coordinates are loaded from `LOCATIONS`:
 
@@ -426,14 +437,24 @@ This setting should be reviewed before using BirdPi at another location.
 
 ```python
 CameraConfig(
-    width=2304,
-    height=1296,
+    width=1640,
+    height=1232,
+    metering="centre",
+    exposure_value=0.4,
+    awb="auto",
 )
 ```
 
-These values define the still-image resolution.
+These values define the current daytime still-image profile for the Raspberry
+Pi Camera Module V2.1:
 
-The current defaults match the Raspberry Pi Camera Module 3.
+| Setting          | Current value | Purpose |
+|------------------|---------------|---------|
+| `width`          | `1640`        | 4:3 still-image width |
+| `height`         | `1232`        | 4:3 still-image height |
+| `metering`       | `"centre"`    | Center-weighted exposure metering |
+| `exposure_value` | `0.4`         | Slight positive exposure compensation |
+| `awb`            | `"auto"`      | Automatic white balance |
 
 ---
 
@@ -441,11 +462,13 @@ The current defaults match the Raspberry Pi Camera Module 3.
 
 ```python
 VideoConfig(
-    width=1920,
-    height=1080,
-    framerate=30,
-    duration_seconds=15,
+    width=1600,
+    height=1200,
+    framerate=25,
+    duration_seconds=30,
 )
+
+manual_video_max_duration_seconds = 120
 ```
 
 Options:
@@ -457,6 +480,10 @@ Options:
 | `framerate`        | Frames per second            |
 | `duration_seconds` | Recording duration per event |
 
+`manual_video_max_duration_seconds` limits a manually started recording to
+120 seconds. The 1600 × 1200 event-video format closely matches the 4:3 still
+image framing and retains more vertical image area than a 16:9 format.
+
 BirdPi records H.264 using `rpicam-vid` and remuxes the result into MP4 using
 FFmpeg.
 
@@ -464,7 +491,7 @@ The temporary raw H.264 file is removed afterwards.
 
 ---
 
-## Infrared lighting
+## Optional infrared lighting
 
 ```python
 IRLightConfig(
@@ -482,11 +509,13 @@ Options:
 | `left_pin`  | GPIO for left IR channel                     |
 | `right_pin` | GPIO for right IR channel                    |
 
-The GPIO values must match the actual hardware wiring.
+The GPIO values must match the actual hardware wiring. This section documents
+the prepared IR capability; IR illumination is not part of the current primary
+daytime operation.
 
-The current runtime logic controls IR from observation mode and day/night state.
-The `enabled` field is present in the configuration but is not currently used as
-a runtime gate.
+When used with suitable camera hardware, the runtime logic can control IR from
+observation mode and day/night state. The `enabled` field is present in the
+configuration but is not currently used as a runtime gate.
 
 ---
 
@@ -553,16 +582,21 @@ Sunset:  +20 minutes
 This means DAY begins 20 minutes before the calculated sunrise and NIGHT begins
 20 minutes after the calculated sunset.
 
-Day/night state alone no longer decides whether BirdPi observes or enables IR;
-it is combined with the selected observation mode.
+In the current Bird mode, day/night state switches daytime observation between
+ACTIVE and STANDBY. The state is also available to the optional Wildlife/IR
+logic.
 
 ---
 
 ## Observation modes
 
-BirdPi provides two runtime observation modes:
+BirdPi's current operating mode is:
 
-- `bird` - optimized for bird-house observation during daylight
+- `bird` - bird-house observation during daylight; standby at night
+
+The software also retains an optional mode for a future day/night-capable
+camera installation:
+
 - `wildlife` - continuous day/night observation
 
 The resulting behavior is:
@@ -571,17 +605,17 @@ The resulting behavior is:
 |------------------|-----------|-------------|--------------|
 | Bird             | DAY       | ACTIVE      | OFF          |
 | Bird             | NIGHT     | STANDBY     | OFF          |
-| Wildlife         | DAY       | ACTIVE      | OFF          |
-| Wildlife         | NIGHT     | ACTIVE      | LEFT         |
+| Wildlife (optional) | DAY    | ACTIVE      | OFF          |
+| Wildlife (optional) | NIGHT  | ACTIVE      | LEFT         |
 
 The selected mode can be changed from the WebUI or Telegram bot. It is written
-to `runtime.json` and restored when `birdpi.service` starts again.
+to `runtime.json` and restored when `birdpi.service` starts again. For the
+current Camera Module V2.1 installation, `bird` is the intended mode.
 
 When observation changes from standby to active, motion detection waits for a
 short settling interval before accepting motion. The current interval is
-**2 seconds**. This allows IR illumination and camera exposure to stabilize and
-prevents the lighting change itself from immediately creating a false motion
-event.
+**2 seconds**. This allows camera exposure—and optional lighting, when
+installed—to stabilize before motion events are accepted.
 
 Manual runtime commands remain available while automatic observation is in
 standby.
@@ -739,9 +773,9 @@ hardware.
 - stored image count
 - BirdPi service state
 - DAY / NIGHT state
-- observation mode (`BIRD` / `WILDLIFE`)
+- observation mode (`BIRD`; optional `WILDLIFE`)
 - observation state (`OBSERVATION` / `STANDBY`)
-- IR state
+- optional IR state
 - motion state
 - current event
 - latest event
@@ -749,10 +783,10 @@ hardware.
 - runtime status timestamp
 - disk usage
 - storage warning level
-- Bird / Wildlife mode buttons
+- Bird / optional Wildlife mode buttons
 - manual image capture
 - manual video start / stop
-- manual IR control (`OFF`, `LEFT`, `RIGHT`, `BOTH`)
+- optional manual IR control (`OFF`, `LEFT`, `RIGHT`, `BOTH`)
 
 ## Events
 
@@ -799,7 +833,7 @@ The bot can currently:
 - show BirdPi runtime status
 - show DAY / NIGHT state
 - show observation mode and ACTIVE / STANDBY state
-- switch between Bird and Wildlife observation modes
+- switch between Bird and the optional Wildlife observation mode
 - show free/used storage
 - show the latest image
 - show the latest motion event
@@ -811,7 +845,7 @@ The bot can currently:
 - clear all stored videos
 - manually capture an image
 - manually start / stop video recording
-- manually set IR to OFF / LEFT / RIGHT / BOTH
+- manually set the optional IR hardware to OFF / LEFT / RIGHT / BOTH
 - start `birdpi.service`
 - stop `birdpi.service`
 - restart `birdpi.service`
@@ -881,8 +915,9 @@ Service
 Manual Control
 ```
 
-The Observation menu shows the current Bird/Wildlife mode, DAY/NIGHT state and
-ACTIVE/STANDBY state. The selected mode is marked in the inline keyboard.
+The Observation menu shows the current Bird/optional Wildlife mode, DAY/NIGHT
+state and ACTIVE/STANDBY state. The selected mode is marked in the inline
+keyboard.
 
 The status output includes:
 
@@ -1088,7 +1123,7 @@ cleanup:
 
 - current motion event is closed
 - metadata is saved
-- IR lighting is switched off
+- optional IR lighting is switched off
 - BirdPi logs an offline message
 
 ---
@@ -1107,15 +1142,13 @@ Default logfiles:
 
 The current logging configuration uses rotating file handlers.
 
-Typical runtime log messages include:
+Typical runtime log messages in the current daytime setup include:
 
 ```text
 BirdPi online
-Restored observation mode: wildlife
 IR lighting disabled: mode=bird, day_night=night
-IR lighting enabled: mode=wildlife, day_night=night
 Observation standby: mode=bird, day_night=night
-Observation active: mode=wildlife, day_night=night
+Observation active: mode=bird, day_night=day
 Motion detection settling for 2.0 s
 Motion detection ready
 Motion detected
@@ -1221,7 +1254,7 @@ development.
 Current focus areas include:
 
 - long-term outdoor testing
-- Bird / Wildlife observation-mode testing
+- daytime Bird-mode testing with the Camera Module V2.1
 - motion-detection tuning
 - WebUI and Telegram bot refinement
 - runtime monitoring
@@ -1232,8 +1265,9 @@ Current focus areas include:
 
 # Safety notes
 
-- Never power high-current IR LEDs directly from Raspberry Pi GPIO pins.
-- Use a suitable transistor or MOSFET driver.
+- If the optional IR hardware is installed, never power high-current IR LEDs
+  directly from Raspberry Pi GPIO pins.
+- Use a suitable transistor or MOSFET driver for optional IR LEDs.
 - Verify GPIO numbering before connecting hardware.
 - Protect the Raspberry Pi and camera electronics against moisture.
 - Monitor SD-card wear and storage usage for long-term installations.
