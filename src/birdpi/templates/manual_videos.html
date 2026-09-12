@@ -27,9 +27,10 @@
 
                 {% for video, recorded_at in videos %}
 
-                    <div class="media-card">
 
-                        <a
+
+                        <nav>
+                            <a
                                 href="{{ url_for(
                                     'web.manual_video',
                                     filename=video.name
@@ -76,8 +77,8 @@
                                 </form>
 
                             </div>
-                        </a>
-                    </div>
+                        </a></nav>
+
 
                 {% endfor %}
 
