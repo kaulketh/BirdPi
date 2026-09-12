@@ -15,6 +15,10 @@ from birdpi.utils.geo import LOCATIONS
 class CameraConfig:
     width: int
     height: int
+    metering: str
+    exposure_value: float
+    awb: str
+    timeout_ms: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -139,15 +143,19 @@ def load_config() -> Config:
         runtime_command_socket_path=runtime_command_socket_path,
 
         camera=CameraConfig(
-            width=2304,
-            height=1296,
+            width=1640,
+            height=1232,
+            metering="centre",
+            exposure_value=0.4,
+            awb="auto",
+            timeout_ms=1000,
         ),
 
         video=VideoConfig(
-            width=1920,
-            height=1080,
-            framerate=30,
-            duration_seconds=15,
+            width=1600,
+            height=1200,
+            framerate=25,
+            duration_seconds=30,
         ),
 
         ir=IRLightConfig(
@@ -196,5 +204,5 @@ def load_config() -> Config:
             chat_id_env="BIRDPI_TELEGRAM_CHAT_ID",
         ),
 
-        manual_video_max_duration_seconds=60,
+        manual_video_max_duration_seconds=120,
     )

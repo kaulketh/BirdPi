@@ -18,6 +18,7 @@ from birdpi.telegram.keyboard import (
     confirm_delete_event_image,
     confirm_delete_event_video,
     confirm_delete_latest_image,
+    confirm_delete_manual_video,
     confirm_service_restart,
     confirm_service_stop,
     event_menu,
@@ -25,6 +26,8 @@ from birdpi.telegram.keyboard import (
     latest_image_menu,
     main_menu,
     manual_control_menu,
+    manual_video_menu,
+    manual_videos_menu,
     observation_keyboard,
     service_menu,
     storage_menu,
@@ -41,6 +44,7 @@ from birdpi.utils.logger import get_logger
 logger = get_logger(__name__)
 
 EVENTS_PAGE_SIZE = 5
+MANUAL_VIDEOS_PAGE_SIZE = 5
 
 _MAIN_ACTIONS = {
     "main_menu",
@@ -87,6 +91,10 @@ _STORAGE_ACTIONS = {
     "storage_clear_videos",
     "confirm_clear_images",
     "confirm_clear_videos",
+}
+
+_MANUAL_VIDEO_ACTIONS = {
+    "manual_videos",
 }
 
 _MANUAL_ACTIONS = {
@@ -688,6 +696,173 @@ async def _handle_storage_action(
             )
 
 
+async def show_manual_videos_page(
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+        page: int,
+) -> None:
+    storage = context.application.bot_data["storage"]
+
+    all_videos = storage.manual_videos()
+
+    offset = page * MANUAL_VIDEOS_PAGE_SIZE
+    end = offset + MANUAL_VIDEOS_PAGE_SIZE
+
+    videos = all_videos[offset:end]
+
+    if not videos and page > 0:
+        page -= 1
+
+        offset = page * MANUAL_VIDEOS_PAGE_SIZE
+        end = offset + MANUAL_VIDEOS_PAGE_SIZE
+
+        videos = all_videos[offset:end]
+
+    await query.edit_message_text(
+        f"🎬 Manual Videos — Page {page + 1}",
+        reply_markup=manual_videos_menu(
+            videos=videos,
+            page=page,
+            has_previous=page > 0,
+            has_next=end < len(all_videos),
+        ),
+    )
+
+
+async def _handle_manual_video_action(
+        data: str,
+        query,
+        context: ContextTypes.DEFAULT_TYPE,
+) -> None:
+    storage = context.application.bot_data["storage"]
+
+    if data.startswith("manual_videos_page:"):
+        page = int(
+            data.removeprefix("manual_videos_page:")
+        )
+
+        await show_manual_videos_page(
+            query,
+            context,
+            page=page,
+        )
+        return
+
+    if data.startswith("manual_video_send:"):
+        filename = data.removeprefix(
+            "manual_video_send:"
+        )
+
+        video = storage.manual_video(filename)
+
+        if video is None:
+            await query.answer(
+                "Video not found.",
+                show_alert=True,
+            )
+            return
+
+        with video.open("rb") as file:
+            await context.bot.send_video(
+                chat_id=query.message.chat_id,
+                video=file,
+                caption=f"🎥 {video.name}",
+                write_timeout=120,
+                connect_timeout=120,
+                read_timeout=120,
+            )
+
+        logger.info(
+            "Telegram sent manual video: %s",
+            video.name,
+        )
+        return
+
+    if data.startswith("manual_video_delete_request:"):
+        filename = data.removeprefix(
+            "manual_video_delete_request:"
+        )
+
+        video = storage.manual_video(filename)
+
+        if video is None:
+            await query.answer(
+                "Video not found.",
+                show_alert=True,
+            )
+            return
+
+        await query.edit_message_text(
+            "⚠ Delete this manual video?",
+            reply_markup=confirm_delete_manual_video(
+                filename
+            ),
+        )
+        return
+
+    if data.startswith("confirm_manual_video_delete:"):
+        filename = data.removeprefix(
+            "confirm_manual_video_delete:"
+        )
+
+        video = storage.manual_video(filename)
+
+        if video is None:
+            await query.answer(
+                "Video not found.",
+                show_alert=True,
+            )
+            return
+
+        deleted = storage.delete_video(filename)
+
+        if deleted:
+            logger.info(
+                "Telegram deleted manual video: %s",
+                filename,
+            )
+
+        await query.edit_message_text(
+            "🗑 Manual video deleted."
+            if deleted
+            else "Video not found.",
+            reply_markup=main_menu(),
+        )
+        return
+
+    if data.startswith("manual_video:"):
+        filename = data.removeprefix(
+            "manual_video:"
+        )
+
+        video = storage.manual_video(filename)
+
+        if video is None:
+            await query.answer(
+                "Video not found.",
+                show_alert=True,
+            )
+            return
+
+        await query.edit_message_text(
+            (
+                "🎬 Manual Video\n\n"
+                f"{video.name}"
+            ),
+            reply_markup=manual_video_menu(
+                video.name
+            ),
+        )
+        return
+
+    if data == "manual_videos":
+        await show_manual_videos_page(
+            query,
+            context,
+            page=0,
+        )
+
+
 async def _show_manual_control(
         query,
         context: ContextTypes.DEFAULT_TYPE,
@@ -963,6 +1138,20 @@ async def menu_callback(
 
         elif data in _OBSERVATION_ACTIONS:
             await _handle_observation_action(
+                data,
+                query,
+                context,
+            )
+
+        elif (
+                data in _MANUAL_VIDEO_ACTIONS
+                or data.startswith("manual_videos_page:")
+                or data.startswith("manual_video:")
+                or data.startswith("manual_video_send:")
+                or data.startswith("manual_video_delete_request:")
+                or data.startswith("confirm_manual_video_delete:")
+        ):
+            await _handle_manual_video_action(
                 data,
                 query,
                 context,

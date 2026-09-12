@@ -56,16 +56,31 @@ class Camera:
 
         command = [
             "rpicam-still",
+
             "--width",
             str(self.config.camera.width),
+
             "--height",
             str(self.config.camera.height),
+
+            "--metering",
+            self.config.camera.metering,
+
+            "--ev",
+            str(self.config.camera.exposure_value),
+
+            "--awb",
+            self.config.camera.awb,
+
             "--timeout",
-            "500",
+            str(self.config.camera.timeout_ms),
+
             "-o",
             str(output_file),
+
             "--nopreview",
         ]
+
         captured_at = datetime.now()
 
         try:

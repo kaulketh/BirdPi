@@ -109,13 +109,11 @@ def register_routes(
 
             "manual_video_active": status.manual_video_active,
 
-
         }
 
     @web.get("/")
     def index() -> str:
         latest_image = storage.latest_image()
-
         return render_template("index.html", latest_image=latest_image, )
 
     @web.get("/images/<path:filename>")
@@ -129,87 +127,92 @@ def register_routes(
     @web.get("/gallery")
     def gallery() -> str:
         images = storage.images()
-
         return render_template("gallery.html", images=images, )
+
+    @web.get("/manual-videos")
+    def manual_videos() -> str:
+        videos = [(video, datetime.fromtimestamp(video.stat().st_mtime))
+                  for video in storage.manual_videos()
+                  ]
+        return render_template("manual_videos.html", videos=videos, )
+
+    @web.get("/manual-videos/<path:filename>")
+    def manual_video(filename: str) -> str:
+        video = storage.manual_video(filename)
+        if video is None:
+            abort(404)
+        return render_template("manual_video.html", video=video, )
 
     @web.get("/gallery/<path:filename>")
     def gallery_image(filename: str, ) -> str:
-        image = storage.get_image(
-            filename
-        )
-
+        image = storage.get_image(filename)
         if image is None:
             abort(404)
-
-        newer, older = storage.adjacent_images(
-            image
-        )
-
-        return render_template("image.html",
-                               image=image, newer=newer, older=older, )
+        newer, older = storage.adjacent_images(image)
+        return render_template("image.html", image=image, newer=newer,
+                               older=older, )
 
     @web.get("/events")
     def events() -> str:
         motion_events = storage.events()
-
         return render_template("events.html", events=motion_events, )
 
     @web.get("/events/<event_id>")
     def event_detail(event_id: str, ) -> str:
         event = storage.event(event_id)
-
         if event is None:
             abort(404)
-
         return render_template("event.html", event=event, )
 
     @web.post("/service/start")
     def service_start():
         logger.info("WebUI requested BirdPi service start")
         service.start()
-
         return redirect(url_for("web.index"))
 
     @web.post("/service/stop")
     def service_stop():
         logger.info("WebUI requested BirdPi service stop")
         service.stop()
-
         return redirect(url_for("web.index"))
 
     @web.post("/service/restart")
     def service_restart():
         logger.info("WebUI requested BirdPi service restart")
         service.restart()
-
         return redirect(url_for("web.index"))
 
     @web.post("/images/<path:filename>/delete")
     def delete_image(filename: str, ):
         logger.info("WebUI deleted image: %s", filename, )
         storage.delete_image(filename)
-
         return redirect(url_for("web.gallery"))
 
     @web.post("/images/clear")
     def clear_images():
         deleted = storage.clear_images()
         logger.info("WebUI cleared images: %d deleted", deleted, )
-
         return redirect(url_for("web.gallery"))
 
     @web.post("/videos/<path:filename>/delete")
     def delete_video(filename: str, ):
         logger.info("WebUI deleted video: %s", filename, )
         storage.delete_video(filename)
-
         return redirect(url_for("web.events"))
+
+    @web.post("/manual-videos/<path:filename>/delete")
+    def delete_manual_video(filename: str):
+        video = storage.manual_video(filename)
+        if video is None:
+            abort(404)
+        logger.info("WebUI deleted manual video: %s", filename, )
+        storage.delete_video(filename)
+        return redirect(url_for("web.manual_videos"))
 
     @web.post("/videos/clear")
     def clear_videos():
         deleted = storage.clear_videos()
         logger.info("WebUI cleared videos: %d deleted", deleted, )
-
         return redirect(url_for("web.events"))
 
     @web.post("/capture")
@@ -222,28 +225,24 @@ def register_routes(
     def ir_off():
         logger.info("WebUI set IR mode: OFF")
         runtime.ir_off()
-
         return redirect(url_for("web.index"))
 
     @web.post("/ir/left")
     def ir_left():
         logger.info("WebUI set IR mode: LEFT")
         runtime.ir_left()
-
         return redirect(url_for("web.index"))
 
     @web.post("/ir/right")
     def ir_right():
         logger.info("WebUI set IR mode: RIGHT")
         runtime.ir_right()
-
         return redirect(url_for("web.index"))
 
     @web.post("/ir/both")
     def ir_both():
         logger.info("WebUI set IR mode: BOTH")
         runtime.ir_both()
-
         return redirect(url_for("web.index"))
 
     @web.post("/video/start")
@@ -259,34 +258,18 @@ def register_routes(
         logger.info("WebUI requested manual video stop")
         response = runtime.video_stop()
         logger.info("Manual video stop result: %s", response, )
-
         return redirect(url_for("web.index"))
 
     @web.get("/thumbnails/<path:filename>")
-    def thumbnail(
-            filename: str,
-    ):
-        thumbnail_path = (
-                config.thumbnail_path
-                / filename
-        )
+    def thumbnail(filename: str, ):
+        thumbnail_path = (config.thumbnail_path / filename)
 
         if not thumbnail_path.is_file():
-            image = storage.get_image(
-                filename
-            )
-
+            image = storage.get_image(filename)
             if image is None:
                 abort(404)
-
-            storage.create_thumbnail(
-                image.path
-            )
-
-        return send_from_directory(
-            config.thumbnail_path,
-            filename,
-        )
+            storage.create_thumbnail(image.path)
+        return send_from_directory(config.thumbnail_path, filename, )
 
     @web.post("/observation/bird")
     def observation_bird():

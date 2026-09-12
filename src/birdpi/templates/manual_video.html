@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Manual Video – BirdPi{% endblock %}
+
+{% block content %}
+
+    <section class="card">
+
+        <div class="card-header">
+            <div>
+                <h2>Manual Video</h2>
+
+                <span class="card-subtitle">
+                    {{ video.name }}
+                </span>
+            </div>
+        </div>
+
+
+        <video
+                controls
+                preload="metadata"
+                style="width: 100%; max-width: 100%;"
+        >
+            <source
+                    src="{{ url_for(
+                        'web.video',
+                        filename=video.name
+                    ) }}"
+                    type="video/mp4"
+            >
+
+            Your browser does not support HTML5 video.
+        </video>
+
+
+        <div class="media-info">
+
+            <div class="media-details">
+
+                <span class="media-filename">
+                    {{ video.name }}
+                </span>
+
+            </div>
+
+
+            <form
+                    action="{{ url_for(
+                        'web.delete_manual_video',
+                        filename=video.name
+                    ) }}"
+                    method="post"
+                    onsubmit="return confirm('Delete this video?');"
+            >
+                <button
+                        type="submit"
+                        class="btn btn-danger"
+                >
+                    🗑 Delete
+                </button>
+            </form>
+
+        </div>
+
+
+        <div style="margin-top: 1rem;">
+            <a
+                    href="{{ url_for('web.manual_videos') }}"
+                    class="btn btn-neutral"
+            >
+                ← Back to Manual Videos
+            </a>
+        </div>
+
+    </section>
+
+{% endblock %}
