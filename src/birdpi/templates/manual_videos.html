@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{% block title %}Manual Videos – BirdPi{% endblock %}
+
+{% block content %}
+
+    <section class="card">
+
+        <div class="card-header">
+            <div>
+                <h2>Manual Videos</h2>
+
+                {% if videos %}
+                    <span class="card-subtitle">
+                        {{ videos|length }} stored video
+                        {% if videos|length != 1 %}
+                            s{% endif %}
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+
+        {% if videos %}
+
+            <div class="media-grid">
+
+                {% for video, recorded_at in videos %}
+
+                    <div class="media-card">
+
+                        <a
+                                href="{{ url_for(
+                                    'web.manual_video',
+                                    filename=video.name
+                                ) }}"
+                        >
+                            <div class="video-placeholder">
+                                🎥
+                            </div>
+
+
+                            <div class="media-info">
+
+                                <div class="media-details">
+
+                                    <strong class="media-date">
+                                        {{ recorded_at.strftime(
+                                        "%d.%m.%Y %H:%M:%S"
+                                    ) }}
+                                    </strong>
+
+                                    <span class="media-filename">
+                                    {{ video.name }}
+                                </span>
+
+                                </div>
+
+
+                                <form
+                                        action="{{ url_for(
+                                        'web.delete_manual_video',
+                                        filename=video.name
+                                    ) }}"
+                                        method="post"
+                                        onsubmit="return confirm('Delete this video?');"
+                                >
+                                    <button
+                                            type="submit"
+                                            class="icon-button delete-button"
+                                            title="Delete video"
+                                            aria-label="Delete video"
+                                    >
+                                        🗑
+                                    </button>
+                                </form>
+
+                            </div>
+                        </a>
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state">
+                <div class="empty-state-icon">🎥</div>
+
+                <div class="empty-state-title">
+                    No manual videos available
+                </div>
+
+                <div class="empty-state-text">
+                    Manually recorded videos will appear here.
+                </div>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+{% endblock %}

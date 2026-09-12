@@ -23,6 +23,10 @@ class Callback(StrEnum):
     LATEST_IMAGE_CANCEL = "latest_image_cancel"
 
     MAIN = "main_menu"
+    MANUAL_VIDEOS = "manual_videos"
+    MANUAL_VIDEO = "manual_video"
+    MANUAL_VIDEO_DELETE_REQUEST = "manual_video_delete_request"
+    CONFIRM_MANUAL_VIDEO_DELETE = "confirm_manual_video_delete"
     SERVICE = "service"
     STORAGE = "storage"
 
@@ -51,9 +55,9 @@ def _auto_emoji(text: str) -> str:
 
 def _make_confirm_dialog(
         yes_label: str,
-        yes_callback: Callback,
+        yes_callback: Callback | str,
         cancel_label: str,
-        cancel_callback: Callback,
+        cancel_callback: Callback | str,
 ) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         [
@@ -136,6 +140,17 @@ def confirm_service_stop() -> InlineKeyboardMarkup:
     )
 
 
+def confirm_delete_manual_video(
+        filename: str,
+) -> InlineKeyboardMarkup:
+    return _make_confirm_dialog(
+        "Yes, delete video",
+        f"{Callback.CONFIRM_MANUAL_VIDEO_DELETE}:{filename}",
+        ButtonLabel.CANCEL,
+        f"{Callback.MANUAL_VIDEO}:{filename}",
+    )
+
+
 def main_menu() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
 
@@ -164,6 +179,12 @@ def main_menu() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(
                     "💾 Storage",
                     callback_data=Callback.STORAGE,
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "🎬 Manual Videos",
+                    callback_data=Callback.MANUAL_VIDEOS,
                 ),
             ],
             [
@@ -382,6 +403,88 @@ def events_menu(events, page: int, has_previous: bool,
     )
 
     return InlineKeyboardMarkup(buttons)
+
+
+def manual_videos_menu(
+        videos,
+        page: int,
+        has_previous: bool,
+        has_next: bool,
+) -> InlineKeyboardMarkup:
+    buttons = []
+
+    for video in videos:
+        label = video.stem.removeprefix(
+            "manual_"
+        )
+
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    f"🎥 {label}",
+                    callback_data=f"manual_video:{video.name}",
+                )
+            ]
+        )
+
+    navigation = []
+
+    if has_previous:
+        navigation.append(
+            InlineKeyboardButton(
+                "⬅ Previous",
+                callback_data=f"manual_videos_page:{page - 1}",
+            )
+        )
+
+    if has_next:
+        navigation.append(
+            InlineKeyboardButton(
+                "Next ➡",
+                callback_data=f"manual_videos_page:{page + 1}",
+            )
+        )
+
+    if navigation:
+        buttons.append(navigation)
+
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                ButtonLabel.BACK,
+                callback_data=Callback.MAIN,
+            )
+        ]
+    )
+
+    return InlineKeyboardMarkup(buttons)
+
+
+def manual_video_menu(
+        filename: str,
+) -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "🎥 Send Video",
+                    callback_data=f"manual_video_send:{filename}",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "🗑 Delete Video",
+                    callback_data=f"{Callback.MANUAL_VIDEO_DELETE_REQUEST}:{filename}",
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    ButtonLabel.BACK,
+                    callback_data=f"{Callback.MANUAL_VIDEO}:{filename}",
+                ),
+            ],
+        ]
+    )
 
 
 def latest_image_menu() -> InlineKeyboardMarkup:

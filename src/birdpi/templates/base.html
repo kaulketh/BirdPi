@@ -58,6 +58,15 @@
         >
             Gallery
         </a>
+        <a
+                href="{{ url_for('web.manual_videos') }}"
+                class="{% if request.endpoint in [
+            'web.manual_videos',
+            'web.manual_video'
+        ] %}active{% endif %}"
+        >
+            Manual Videos
+        </a>
 
     </nav>
 
@@ -66,13 +75,13 @@
 
 </div>
 <script>
-function toggleManualControl() {
-    const panel = document.getElementById(
-        "manual-control-panel"
-    );
+    function toggleManualControl() {
+        const panel = document.getElementById(
+            "manual-control-panel"
+        );
 
-    panel.classList.toggle("open");
-}
+        panel.classList.toggle("open");
+    }
 </script>
 </body>
 </html>

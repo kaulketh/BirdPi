@@ -9,9 +9,9 @@ from pathlib import Path
 import cv2
 
 from birdpi.config import Config
+from birdpi.exceptions import ThumbnailError
 from birdpi.models import CapturedImage
 from birdpi.models import MotionEvent
-from birdpi.exceptions import ThumbnailError
 
 
 class Storage:
@@ -192,6 +192,35 @@ class Storage:
                 self.config.video_path
                 / f"event_{event_id}.mp4"
         )
+
+    def manual_videos(self) -> list[Path]:
+        """
+        Return all manually recorded videos ordered newest first.
+        """
+
+        return sorted(
+            self.config.video_path.glob("manual_*.mp4"),
+            reverse=True,
+        )
+
+    def manual_video(
+            self,
+            filename: str,
+    ) -> Path | None:
+        """
+        Return a manually recorded video by filename.
+        """
+
+        path = self.config.video_path / filename
+
+        if (
+                not path.is_file()
+                or not path.name.startswith("manual_")
+                or path.suffix.lower() != ".mp4"
+        ):
+            return None
+
+        return path
 
     @staticmethod
     def image_from_path(
@@ -549,7 +578,7 @@ class Storage:
                     file,
                     indent=4,
                 )
-                
+
         for thumbnail_path in self.config.thumbnail_path.glob("*.jpg"):
             thumbnail_path.unlink()
 
